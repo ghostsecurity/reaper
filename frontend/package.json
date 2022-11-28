@@ -1,0 +1,29 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.2.37",
+    "vue-prism-editor": "^2.0.0-alpha.2",
+    "vuetify": "^3.0.1"
+  },
+  "devDependencies": {
+    "@babel/types": "^7.18.10",
+    "@mdi/font": "^7.0.96",
+    "@types/prismjs": "^1.26.0",
+    "@vitejs/plugin-vue": "^3.0.3",
+    "highlight.js": "^11.7.0",
+    "install": "^0.13.0",
+    "npm": "^9.1.2",
+    "prismjs": "^1.29.0",
+    "typescript": "^4.6.4",
+    "vite": "^3.0.7",
+    "vue-tsc": "^0.39.5"
+  }
+}
