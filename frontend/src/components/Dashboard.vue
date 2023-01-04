@@ -27,6 +27,10 @@ export default /*#__PURE__*/ defineComponent({
       type: String,
       required: true,
     },
+    onWorkspaceConfig: {
+      type: Function as PropType<() => void>,
+      required: true,
+    },
   },
   data() {
     return {
@@ -96,7 +100,7 @@ export default /*#__PURE__*/ defineComponent({
       <Search :on-search="onSearch" :query="liveCriteria.Raw"/>
     </div>
     <div class="flex-shrink p-0 ml-2">
-      <WorkspaceMenu/>
+      <WorkspaceMenu :on-workspace-config="onWorkspaceConfig"/>
     </div>
   </div>
   <div class="min-h-16 h-16 max-h-16 px-2">

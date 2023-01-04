@@ -1,4 +1,4 @@
-name: golangci-lint
+name: Go Lint
 on:
   push:
     branches:
@@ -9,7 +9,7 @@ permissions:
   pull-requests: read
 jobs:
   golangci:
-    name: lint
+    name: golangci-lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
