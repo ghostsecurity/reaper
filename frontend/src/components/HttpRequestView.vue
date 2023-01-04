@@ -17,15 +17,16 @@ export default /*#__PURE__*/ defineComponent({
 </script>
 
 <template>
-  <div class="d-flex fill-height">
-    <div class="v-col-8 fill-height">
-      <Code :code="request.Raw" :onchange="onchange" :readonly="readonly" class="fill-height"/>
+  <!-- TODO add tabs for headers, tags etc. -->
+    <div class="h-full min-h-full w-full">
+      <Code :code="request.Raw" :onchange="onchange" :readonly="readonly" class="h-full"/>
     </div>
-    <div class="v-col-4 text-left overflow-y-auto">
+    <!--
+    <div class="text-left overflow-y-auto">
         <p class="text-h5 text--primary">
           Summary
         </p>
-        <v-table  density="compact" style="max-width: 100% !important;">
+        <table  density="compact" style="max-width: 100% !important;">
           <tbody>
             <tr>
               <th>Status</th>
@@ -48,11 +49,11 @@ export default /*#__PURE__*/ defineComponent({
               <td>{{request.ID}}</td>
             </tr>
           </tbody>
-        </v-table>
+        </table>
       <p class="text-h5 text--primary mt-5">
         Headers
       </p>
-      <v-table  density="compact" style="max-width: 100% !important;">
+      <table  density="compact" style="max-width: 100% !important;">
         <tbody>
         <template v-for="(values, key) in request.Headers">
           <tr v-for="value in values" :key="key + ':' + value">
@@ -61,11 +62,11 @@ export default /*#__PURE__*/ defineComponent({
           </tr>
         </template>
         </tbody>
-      </v-table>
+      </table>
       <p class="text-h5 text--primary mt-5">
         Query Parameters
       </p>
-      <v-table  density="compact" style="max-width: 100% !important;">
+      <table  density="compact" style="max-width: 100% !important;">
         <tbody>
         <template v-for="(values, key) in request.Query">
           <tr v-for="value in values" :key="key + ':' + value">
@@ -74,12 +75,12 @@ export default /*#__PURE__*/ defineComponent({
           </tr>
         </template>
         </tbody>
-      </v-table>
+      </table>
     </div>
-  </div>
+    -->
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 tbody {
   max-width: 100% !important;
 }

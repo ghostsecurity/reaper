@@ -15,6 +15,7 @@ type HttpRequest struct {
 	Host        string
 	Path        string
 	QueryString string
+	Scheme      string
 	Raw         string
 	ID          int64
 	Headers     map[string][]string
@@ -42,6 +43,7 @@ func PackageHttpRequest(request *http.Request, id int64) HttpRequest {
 		QueryString: request.URL.RawQuery,
 		Headers:     packageHeaders(request.Header),
 		Query:       request.URL.Query(),
+		Scheme:      request.URL.Scheme,
 	}
 }
 

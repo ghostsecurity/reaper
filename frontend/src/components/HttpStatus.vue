@@ -10,13 +10,13 @@ export default /*#__PURE__*/ defineComponent({
         return ''
       }
       if (this.code >= 200 && this.code < 300) {
-        return 'text-success'
+        return 'bg-aurora-4'
       } else if (this.code >= 300 && this.code < 400) {
-        return 'text-info'
+        return 'bg-aurora-3'
       } else if (this.code >= 400 && this.code < 500) {
-        return 'text-warning'
+        return 'bg-aurora-2'
       } else if (this.code >= 500 && this.code < 600) {
-        return 'text-error'
+        return 'bg-aurora-1'
       }
       return ''
     }
@@ -25,6 +25,6 @@ export default /*#__PURE__*/ defineComponent({
 </script>
 
 <template>
-  <span v-if="code" v-bind:class="getClass()">{{ code }}</span>
-  <span v-if="!code">-</span>
+  <span v-if="code" v-bind:class="'px-2 inline-flex rounded-full '+getClass()">{{ code }}</span>
+  <span v-else></span>
 </template>

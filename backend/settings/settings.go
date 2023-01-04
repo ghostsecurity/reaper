@@ -3,7 +3,7 @@ package settings
 import "github.com/ghostsecurity/reaper/backend/log"
 
 const (
-	settingsFilename = "settings.json"
+	settingsFilename = "settings.v1.json"
 )
 
 type Settings struct {
@@ -12,14 +12,14 @@ type Settings struct {
 	ProxyPort int
 	ProxyHost string
 	LogLevel  log.Level
-	Theme     string
+	DarkMode  bool
 }
 
 var defaultSettings = Settings{
 	ProxyPort: 8080,
 	ProxyHost: "reaper",
 	LogLevel:  log.LevelWarn,
-	Theme:     "ghost",
+	DarkMode:  true,
 }
 
 func (s Settings) WithCA(cert []byte, key []byte) Settings {

@@ -1,0 +1,25 @@
+name: golangci-lint
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+      - uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.50.1
+          skip-cache: true
+          args: --timeout 10m --verbose

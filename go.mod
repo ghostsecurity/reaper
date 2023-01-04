@@ -5,10 +5,11 @@ go 1.18
 require (
 	github.com/alecthomas/chroma v0.10.0
 	github.com/elazarl/goproxy v0.0.0-20221015165544-a0805db90819
+	github.com/google/uuid v1.1.2
 	github.com/kirsle/configdir v0.0.0-20170128060238-e45d2f54772f
 	github.com/liamg/tml v0.6.0
-	github.com/stretchr/testify v1.7.1
-	github.com/wailsapp/wails/v2 v2.2.0
+	github.com/stretchr/testify v1.8.0
+	github.com/wailsapp/wails/v2 v2.3.1
 )
 
 require (
@@ -16,7 +17,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
-	github.com/google/uuid v1.1.2 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/labstack/echo/v4 v4.9.0 // indirect

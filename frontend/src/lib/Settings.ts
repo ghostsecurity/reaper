@@ -5,13 +5,13 @@ export default class Settings {
     ProxyPort:      number;
     ProxyHost:      string;
     LogLevel: number;
-    Theme:       string;
+    DarkMode:       boolean;
     constructor() {
         this.CACert = "";
         this.CAKey = "";
         this.ProxyPort = 0;
         this.ProxyHost = "";
         this.LogLevel = 0;
-        this.Theme = "";
+        this.DarkMode = true;
     }
 }
