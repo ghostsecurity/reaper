@@ -31,7 +31,9 @@ lint: lint-go
 .PHONY: lint-go
 lint-go:
 	which golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.50.1
-	$$GOROOT/bin/langci-lint run --timeout 3m --verbose
+	go env
+	echo $PATH
+	golangci-lint run --timeout 3m --verbose
 
 .PHONY: run
 run: clean wails
