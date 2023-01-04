@@ -39,28 +39,30 @@ In order to build cross-platform, production binaries, creating and pushing a gi
 - [ ] Squash commits on main branch
 - [ ] Protect main and require all build steps to pass etc.
 
-## Post lockdown (MVPoC milestone)
+### Ghostbank milestone
 
-- [x] Rework main requests pane layout to include search at top
-- [x] Workspace concept
 - [ ] Workspace scope/name editor
 - [ ] Workspace switch button
-- [ ] In-memory db of saved requests, sequences etc.
-- [x] Add left-side-pop/pin to show inventory/project (hosts + paths)
-- [ ] Add collection/saved requests + sequences panel
-- [ ] Add pre/post scripts + variables (a la postman)
-- [ ] Add sequences + sequence editor
 - [ ] Add modal for intercepts?
-- [x] Add query functionality to request log (elasticsearch style)
-- [x] Click on project tree node adds query selector to request log
-- [ ] Import saved request from `curl` command
-- [ ] Try editors like https://codemirror.net/ + https://shiki.matsu.io/
-- [ ] Add omnibox for EVERYTHING - https://tailwindui.com/components/application-ui/navigation/command-palettes
-- [ ] Export HAR files/curl
+- [ ] Add collection/saved requests
+- [ ] Rework request/response popout/editor
 - [ ] Contextual tags (request has auth)
 - [ ] Add context menu to request parts (fuzz this shiz)
+
+### Post lockdown (MVPoC milestone)
+
+- [ ] In-memory db of saved requests, sequences etc.
+- [ ] Add pre/post scripts + variables (a la postman)
+- [ ] Add sequences + sequence editor
+- [ ] Import saved request from `curl` command
+- [ ] Try editors like https://codemirror.net/ + https://shiki.matsu.io/
+- [ ] Export HAR files/curl
 - [ ] Investigate TINES style request editor (raw vs. smart)
 - [ ] Add notes to requests
+- [ ] Rewrite proxy dependency (the current module has dodgy TLS handling and lots of globals)
+
+### Future Development
+
 - [ ] JWT viewer/editor
 - [ ] Protobuf support
-- [ ] Rewrite proxy dependency (the current module has dodgy TLS handling and lots of globals)
+- [ ] Add omnibox for EVERYTHING - https://tailwindui.com/components/application-ui/navigation/command-palettes
