@@ -134,19 +134,21 @@ export default /*#__PURE__*/ defineComponent({
     </div>
   </div>
   <ul class="text-xs">
-    <li v-for="node in nodes" class="whitespace-nowrap">
-      <a @click="toggle(node.Name)" @contextmenu.prevent="openMenu" @dblclick="onNodeSelect(node)">
-        <span v-if="node.Children.length === 0" class="w-6 inline-block bg-red h-1" />
-        <ChevronDownIcon v-else-if="toggled(node.Name)" class="w-4 inline text-gray-500" />
-        <ChevronRightIcon v-else class="w-4 inline text-gray-500" />
-        <FolderIcon v-if="node.Children.length > 0" class="text-frost mr-1 w-4 inline" />
-        <CodeBracketSquareIcon v-else-if="isCode(node.Name)" class="text-frost-3 mr-1 w-4 inline" />
-        <PhotoIcon v-else-if="isPhoto(node.Name)" class="text-frost-3 mr-1 w-4 inline" />
-        <DocumentIcon v-else class="text-frost-3 mr-1 w-4 inline" />
-      </a>
-      <a @click="onNodeSelect(node)" class="hover:bg-polar-night-3">
-        {{ node.Name }}
-      </a>
+    <li v-for="node in nodes" class="whitespace-nowrap text-snow-storm-1">
+      <div class="flex items-center">
+        <a @click="toggle(node.Name)" @contextmenu.prevent="openMenu" @dblclick="onNodeSelect(node)">
+          <span v-if="node.Children.length === 0" class="w-6 inline-block bg-red h-1" />
+          <ChevronDownIcon v-else-if="toggled(node.Name)" class="w-4 inline text-gray-500" />
+          <ChevronRightIcon v-else class="w-4 inline text-gray-500" />
+          <FolderIcon v-if="node.Children.length > 0" class="text-frost mr-1 w-4 inline" />
+          <CodeBracketSquareIcon v-else-if="isCode(node.Name)" class="text-frost-3 mr-1 w-4 inline" />
+          <PhotoIcon v-else-if="isPhoto(node.Name)" class="text-frost-3 mr-1 w-4 inline" />
+          <DocumentIcon v-else class="text-frost-3 mr-1 w-4 inline" />
+        </a>
+        <a @click="onNodeSelect(node)" class="hover:bg-polar-night-3">
+          {{ node.Name }}
+        </a>
+      </div>
       <Structure :on-select="onChildSelect(node.Name)" :key="node.Name" v-if="toggled(node.Name)" :nodes="node.Children"
         :expanded="expanded" :hasParent="true" :shrinkIndex="lastShrink" />
     </li>
