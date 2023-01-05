@@ -133,12 +133,12 @@ export default /*#__PURE__*/ defineComponent({
       <p class="mt-1 text-sm text-snow-storm-1">Configure your browser to use Reaper</p>
     </div>
   </div>
-  <ul class="text-sm">
+  <ul class="text-xs">
     <li v-for="node in nodes" class="whitespace-nowrap">
       <a @click="toggle(node.Name)" @contextmenu.prevent="openMenu" @dblclick="onNodeSelect(node)">
         <span v-if="node.Children.length === 0" class="w-6 inline-block bg-red h-1" />
-        <ChevronDownIcon v-else-if="toggled(node.Name)" class="w-6 inline" />
-        <ChevronRightIcon v-else class="w-6 inline" />
+        <ChevronDownIcon v-else-if="toggled(node.Name)" class="w-4 inline text-gray-500" />
+        <ChevronRightIcon v-else class="w-4 inline text-gray-500" />
         <FolderIcon v-if="node.Children.length > 0" class="text-frost mr-1 w-4 inline" />
         <CodeBracketSquareIcon v-else-if="isCode(node.Name)" class="text-frost-3 mr-1 w-4 inline" />
         <PhotoIcon v-else-if="isPhoto(node.Name)" class="text-frost-3 mr-1 w-4 inline" />

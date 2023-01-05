@@ -1,22 +1,22 @@
 
 
 <script lang="ts">
-import {defineComponent, PropType} from "vue";
+import { defineComponent, PropType } from "vue";
 
-import {EventsEmit, EventsOn} from "../../wailsjs/runtime";
+import { EventsEmit, EventsOn } from "../../wailsjs/runtime";
 
 export default /*#__PURE__*/ defineComponent({
   props: {
-    code: {type: String, required: true},
-    readonly: {type: Boolean, required: true},
-    onchange: {type: Function as PropType<(raw: string) => void>, required: false},
+    code: { type: String, required: true },
+    readonly: { type: Boolean, required: true },
+    onchange: { type: Function as PropType<(raw: string) => void>, required: false },
   },
   data: function () {
     return {
       buffer: this.code,
       busy: true,
       highlighted: '',
-      cancel: ()=> {},
+      cancel: () => { },
       sent: '',
     }
   },
@@ -40,7 +40,7 @@ export default /*#__PURE__*/ defineComponent({
     this.updateCode()
   },
   methods: {
-    setHighlighted(highlighted: string){
+    setHighlighted(highlighted: string) {
       this.highlighted = highlighted
       this.busy = false;
       if (typeof this.cancel !== 'undefined') {
@@ -57,7 +57,7 @@ export default /*#__PURE__*/ defineComponent({
 
       this.busy = true
 
-      if(this.onchange !== undefined){
+      if (this.onchange !== undefined) {
         this.onchange(this.buffer)
       }
 
@@ -79,9 +79,12 @@ export default /*#__PURE__*/ defineComponent({
 </script>
 
 <template>
-  <div v-bind:class="'overflow-x-auto ' + (busy?'h-full text-left wrapper plain':'h-full text-left wrapper highlighted min-h-full')">
-    <pre ref="pre" class="h-full min-h-full"  aria-hidden="true"><code v-html="highlighted"></code></pre>
-    <textarea :readonly="readonly" spellcheck="false" ref="textarea" @input="updateCode" @scroll="syncScroll" v-model="buffer"></textarea>
+  <div
+    v-bind:class="'overflow-x-auto ' + (busy ? 'h-full text-left wrapper plain' : 'h-full text-left wrapper highlighted min-h-full')">
+    <pre ref="pre" class="h-full min-h-full font-mono text-xs"
+      aria-hidden="true"><code v-html="highlighted"></code></pre>
+    <textarea :readonly="readonly" spellcheck="false" ref="textarea" @input="updateCode" @scroll="syncScroll"
+      v-model="buffer"></textarea>
   </div>
 </template>
 
@@ -89,39 +92,42 @@ export default /*#__PURE__*/ defineComponent({
 .wrapper {
   position: relative;
 }
-.v-theme--dark .wrapper, .v-theme--ghost .wrapper{
+
+.v-theme--dark .wrapper,
+.v-theme--ghost .wrapper {
   border-right: 1px solid #444;
 }
-.v-theme--light .wrapper{
+
+.v-theme--light .wrapper {
   border-right: 1px solid #ccc;
 }
-textarea, pre {
+
+textarea,
+pre {
   position: absolute;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
-  white-space: pre; /*nowrap;*/
+  white-space: pre;
+  /*nowrap;*/
   overflow-wrap: normal;
   overflow: auto;
   overflow-x: scroll !important;
   padding: 0;
   border: none;
 }
-textarea, pre, code{
-  font-size: 12pt !important;
-  font-family: monospace !important;
-  line-height: 20pt !important;
-  tab-size: 2;
-}
+
 pre {
   z-index: 9;
   padding: 0 !important;
   margin: 0 !important;
 }
+
 .plain pre {
   display: none;
 }
+
 textarea {
   box-shadow: none;
   outline: none;
@@ -131,12 +137,15 @@ textarea {
   caret-color: white;
   background-color: transparent;
 }
+
 textarea:focus {
   outline: none !important;
 }
+
 .highlighted textarea {
   color: transparent;
 }
+
 .plain textarea {
   color: white;
 }
