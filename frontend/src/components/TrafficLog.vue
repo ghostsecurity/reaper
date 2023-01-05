@@ -1,21 +1,21 @@
 <script lang="ts">
-import {defineComponent, PropType} from 'vue'
-import {HttpRequest, HttpResponse} from '../lib/Http.js';
+import { defineComponent, PropType } from 'vue'
+import { HttpRequest, HttpResponse } from '../lib/Http.js';
 import HttpStatus from "./HttpStatus.vue";
-import {Criteria}  from "../lib/Criteria";
+import { Criteria } from "../lib/Criteria";
 
 export default /*#__PURE__*/ defineComponent({
-  components: {HttpStatus},
+  components: { HttpStatus },
   // type inference enabled
   props: {
-    requests: {type: Array<HttpRequest>, required: true},
-    onSelect: {type: Function},
-    selected: {type: Number},
-    criteria: {type: Object as PropType<Criteria>, required: true},
-    proxyAddress: {type: String, required: true},
+    requests: { type: Array<HttpRequest>, required: true },
+    onSelect: { type: Function },
+    selected: { type: Number },
+    criteria: { type: Object as PropType<Criteria>, required: true },
+    proxyAddress: { type: String, required: true },
   },
   methods: {
-    filterRequests: function(requests: Array<HttpRequest>): Array<HttpRequest> {
+    filterRequests: function (requests: Array<HttpRequest>): Array<HttpRequest> {
       return requests.filter((request) => {
         return this.criteria.Match(request)
       })
@@ -26,9 +26,9 @@ export default /*#__PURE__*/ defineComponent({
       }
     },
     classFromMethod(method: string) {
-      switch(method) {
+      switch (method) {
         case 'GET':
-          return 'bg-frost-3'
+          return 'bg-frost-3/25 text-frost-3'
         case 'POST':
           return 'bg-frost-1'
         case 'PUT':
@@ -61,12 +61,12 @@ export default /*#__PURE__*/ defineComponent({
     },
     classFromStatus(status: number | undefined) {
       if (status === undefined) {
-        return 'bg-polar-night-1'
+        return 'bg-polar-night-1/25 text-polar-night-1'
       }
       if (status >= 200 && status < 300) {
-        return 'bg-aurora-4'
+        return 'bg-aurora-4/25 text-aurora-4'
       } else if (status >= 300 && status < 400) {
-        return 'bg-aurora-3'
+        return 'bg-aurora-3/25 text-aurora-3'
       } else if (status >= 400 && status < 500) {
         return 'bg-aurora-2'
       } else if (status >= 500 && status < 600) {
@@ -74,36 +74,43 @@ export default /*#__PURE__*/ defineComponent({
       }
       return ''
     },
-  },
+    timeAgo() {
+      return "3 seconds ago"
+    }
+  }
 })
 </script>
 
 <script lang="ts" setup>
-import {RocketLaunchIcon, MagnifyingGlassCircleIcon} from "@heroicons/vue/20/solid";
+import { RocketLaunchIcon, MagnifyingGlassCircleIcon } from "@heroicons/vue/20/solid";
 </script>
 
 <template>
   <div v-if="requests.length === 0">
     <div class="text-center pt-8 pl-8">
-      <RocketLaunchIcon class="mx-auto h-12 w-12"/>
+      <RocketLaunchIcon class="mx-auto h-12 w-12" />
       <h3 class="mt-2 text-sm font-medium">All Systems Go!</h3>
-      <p class="mt-1 text-sm text-snow-storm-1">Reaper is ready to receive requests at {{proxyAddress}}</p>
+      <p class="mt-1 text-sm text-snow-storm-1">Reaper is ready to receive requests at {{ proxyAddress }}</p>
     </div>
   </div>
   <div v-else-if="filterRequests(requests).length === 0">
     <div class="text-center pt-8 pl-8">
-      <MagnifyingGlassCircleIcon class="mx-auto h-12 w-12"/>
+      <MagnifyingGlassCircleIcon class="mx-auto h-12 w-12" />
       <h3 class="mt-2 text-sm font-medium">No Results</h3>
       <p class="mt-1 text-sm text-snow-storm-1">No requests match your search criteria</p>
     </div>
   </div>
-  <div v-else class="sm:rounded-md bg-snow-storm dark:bg-polar-night-1a h-full" >
-    <ul role="list" class="divide-y divide-polar-night-3">
-      <li v-for="request in filterRequests(requests)"  :key="request.ID">
-        <a @click="selectRequest(request)" :class="'block  relative px-4 ' + (request.ID == selected ? 'bg-polar-night-3' : 'hover:bg-gray-50 dark:hover:bg-polar-night-2')">
-          <div :class="'left ending '+classFromMethod(request.Method)">{{ request.Method }}</div>
-          <div :class="'right ending '+classFromStatus(request.Response?.StatusCode)">{{request.Response ? request.Response.StatusCode :'&nbsp;'}}</div>
-          <div class="px-4 py-4 sm:px-6">
+  <div v-else class="sm:rounded-md h-full">
+    <ul role="list" class="space-y-1">
+      <li v-for="request in filterRequests(requests)" :key="request.ID" class="bg-snow-storm dark:bg-polar-night-1a">
+        <a @click="selectRequest(request)"
+          :class="'block  relative px-4 ' + (request.ID == selected ? 'bg-polar-night-3' : 'hover:bg-gray-50 dark:hover:bg-polar-night-2')">
+          <div :class="'text-xs px-0.5 left ending ' + classFromMethod(request.Method)">{{ request.Method }}</div>
+          <div :class="'text-xs px-0.5 right ending ' + classFromStatus(request.Response?.StatusCode)">{{
+            request.Response ?
+              request.Response.StatusCode : '&nbsp;'
+          }}</div>
+          <div class="px-4 py-2 sm:px-6">
             <div class="flex items-center justify-between">
               <p class="truncate text-sm font-medium text-frost">{{ request.Path }}</p>
               <div class="ml-2 flex flex-shrink-0">
@@ -123,8 +130,11 @@ import {RocketLaunchIcon, MagnifyingGlassCircleIcon} from "@heroicons/vue/20/sol
               </div>
               <div class="mt-2 flex items-center text-sm text-frost-3 sm:mt-0">
                 <p>
-                  <span v-if="request.Path.indexOf('a') > -1" class="mr-1 bg-frost-1 text-polar-night-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">Auth</span>
-                  <span :class="classFromMethod(request.Method) + ' text-polar-night-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium'">Something</span>
+                  <span v-if="request.Path.indexOf('a') > -1"
+                    class="mr-1 bg-frost-1 text-polar-night-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">Auth</span>
+                  <span
+                    :class="classFromMethod(request.Method) + ' text-polar-night-4 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium'">
+                    {{ timeAgo() }}</span>
                 </p>
               </div>
             </div>
@@ -136,25 +146,28 @@ import {RocketLaunchIcon, MagnifyingGlassCircleIcon} from "@heroicons/vue/20/sol
 </template>
 
 <style scoped>
-li a{
- cursor: pointer;
- border-radius: 6px;
+li a {
+  cursor: pointer;
+  border-radius: 6px;
 }
+
 .ending {
   position: absolute;
-  writing-mode:tb-rl;
-  white-space:nowrap;
-  display:block;
-  bottom:0px;
-  height:100%;
+  writing-mode: tb-rl;
+  white-space: nowrap;
+  display: block;
+  bottom: 0px;
+  height: 100%;
   border-radius: 0 6px 6px 0;
 }
+
 .ending.left {
-  left:0px;
-  transform:rotate(180deg);
+  left: 0px;
+  transform: rotate(180deg);
 }
+
 .ending.right {
-  right:0px;
+  right: 0px;
 }
 </style>
 
