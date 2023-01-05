@@ -18,8 +18,8 @@ body, html {
 	width: 100%;
 	margin: 0;
 	padding: 0;
-	background-color: #000000;
-	color: #ffffff;
+	background-color: #2e3440;
+	color: #d8dee9;
 }
 .container {
 	margin: 100px;
@@ -35,7 +35,7 @@ main {
 	padding-top: 60px;
 }
 a {
-	color: #492CFB;
+	color: #8fbcbb;
 }
 </style>
 </head>

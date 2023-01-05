@@ -79,8 +79,8 @@ export default /*#__PURE__*/ defineComponent({
 </script>
 
 <template>
-  <div v-bind:class="busy?'fill-height text-left wrapper plain':'fill-height text-left wrapper highlighted'">
-    <pre ref="pre" class="fill-height"  aria-hidden="true"><code v-html="highlighted"></code></pre>
+  <div v-bind:class="'overflow-x-auto ' + (busy?'h-full text-left wrapper plain':'h-full text-left wrapper highlighted min-h-full')">
+    <pre ref="pre" class="h-full min-h-full"  aria-hidden="true"><code v-html="highlighted"></code></pre>
     <textarea :readonly="readonly" spellcheck="false" ref="textarea" @input="updateCode" @scroll="syncScroll" v-model="buffer"></textarea>
   </div>
 </template>
@@ -104,7 +104,9 @@ textarea, pre {
   white-space: pre; /*nowrap;*/
   overflow-wrap: normal;
   overflow: auto;
-  overflow-x: scroll;
+  overflow-x: scroll !important;
+  padding: 0;
+  border: none;
 }
 textarea, pre, code{
   font-size: 12pt !important;
@@ -121,6 +123,8 @@ pre {
   display: none;
 }
 textarea {
+  box-shadow: none;
+  outline: none;
   white-space: pre;
   z-index: 10;
   resize: none;
@@ -128,7 +132,7 @@ textarea {
   background-color: transparent;
 }
 textarea:focus {
-  outline: none;
+  outline: none !important;
 }
 .highlighted textarea {
   color: transparent;

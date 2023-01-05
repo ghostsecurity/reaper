@@ -6,6 +6,7 @@ import (
 	"github.com/ghostsecurity/reaper/backend/app"
 	"github.com/ghostsecurity/reaper/backend/log"
 	"github.com/ghostsecurity/reaper/backend/settings"
+	"github.com/ghostsecurity/reaper/backend/workspace"
 	"os"
 
 	"github.com/wailsapp/wails/v2"
@@ -13,6 +14,8 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
+// nolint:typecheck
+//
 //go:embed all:frontend/dist
 var assets embed.FS
 
@@ -30,14 +33,20 @@ func main() {
 	logger.Info("User settings loaded...")
 	logger.Infof("Log level is %s", userSettings.Get().LogLevel)
 
+	initialWorkspace, err := workspace.LoadPrevious()
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Error loading workspace: %s\n", err)
+		os.Exit(1)
+	}
+
 	// Create an instance of the app structure
-	application := app.New(logger.WithPrefix("app"), userSettings)
+	application := app.New(logger.WithPrefix("app"), userSettings, initialWorkspace)
 
 	// Create application with options
 	if err := wails.Run(&options.App{
 		Title:  "Reaper",
-		Width:  1024,
-		Height: 768,
+		Width:  1900,
+		Height: 1024,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

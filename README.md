@@ -1,60 +1,26 @@
-<p align="center">
-<img width="400" src="frontend/src/assets/images/logo.png">
-</p>
-
 # Reaper
 
 > :dragon: HERE BE DRAGONS!
 > This is a work in progress. It's an experimental PoC and will likely change almost entirely over time. I'm currently working on it as a side-project to test out some ideas.
 
-Reaper is a reconnaissance and attack proxy, built to be a lightweight, API-focused equivalent to Burp Suite/ZAP etc.
+<img width="75" align="right" src="frontend/src/assets/images/logo.png">
+
+Reaper is a reconnaissance and attack proxy, built to be a lightweight, API-focused equivalent to Burp Suite/ZAP etc. Imagine if your favourite attack proxy had a baby with your favourite API testing tool - that's our goal.
+
+![Reaper Screenshot](screenshot.png)
 
 ## Installation
 
-For now you can clone the repo and use `make run` to try it out. Ensure you have `go` and `npm` installed and in your path first.
+Eventually you can grab a binary from the releases page, or use your favourite package manager. For now, you'll need to build from source as described below...
 
-## Usage
+## Building and Hacking Locally
 
-One day we should put some docs here.
+The following steps should work across Mac, Linux and Windows:
 
-## Extensibility
+1. Clone the repo.
+2. Ensure you have Go (1.19+) and npm installed.
+3. Run `make wails` to install Wails v2.
+4. Run `wails doctor` to ensure your environment is configured correctly. Install any missing dependencies as prompted.
+5. Run `make run` to start _reaper_.
 
-One day we should add plugin support.
-
-## Live Development
-
-To run in live development mode, run `make run` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
-
-## Building
-
-To build a redistributable, production mode package, use `make build`.
-
-## TODO: For MVPoC
-
-- [x] Basic proxy functionality
-- [x] Request history
-- [x] Request viewer
-- [x] Response viewer
-- [x] Request editor
-- [x] Response editor
-- [x] Request interception
-- [ ] Response interception
-- [ ] Rewrite proxy dependency (the current module has dodgy TLS handling and lots of globals)
-- [ ] Fuzzer (Intruder style)
-- [ ] Scope editing (ignore all non-scope requests/responses)
-- [ ] Target map
-- [ ] Websockets
-- [x] Save/load settings, restart proxy as required
-- [x] Dark mode (most important)
-- [x] Ghost branded UI theme
-- [x] Ghost branded non-proxy page
-- [x] Ghost branded syntax highlighting theme
-- [ ] Proxy status indicator (toggle switch in top right?)
-- [ ] History descending - sortable?
-- [ ] History filtering
-- [ ] Intercept filtering
-- [ ] JWT viewer/editor
-- [ ] Protobuf support
+In order to build cross-platform, production binaries, creating and pushing a git tag will (eventually) trigger GitHub actions to publish versioned binaries as release artifacts.

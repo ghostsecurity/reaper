@@ -11,47 +11,63 @@ export default /*#__PURE__*/ defineComponent({
   },
   data() {
     return {
-      tab: '',
+      currentTab: 'request'
     }
   },
   watch: {
     request: function () {
       if (this.request.Response == null) {
-        this.tab = 'request'
+        this.currentTab = 'request'
       }
+    },
+  },
+  methods: {
+    selectTab: function (tab: string) {
+      this.currentTab = tab
     }
   },
 })
 </script>
 
 <template>
-  <div class="d-flex flex-column fill-height">
-  <v-tabs
-      v-model="tab"
-      bg-color="background"
-      show-arrows
-      ref="strip"
-      style="flex: 0 1 auto"
-  >
-    <v-tab value="request">
-      Request
-    </v-tab>
-    <v-tab v-if="request.Response" value="response">
-      Response
-    </v-tab>
-  </v-tabs>
-  <v-window v-model="tab"  style="flex: 1 1 auto" class="fill-height">
-    <v-window-item value="request" class="fill-height">
-      <HttpRequestView :readonly="true" :request="request" />
-    </v-window-item>
-    <v-window-item value="response"  class="fill-height">
-      <HttpResponseView v-if="request.Response" :readonly="true" :response="request.Response" />
-    </v-window-item>
-  </v-window>
+  <div class="smart">
+    <div>
+      <div class="border-b border:snow-storm-3 dark:border-polar-night-4">
+        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+          <a @click="selectTab('request')"
+             :class="['request' == currentTab ?
+             'border-frost text-frost' :
+             'border-transparent text-polar-night-4 hover:text-frost-4 hover:border-frost-4',
+              'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm']" :aria-current="'request' == currentTab ? 'page' : undefined">
+            Request
+          </a>
+          <a v-if="request.Response" @click="selectTab('response')"
+             :class="['response' == currentTab ?
+             'border-frost text-frost' :
+             'border-transparent text-polar-night-4 hover:text-frost-4 hover:border-frost-4',
+              'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm']" :aria-current="'response' == currentTab ? 'page' : undefined">
+            Response
+          </a>
+        </nav>
+      </div>
+    </div>
+    <div class="pt-4 h-full">
+      <div :class="{'hidden': currentTab != 'request', 'h-full': true}">
+        <HttpRequestView :request="request" :readonly="true" />
+      </div>
+      <div :class="{'hidden': currentTab != 'response', 'h-full': true}">
+        <HttpResponseView v-if="request.Response" :response="request.Response" :readonly="true" />
+      </div>
+    </div>
   </div>
-
 </template>
 
 <style scoped>
+a{
+  cursor: pointer;
+}
+.smart{
+  height: calc(100% - 4rem);
+}
 </style>
 

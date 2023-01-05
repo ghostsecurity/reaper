@@ -2,6 +2,7 @@
 interface HttpRequest {
     ID: number
     Method: string
+    Scheme: string
     URL: string
     Host: string
     Path: string

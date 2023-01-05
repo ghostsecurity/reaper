@@ -10,9 +10,11 @@ import (
 	"github.com/ghostsecurity/reaper/backend/packaging"
 	"github.com/ghostsecurity/reaper/backend/proxy"
 	"github.com/ghostsecurity/reaper/backend/settings"
+	"github.com/ghostsecurity/reaper/backend/workspace"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -22,16 +24,19 @@ type App struct {
 	proxy        *proxy.Proxy
 	logger       *log.Logger
 	userSettings *settings.Provider
+	workspaceMu  sync.RWMutex
+	workspace    *workspace.Workspace
 	readyChan    chan struct{}
 	interceptor  *interceptor2.Interceptor
 }
 
 // New creates a new App application struct
-func New(logger *log.Logger, settingsProvider *settings.Provider) *App {
+func New(logger *log.Logger, settingsProvider *settings.Provider, ws *workspace.Workspace) *App {
 	return &App{
 		logger:       logger,
 		readyChan:    make(chan struct{}),
 		userSettings: settingsProvider,
+		workspace:    ws,
 	}
 }
 
@@ -65,15 +70,33 @@ func (a *App) restartWithNewSettings(ctx context.Context) error {
 		return request, nil
 	})
 	a.proxy.OnRequest(func(request *http.Request, id int64) (*http.Request, *http.Response) {
+		a.workspaceMu.RLock()
+		defer a.workspaceMu.RUnlock()
+		if !a.workspace.Scope.Includes(request) {
+			return request, nil
+		}
 		runtime.EventsEmit(ctx, "OnHttpRequest", packaging.PackageHttpRequest(request, id))
+		// update workspace tree
+		runtime.EventsEmit(ctx, "OnTreeUpdate", a.workspace.UpdateTree(request).Structure())
 		return request, nil
 	})
 	a.proxy.OnRequest(func(request *http.Request, id int64) (*http.Request, *http.Response) {
+		a.workspaceMu.RLock()
+		defer a.workspaceMu.RUnlock()
+		if !a.workspace.Scope.Includes(request) {
+			return request, nil
+		}
+		// TODO: check interception scope here as well
 		return a.interceptor.Intercept(request, id)
 	})
 	a.proxy.OnResponse(func(response *http.Response, id int64) *http.Response {
 		if response == nil {
 			return nil
+		}
+		a.workspaceMu.RLock()
+		defer a.workspaceMu.RUnlock()
+		if !a.workspace.Scope.Includes(response.Request) {
+			return response
 		}
 		runtime.EventsEmit(ctx, "OnHttpResponse", packaging.PackageHttpResponse(response, id))
 		return response
@@ -87,6 +110,13 @@ func (a *App) restartWithNewSettings(ctx context.Context) error {
 	a.logger.Infof("Proxy shut down cleanly.")
 	return nil
 }
+
+// TODO: trigger this from the frontend
+//func (a *App) setWorkspace(workspace *workspace.Workspace) {
+//	a.workspaceMu.Lock()
+//	defer a.workspaceMu.Unlock()
+//	a.workspace = workspace
+//}
 
 func (a *App) isProxyRestartRequired(oldSettings settings.Settings, newSettings settings.Settings) bool {
 	return oldSettings.ProxyPort != newSettings.ProxyPort ||
@@ -217,7 +247,7 @@ func (a *App) Startup(ctx context.Context) {
 			return
 		}
 		go func() {
-			highlighted := highlight.HTTP(raw, a.userSettings.Get().Theme)
+			highlighted := highlight.HTTP(raw)
 			if highlighted != "" {
 				runtime.EventsEmit(ctx, "OnHighlightResponse", highlighted, raw)
 			}
@@ -258,7 +288,6 @@ func (a *App) Startup(ctx context.Context) {
 
 		if err := a.userSettings.Modify(func(s *settings.Settings) {
 			*s = newSettings
-			a.logger.Infof("Updating theme: %s", s.Theme)
 		}); err != nil {
 			a.notifyUser(fmt.Sprintf("Failed to update settings for current session: %s", err), runtime.ErrorDialog)
 			return
