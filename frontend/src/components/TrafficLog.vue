@@ -125,7 +125,9 @@ import { RocketLaunchIcon, MagnifyingGlassCircleIcon } from "@heroicons/vue/20/s
                   {{ request.Host }}
                 </p>
                 <p class="mt-2 flex items-center text-sm text-frost-3 sm:mt-0 sm:ml-6">
+                <div class="max-w-4xl truncate">
                   {{ request.QueryString }}
+                </div>
                 </p>
               </div>
               <div class="mt-2 flex items-center text-sm text-frost-3 sm:mt-0">
