@@ -24,7 +24,7 @@ type proxyLogger struct {
 }
 
 func (l *proxyLogger) Printf(format string, v ...interface{}) {
-	l.logger.Printf(-1, format, v...)
+	l.logger.Printf(log.LevelDebug, format, v...)
 }
 
 type ProxyRequestFunc func(*http.Request, int64) (*http.Request, *http.Response)

@@ -1,7 +1,10 @@
 package packaging
 
 import (
+	"bytes"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -75,8 +78,87 @@ func TestRequestPackaging(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := PackageHttpRequest(tt.input(), 123)
-			assert.Equal(t, tt.want, got)
+			input := tt.input()
+			got, err := PackageHttpRequest(input, 123)
+			require.NoError(t, err)
+			require.NotNil(t, got)
+			assert.Equal(t, tt.want, *got)
+			var buf bytes.Buffer
+			require.NoError(t, input.Write(&buf))
+			assert.Equal(t, tt.want.Raw, buf.String())
+		})
+	}
+}
+
+func TestResponsePackaging(t *testing.T) {
+	tests := []struct {
+		name  string
+		input *http.Response
+		want  HttpResponse
+	}{
+		{
+			name: "get",
+			input: &http.Response{
+				StatusCode: 200,
+				Header:     http.Header{},
+				Body:       nil,
+				ProtoMajor: 1,
+				ProtoMinor: 1,
+			},
+			want: HttpResponse{
+				Raw:        "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n",
+				ID:         123,
+				Headers:    map[string][]string{},
+				StatusCode: 200,
+			},
+		},
+		{
+			name: "get with headers",
+			input: &http.Response{
+				StatusCode: 200,
+				Header: http.Header{
+					"X-Test": {"test"},
+				},
+				Body:       nil,
+				ProtoMajor: 1,
+				ProtoMinor: 1,
+			},
+			want: HttpResponse{
+				Raw: "HTTP/1.1 200 OK\r\nX-Test: test\r\nContent-Length: 0\r\n\r\n",
+				ID:  123,
+				Headers: map[string][]string{
+					"X-Test": {"test"},
+				},
+				StatusCode: 200,
+			},
+		},
+		{
+			name: "post with body",
+			input: &http.Response{
+				StatusCode: 200,
+				Header:     http.Header{},
+				Body:       io.NopCloser(strings.NewReader("msg=hello")),
+				ProtoMajor: 1,
+				ProtoMinor: 1,
+			},
+			want: HttpResponse{
+				Raw:        "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\nmsg=hello",
+				ID:         123,
+				Headers:    map[string][]string{},
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := PackageHttpResponse(tt.input, 123)
+			require.NoError(t, err)
+			require.NotNil(t, got)
+			assert.Equal(t, tt.want, *got)
+			var buf bytes.Buffer
+			require.NoError(t, tt.input.Write(&buf))
+			assert.Equal(t, tt.want.Raw, buf.String())
 		})
 	}
 }
