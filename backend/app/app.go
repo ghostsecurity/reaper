@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ghostsecurity/reaper/backend/highlight"
-	interceptor2 "github.com/ghostsecurity/reaper/backend/interceptor"
+	"github.com/ghostsecurity/reaper/backend/interceptor"
 	"github.com/ghostsecurity/reaper/backend/log"
 	"github.com/ghostsecurity/reaper/backend/packaging"
 	"github.com/ghostsecurity/reaper/backend/proxy"
@@ -27,7 +27,7 @@ type App struct {
 	workspaceMu  sync.RWMutex
 	workspace    *workspace.Workspace
 	readyChan    chan struct{}
-	interceptor  *interceptor2.Interceptor
+	interceptor  *interceptor.Interceptor
 }
 
 // New creates a new App application struct
@@ -75,7 +75,11 @@ func (a *App) restartWithNewSettings(ctx context.Context) error {
 		if !a.workspace.Scope.Includes(request) {
 			return request, nil
 		}
-		runtime.EventsEmit(ctx, "OnHttpRequest", packaging.PackageHttpRequest(request, id))
+		if packaged, err := packaging.PackageHttpRequest(request, id); err != nil {
+			a.logger.Errorf("Error packaging request: %s", err)
+		} else {
+			runtime.EventsEmit(ctx, "OnHttpRequest", packaged)
+		}
 		// update workspace tree
 		runtime.EventsEmit(ctx, "OnTreeUpdate", a.workspace.UpdateTree(request).Structure())
 		return request, nil
@@ -86,6 +90,7 @@ func (a *App) restartWithNewSettings(ctx context.Context) error {
 		if !a.workspace.Scope.Includes(request) {
 			return request, nil
 		}
+		a.logger.Debugf("Request %d in scope: %s %s", id, request.Method, request.URL)
 		// TODO: check interception scope here as well
 		return a.interceptor.Intercept(request, id)
 	})
@@ -96,9 +101,15 @@ func (a *App) restartWithNewSettings(ctx context.Context) error {
 		a.workspaceMu.RLock()
 		defer a.workspaceMu.RUnlock()
 		if !a.workspace.Scope.Includes(response.Request) {
+			a.logger.Debugf("Response %d NOT in scope: %s %s %d", id, response.Request.Method, response.Request.URL, response.StatusCode)
 			return response
 		}
-		runtime.EventsEmit(ctx, "OnHttpResponse", packaging.PackageHttpResponse(response, id))
+		a.logger.Debugf("Response %d in scope: %s %s %d", id, response.Request.Method, response.Request.URL, response.StatusCode)
+		if packaged, err := packaging.PackageHttpResponse(response, id); err != nil {
+			a.logger.Errorf("Error packaging response: %s", err)
+		} else {
+			runtime.EventsEmit(ctx, "OnHttpResponse", packaged)
+		}
 		return response
 	})
 
@@ -161,8 +172,12 @@ func (a *App) Startup(ctx context.Context) {
 		}
 	})
 
-	a.interceptor = interceptor2.New(a.logger.WithPrefix("interceptor"), func(req *http.Request, id int64) {
-		runtime.EventsEmit(a.ctx, "OnInterceptRequest", packaging.PackageHttpRequest(req, id))
+	a.interceptor = interceptor.New(a.logger.WithPrefix("interceptor"), func(req *http.Request, id int64) {
+		if packaged, err := packaging.PackageHttpRequest(req, id); err != nil {
+			a.logger.Errorf("Error packaging request: %s", err)
+		} else {
+			runtime.EventsEmit(a.ctx, "OnInterceptRequest", packaged)
+		}
 	})
 
 	runtime.EventsOn(a.ctx, "OnInterceptRequestModified", func(args ...interface{}) {
