@@ -7,11 +7,10 @@ import (
 	"github.com/ghostsecurity/reaper/backend/log"
 	"github.com/ghostsecurity/reaper/backend/settings"
 	"github.com/ghostsecurity/reaper/backend/workspace"
-	"os"
-
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"os"
 )
 
 // nolint:typecheck
@@ -28,10 +27,16 @@ func main() {
 	}
 
 	logger := log.New(os.Stderr)
-	logger.SetLevel(userSettings.Get().LogLevel)
+	level := userSettings.Get().LogLevel
+
+	if logLevelName := os.Getenv("REAPER_LOG_LEVEL"); logLevelName != "" {
+		level = log.ParseLevel(logLevelName)
+	}
+
+	logger.SetLevel(level)
 
 	logger.Info("User settings loaded...")
-	logger.Infof("Log level is %s", userSettings.Get().LogLevel)
+	logger.Infof("Log level is %s", level)
 
 	initialWorkspace, err := workspace.LoadPrevious()
 	if err != nil {

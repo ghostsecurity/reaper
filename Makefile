@@ -35,4 +35,4 @@ lint-go:
 
 .PHONY: run
 run: clean wails
-	wails dev
+	REAPER_LOG_LEVEL=debug wails dev
