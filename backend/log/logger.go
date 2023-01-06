@@ -26,6 +26,24 @@ const (
 	LevelFatal
 )
 
+func ParseLevel(name string) Level {
+	switch strings.ToLower(name) {
+	case "trace":
+		return LevelTrace
+	case "debug":
+		return LevelDebug
+	case "info":
+		return LevelInfo
+	case "warn":
+		return LevelWarn
+	case "error":
+		return LevelError
+	case "fatal":
+		return LevelFatal
+	}
+	return LevelInfo
+}
+
 func (l Level) String() string {
 	switch l {
 	case LevelTrace:
