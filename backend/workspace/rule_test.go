@@ -23,9 +23,11 @@ func TestRule_MarshalJSON(t *testing.T) {
 		{
 			name: "full",
 			r: Rule{
-				Protocol:  "https:",
-				HostRegex: regexp.MustCompile(`^example\.com`),
-				PathRegex: regexp.MustCompile(`/foo`),
+				Protocol:     "https:",
+				HostRegexRaw: `^example\.com`,
+				HostRegex:    regexp.MustCompile(`^example\.com`),
+				PathRegexRaw: `/foo`,
+				PathRegex:    regexp.MustCompile(`/foo`),
 				Ports: PortList{
 					80,
 					443,
