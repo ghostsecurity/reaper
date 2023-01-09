@@ -1,6 +1,9 @@
 package workspace
 
-import "net/http"
+import (
+	"encoding/json"
+	"net/http"
+)
 
 type Ruleset []Rule
 
@@ -11,4 +14,11 @@ func (r Ruleset) Match(request *http.Request) bool {
 		}
 	}
 	return false
+}
+
+func (r Ruleset) MarshalJSON() ([]byte, error) {
+	if len(r) == 0 {
+		return []byte("[]"), nil
+	}
+	return json.Marshal([]Rule(r))
 }

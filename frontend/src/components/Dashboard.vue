@@ -11,10 +11,15 @@ import { BarsArrowDownIcon, CircleStackIcon, BeakerIcon, BriefcaseIcon} from "@h
 import Search from "./Search.vue";
 import {Criteria}  from "../lib/Criteria";
 import WorkspaceMenu from "./WorkspaceMenu.vue";
+import {workspace} from "../../wailsjs/go/models";
 
 export default /*#__PURE__*/ defineComponent({
   name: "Dashboard",
   props: {
+    ws: {
+      type: Object as PropType<workspace.Workspace>,
+      required: true
+    },
     criteria: {
       type: Object as PropType<Criteria>,
       required: true,
@@ -32,6 +37,7 @@ export default /*#__PURE__*/ defineComponent({
       required: true,
     },
   },
+  emits: ['switchWorkspace'],
   data() {
     return {
       requests: Array<HttpRequest>(),
@@ -53,10 +59,10 @@ export default /*#__PURE__*/ defineComponent({
     },
   },
   beforeMount() {
-    EventsOn("OnHttpRequest", (data) => {
+    EventsOn("HttpRequest", (data) => {
       this.requests.push(data as HttpRequest);
     });
-    EventsOn("OnHttpResponse", (response: HttpResponse) => {
+    EventsOn("HttpResponse", (response: HttpResponse) => {
       for (let i = 0; i < this.requests.length; i++) {
         if (this.requests[i].ID === response.ID) {
           this.requests[i].Response = response;
@@ -88,7 +94,10 @@ export default /*#__PURE__*/ defineComponent({
       if (this.onCriteriaChange) {
         this.onCriteriaChange(crit)
       }
-    }
+    },
+    switchWorkspace() {
+      this.$emit("switchWorkspace")
+    },
   },
   components: {WorkspaceMenu, Search, RightPop, HttpInspector, TrafficLog, BriefcaseIcon}
 })
@@ -100,7 +109,7 @@ export default /*#__PURE__*/ defineComponent({
       <Search :on-search="onSearch" :query="liveCriteria.Raw"/>
     </div>
     <div class="flex-shrink p-0 ml-2">
-      <WorkspaceMenu :on-workspace-config="onWorkspaceConfig"/>
+      <WorkspaceMenu :on-workspace-config="onWorkspaceConfig" :ws="ws" @switchWorkspace="switchWorkspace"/>
     </div>
   </div>
   <div class="min-h-16 h-16 max-h-16 px-2">

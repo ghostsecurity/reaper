@@ -3,7 +3,7 @@ package settings
 import "github.com/ghostsecurity/reaper/backend/log"
 
 const (
-	settingsFilename = "settings.v1.json"
+	settingsFilename = "config.0.json"
 )
 
 type Settings struct {

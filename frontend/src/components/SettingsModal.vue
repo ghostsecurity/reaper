@@ -15,7 +15,7 @@ export default /*#__PURE__*/ defineComponent({
       type: Function as PropType<() => void>,
       required: true
     },
-    settings: {type: Settings, required: true},
+    settings: {type: Object as PropType<Settings>, required: true},
     onSave: {type: Function, required: true},
   },
   methods: {

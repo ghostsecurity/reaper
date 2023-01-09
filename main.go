@@ -3,14 +3,14 @@ package main
 import (
 	"embed"
 	"fmt"
+	"os"
+
 	"github.com/ghostsecurity/reaper/backend/app"
 	"github.com/ghostsecurity/reaper/backend/log"
 	"github.com/ghostsecurity/reaper/backend/settings"
-	"github.com/ghostsecurity/reaper/backend/workspace"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	"os"
 )
 
 // nolint:typecheck
@@ -38,14 +38,8 @@ func main() {
 	logger.Info("User settings loaded...")
 	logger.Infof("Log level is %s", level)
 
-	initialWorkspace, err := workspace.LoadPrevious()
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "Error loading workspace: %s\n", err)
-		os.Exit(1)
-	}
-
 	// Create an instance of the app structure
-	application := app.New(logger.WithPrefix("app"), userSettings, initialWorkspace)
+	application := app.New(logger.WithPrefix("app"), userSettings)
 
 	// Create application with options
 	if err := wails.Run(&options.App{
@@ -57,7 +51,6 @@ func main() {
 		},
 		BackgroundColour: &options.RGBA{R: 255, G: 0, B: 0, A: 1},
 		OnStartup:        application.Startup,
-		OnDomReady:       application.OnDomReady,
 		OnShutdown:       application.Shutdown,
 		Bind: []interface{}{
 			application,

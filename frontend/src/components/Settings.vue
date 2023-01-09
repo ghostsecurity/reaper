@@ -7,7 +7,7 @@ import {
 import {defineComponent} from "vue";
 
 import Settings from "../lib/Settings";
-import {EventsEmit, EventsOn} from "../../wailsjs/runtime";
+import {EventsEmit} from "../../wailsjs/runtime";
 
 export default /*#__PURE__*/ defineComponent({
   props: {
@@ -45,7 +45,7 @@ export default /*#__PURE__*/ defineComponent({
       this.openTab = tabId
     },
     exportCA() {
-      EventsEmit("OnExportCA")
+      EventsEmit("CAExport")
     },
     setProxyPort(event: any) {
       let port = parseInt(event.target.value)
@@ -162,16 +162,15 @@ import {Switch, SwitchDescription, SwitchGroup, SwitchLabel} from '@headlessui/v
                 </div>
               </div>
 
-              <div class="divide-y divide-gray-200 pt-6 text-right">
-                <div class="px-4 sm:px-6 pb-4">
-                  <div>
-                    <button @click="saveSettings" type="button" class="inline-flex items-center rounded border border-transparent bg-aurora-4 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">Save Changes</button>
-                    <button @click="cancel" type="button" class="ml-2 inline-flex items-center rounded border border-transparent bg-aurora-1 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">Cancel</button>
-                  </div>
-                </div>
-              </div>
-
             </form>
+          </div>
+          <div class="divide-y divide-gray-200 pt-6 text-right">
+            <div class="px-4 sm:px-6 pb-4">
+              <div>
+                <button @click="saveSettings" type="button" class="inline-flex items-center rounded border border-transparent bg-aurora-4 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">Save Changes</button>
+                <button @click="cancel" type="button" class="ml-2 inline-flex items-center rounded border border-transparent bg-aurora-1 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">Cancel</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

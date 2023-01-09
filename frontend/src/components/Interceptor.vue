@@ -15,7 +15,7 @@ export default /*#__PURE__*/ defineComponent({
     }
   },
   mounted() {
-    EventsOn('OnInterceptRequest', (request: HttpRequest) => {
+    EventsOn('InterceptedRequest', (request: HttpRequest) => {
       this.request = request
     })
   },
@@ -24,16 +24,14 @@ export default /*#__PURE__*/ defineComponent({
       if(!this.enabled) {
         this.request = null
       }
-      EventsEmit("OnInterceptionEnabledChange", this.enabled)
+      EventsEmit("InterceptionEnabledChange", this.enabled)
     },
     forwardRequest(){
-      console.log("forwarding request")
-      EventsEmit("OnInterceptRequestModified", this.request)
+      EventsEmit("InterceptedRequestChange", this.request)
       this.request = null
     },
     dropRequest(){
-      console.log("forwarding request")
-      EventsEmit("OnInterceptRequestDropped", this.request)
+      EventsEmit("InterceptedRequestDrop", this.request)
       this.request = null
     },
     onChange(raw: string) {

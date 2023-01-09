@@ -8,6 +8,7 @@ import (
 )
 
 type Rule struct {
+	ID        int            `json:"id"`
 	Protocol  string         `json:"protocol"` // e.g. http, https
 	HostRegex *regexp.Regexp `json:"host"`
 	PathRegex *regexp.Regexp `json:"path"`
