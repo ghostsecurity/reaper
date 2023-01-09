@@ -1,18 +1,16 @@
 <script lang="ts">
 import {
-  InformationCircleIcon,
-  PaintBrushIcon, ServerStackIcon,
-  ShieldCheckIcon,
+  PencilSquareIcon,
+   ViewfinderCircleIcon,
 } from '@heroicons/vue/20/solid'
 import {defineComponent} from "vue";
 
-import {Workspace} from "../lib/Workspace";
-import {EventsEmit, EventsOn} from "../../wailsjs/runtime";
+import {workspace} from "../../wailsjs/go/models";
 import {PropType} from 'vue'
 
 export default /*#__PURE__*/ defineComponent({
   props: {
-    workspace: {type: Object as PropType<Workspace>, required: true},
+    ws: {type: Object as PropType<workspace.Workspace>, required: true},
     onSave: {type: Function, required: true},
     onCancel: {type: Function, required: true},
   },
@@ -20,11 +18,11 @@ export default /*#__PURE__*/ defineComponent({
     return {
       openTab: "overview",
       tabs: [
-        {name: 'Overview', icon: PaintBrushIcon, id: "overview"},
-        {name: 'Scope', icon: ShieldCheckIcon, id: "scope"},
+        {name: 'Overview', icon: PencilSquareIcon, id: "overview"},
+        {name: 'Scope', icon:  ViewfinderCircleIcon, id: "scope"},
       ],
       subNavigation: [],
-      modifiedWorkspace: this.workspace,
+      modifiedWorkspace: this.ws,
     }
   },
   methods: {
@@ -32,7 +30,14 @@ export default /*#__PURE__*/ defineComponent({
       this.onSave(this.modifiedWorkspace)
     },
     setWorkspaceName(event: any) {
-      this.modifiedWorkspace.Name = event.target.value
+      let name =  event.target.value;
+      if(name == "") {
+        name = "Untitled Workspace"
+      }
+      this.modifiedWorkspace.name = name
+    },
+    setScope(scope: workspace.Scope) {
+      this.modifiedWorkspace.scope = scope
     },
     cancel() {
       this.onCancel()
@@ -45,7 +50,7 @@ export default /*#__PURE__*/ defineComponent({
 </script>
 
 <script lang="ts" setup>
-import {Switch, SwitchDescription, SwitchGroup, SwitchLabel} from '@headlessui/vue'
+import ScopeEditor from "./ScopeEditor.vue";
 </script>
 
 <template>
@@ -68,7 +73,7 @@ import {Switch, SwitchDescription, SwitchGroup, SwitchLabel} from '@headlessui/v
               </nav>
             </aside>
 
-            <form class="lg:col-span-9" action="#" method="POST">
+            <div class="lg:col-span-9">
 
               <!-- Workspace overview -->
               <div :class="{'hidden': 'overview' !== openTab}">
@@ -80,7 +85,7 @@ import {Switch, SwitchDescription, SwitchGroup, SwitchLabel} from '@headlessui/v
                 <div class="mt-8">
                   <label for="name" class="block text-sm font-medium text-snow-storm">Name</label>
                   <div class="relative mt-1 rounded-md shadow-sm">
-                    <input @change="setWorkspaceName" type="text" name="name" id="name" class="block w-full rounded-md bg-polar-night-4 pr-10 focus:outline-none sm:text-sm" :value="modifiedWorkspace.Name" aria-invalid="true" aria-describedby="name-error" />
+                    <input @change="setWorkspaceName" type="text" name="name" id="name" class="block w-full rounded-md bg-polar-night-4 pr-10 focus:outline-none sm:text-sm" :value="modifiedWorkspace.name" aria-invalid="true" aria-describedby="name-error" />
                   </div>
                 </div>
                 </div>
@@ -95,22 +100,24 @@ import {Switch, SwitchDescription, SwitchGroup, SwitchLabel} from '@headlessui/v
                   </div>
 
                   <div class="mt-8">
-                    TODO: component for modifying scope goes here...
+                    <ScopeEditor :scope="modifiedWorkspace.scope" @save="setScope" />
                   </div>
 
                 </div>
               </div>
 
-              <div class="divide-y divide-gray-200 pt-6 text-right">
-                <div class="px-4 sm:px-6 pb-4">
-                  <div>
-                    <button @click="saveWorkspace" type="button" class="inline-flex items-center rounded border border-transparent bg-aurora-4 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">Save Changes</button>
-                    <button @click="cancel" type="button" class="ml-2 inline-flex items-center rounded border border-transparent bg-aurora-1 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">Cancel</button>
-                  </div>
-                </div>
-              </div>
 
-            </form>
+            </div>
+
+
+          </div>
+          <div class="divide-y divide-gray-200 pt-6 text-right">
+            <div class="px-4 sm:px-6 pb-4">
+              <div>
+                <button @click="saveWorkspace" type="button" class="inline-flex items-center rounded border border-transparent bg-aurora-4 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">Save Changes</button>
+                <button @click="cancel" type="button" class="ml-2 inline-flex items-center rounded border border-transparent bg-aurora-1 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">Cancel</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

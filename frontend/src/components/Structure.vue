@@ -6,7 +6,7 @@ import ContextMenuItem from "./ContextMenu/ContextMenuItem.vue";
 
 <script lang="ts">
 import {defineComponent, PropType} from "vue";
-import StructureNode from "../lib/StructureNode";
+import {workspace} from "../../wailsjs/go/models";
 import ContextMenu from "./ContextMenu/ContextMenu.vue";
 
 export default /*#__PURE__*/ defineComponent({
@@ -15,7 +15,7 @@ export default /*#__PURE__*/ defineComponent({
   },
   props: {
     nodes: {
-      type: Array as PropType<Array<StructureNode>>,
+      type: Array as PropType<Array<workspace.StructureNode>>,
       required: true,
     },
     expanded: {
@@ -51,7 +51,7 @@ export default /*#__PURE__*/ defineComponent({
         this.lastShrink = this.shrinkIndex;
         if(this.hasParent) {
           this.nodes.forEach((node) => {
-            this.visible.set(node.Name, false)
+            this.visible.set(node.name, false)
           })
         }
       },
@@ -90,12 +90,11 @@ export default /*#__PURE__*/ defineComponent({
       (this.$refs.menu as any).close()
     },
     openMenu(evt: MouseEvent) {
-      console.log(this.$refs.menu);
       (this.$refs.menu as any).open(evt, 'something')
     },
-    onNodeSelect(node: StructureNode) {
+    onNodeSelect(node: workspace.StructureNode) {
       if(this.onSelect) {
-        this.onSelect([node.Name])
+        this.onSelect([node.name])
       }
     },
     onChildSelect(part: string): (parts: Array<string>) => void {
@@ -135,19 +134,19 @@ export default /*#__PURE__*/ defineComponent({
   </div>
     <ul>
       <li v-for="node in nodes" class="whitespace-nowrap">
-        <a @click="toggle(node.Name)" @contextmenu.prevent="openMenu" @dblclick="onNodeSelect(node)">
-          <span v-if="node.Children.length===0" class="w-6 inline-block bg-red h-1"/>
-          <ChevronDownIcon v-else-if="toggled(node.Name)" class="w-6 inline"/>
+        <a @click="toggle(node.name)" @contextmenu.prevent="openMenu" @dblclick="onNodeSelect(node)">
+          <span v-if="node.children.length===0" class="w-6 inline-block bg-red h-1"/>
+          <ChevronDownIcon v-else-if="toggled(node.name)" class="w-6 inline"/>
           <ChevronRightIcon v-else class="w-6 inline"/>
-          <FolderIcon v-if="node.Children.length>0" class="text-frost mr-1 w-4 inline"/>
-          <CodeBracketSquareIcon v-else-if="isCode(node.Name)" class="text-frost-3 mr-1 w-4 inline"/>
-          <PhotoIcon v-else-if="isPhoto(node.Name)" class="text-frost-3 mr-1 w-4 inline"/>
+          <FolderIcon v-if="node.children.length>0" class="text-frost mr-1 w-4 inline"/>
+          <CodeBracketSquareIcon v-else-if="isCode(node.name)" class="text-frost-3 mr-1 w-4 inline"/>
+          <PhotoIcon v-else-if="isPhoto(node.name)" class="text-frost-3 mr-1 w-4 inline"/>
           <DocumentIcon v-else class="text-frost-3 mr-1 w-4 inline"/>
         </a>
         <a @click="onNodeSelect(node)" class="hover:bg-polar-night-3">
-          {{node.Name}}
+          {{node.name}}
         </a>
-        <Structure :on-select="onChildSelect(node.Name)" :key="node.Name" v-if="toggled(node.Name)" :nodes="node.Children" :expanded="expanded" :hasParent="true" :shrinkIndex="lastShrink" />
+        <Structure :on-select="onChildSelect(node.name)" :key="node.name" v-if="toggled(node.name)" :nodes="node.children" :expanded="expanded" :hasParent="true" :shrinkIndex="lastShrink" />
       </li>
     </ul>
 </template>

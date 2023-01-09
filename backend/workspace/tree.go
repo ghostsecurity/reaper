@@ -7,11 +7,11 @@ import (
 )
 
 type Tree struct {
-	root StructureNode
+	Root StructureNode `json:"root"`
 }
 
 func (t *Tree) Update(request *http.Request) {
-	t.root.Update(append([]string{
+	t.Root.Update(append([]string{
 		request.URL.Hostname(),
 	},
 		strings.Split(request.URL.Path, "/")...,
@@ -19,12 +19,12 @@ func (t *Tree) Update(request *http.Request) {
 }
 
 func (t *Tree) Structure() []StructureNode {
-	return t.root.Children
+	return t.Root.Children
 }
 
 type StructureNode struct {
-	Name     string          `json:"Name"`
-	Children []StructureNode `json:"Children"`
+	Name     string          `json:"name"`
+	Children []StructureNode `json:"children"`
 }
 
 func (t *StructureNode) Update(parts []string) {
@@ -55,7 +55,7 @@ func (t *StructureNode) MarshalJSON() ([]byte, error) {
 		t.Children = []StructureNode{}
 	}
 	return json.Marshal(map[string]interface{}{
-		"Name":     t.Name,
-		"Children": t.Children,
+		"name":     t.Name,
+		"children": t.Children,
 	})
 }

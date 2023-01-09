@@ -3,7 +3,7 @@
 <script lang="ts">
 import {defineComponent, PropType} from "vue";
 
-import {EventsEmit, EventsOn} from "../../wailsjs/runtime";
+import {HighlightCode} from "../../wailsjs/go/app/App";
 
 export default /*#__PURE__*/ defineComponent({
   props: {
@@ -16,7 +16,6 @@ export default /*#__PURE__*/ defineComponent({
       buffer: this.code,
       busy: true,
       highlighted: '',
-      cancel: ()=> {},
       sent: '',
     }
   },
@@ -32,9 +31,6 @@ export default /*#__PURE__*/ defineComponent({
 
   },
   unmounted() {
-    if (typeof this.cancel !== 'undefined') {
-      this.cancel()
-    }
   },
   mounted() {
     this.updateCode()
@@ -43,9 +39,6 @@ export default /*#__PURE__*/ defineComponent({
     setHighlighted(highlighted: string){
       this.highlighted = highlighted
       this.busy = false;
-      if (typeof this.cancel !== 'undefined') {
-        this.cancel()
-      }
     },
     syncScroll() {
       let textarea = (this.$refs['textarea'] as any) as HTMLTextAreaElement
@@ -66,13 +59,9 @@ export default /*#__PURE__*/ defineComponent({
         this.sent += ' '
       }
 
-      this.cancel = EventsOn('OnHighlightResponse', (highlighted: string, original: string) => {
-        if (original === this.sent) {
-          this.setHighlighted(highlighted)
-        }
+      HighlightCode(this.sent).then((highlighted: string) => {
+        this.setHighlighted(highlighted)
       })
-
-      EventsEmit("OnHighlightRequest", this.sent)
     }
   }
 })

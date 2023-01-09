@@ -4,11 +4,12 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/elazarl/goproxy"
 	"github.com/ghostsecurity/reaper/backend/log"
 	"github.com/ghostsecurity/reaper/backend/settings"
-	"net/http"
-	"strings"
 )
 
 type Proxy struct {
@@ -17,6 +18,7 @@ type Proxy struct {
 	reqFuncs  []ProxyRequestFunc
 	respFuncs []ProxyResponseFunc
 	logger    *log.Logger
+	addr      string
 }
 
 type proxyLogger struct {
@@ -77,6 +79,7 @@ func New(userSettings *settings.Provider, logger *log.Logger) (*Proxy, error) {
 		client: &http.Client{},
 		server: srv,
 		logger: logger,
+		addr:   addr,
 	}
 
 	proxy.OnRequest().DoFunc(func(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
@@ -97,6 +100,10 @@ func New(userSettings *settings.Provider, logger *log.Logger) (*Proxy, error) {
 	})
 
 	return p, nil
+}
+
+func (p *Proxy) Addr() string {
+	return p.addr
 }
 
 func (p *Proxy) OnRequest(f ProxyRequestFunc) *Proxy {
