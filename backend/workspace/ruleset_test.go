@@ -57,7 +57,7 @@ func TestRuleset_Match(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := Ruleset(tt.rules)
+			r := RuleSet(tt.rules)
 			u, err := url.Parse(tt.url)
 			if err != nil {
 				t.Errorf("invalid test url, error = %v", err)
