@@ -6,9 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 	"sort"
-	"strings"
 
 	"github.com/kirsle/configdir"
 
@@ -16,8 +14,9 @@ import (
 )
 
 const (
-	configDirName     = "reaper"
-	workspacesDirName = "workspaces"
+	configDirName         = "reaper"
+	workspacesDirName     = "workspaces"
+	workspaceSettingsFile = "workspace.json"
 )
 
 func getDir() (string, error) {
@@ -41,13 +40,6 @@ func New() *Workspace {
 	return &Workspace{
 		ID:   uuid.New().String(),
 		Name: "Untitled Workspace",
-		Scope: Scope{
-			Include: Ruleset{
-				{
-					HostRegex: regexp.MustCompile(`^(api\.)?ghostbank\.net$`), // TODO: remove this
-				},
-			},
-		},
 	}
 }
 
@@ -78,13 +70,16 @@ func List() ([]*Workspace, error) {
 	// we initialise the empty slice here for json encoding friendliness later
 	workspaces := []*Workspace{}
 	for _, entry := range entries {
-		if entry.IsDir() {
+		if !entry.IsDir() {
 			continue
 		}
-		if !strings.HasSuffix(entry.Name(), ".workspace") {
+		workspaceSettings := filepath.Join(dir, entry.Name(), workspaceSettingsFile)
+
+		if _, err := os.Stat(workspaceSettings); os.IsNotExist(err) {
 			continue
 		}
-		workspace, err := loadFile(filepath.Join(dir, entry.Name()))
+
+		workspace, err := loadFile(workspaceSettings)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load workspace %s: %w", entry.Name(), err)
 		}
@@ -102,7 +97,7 @@ func getWorkspacePath(id string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to access workspace directory: %w", err)
 	}
-	return filepath.Join(dir, id+".workspace"), nil
+	return filepath.Join(dir, id, workspaceSettingsFile), nil
 }
 
 func Load(id string) (*Workspace, error) {
@@ -135,6 +130,10 @@ func (w *Workspace) Save() error {
 	file, err := getWorkspacePath(w.ID)
 	if err != nil {
 		return fmt.Errorf("failed to locate workspace path: %w", err)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(file), 0755); err != nil {
+		return fmt.Errorf("failed to create workspace directory: %w", err)
 	}
 
 	f, err := os.Create(file)

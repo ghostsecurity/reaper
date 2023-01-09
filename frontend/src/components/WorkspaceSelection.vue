@@ -62,7 +62,7 @@ import ScopeEditor from "./ScopeEditor.vue";
     <div class="mt-8">
       <label for="name" class="block text-sm font-medium text-snow-storm">Workspace Name</label>
       <div class="relative mt-1 rounded-md shadow-sm">
-        <input autocomplete="off" autocapitalize="off" spellcheck="false"  v-model="ws.name" type="text" name="name" id="name" class="block w-full rounded-md bg-polar-night-4 pr-10 focus:outline-none sm:text-sm" aria-invalid="true" aria-describedby="name-error" />
+        <input autofocus autocomplete="off" autocapitalize="off" spellcheck="false"  v-model="ws.name" type="text" name="name" id="name" class="block w-full rounded-md bg-polar-night-4 pr-10 focus:outline-none sm:text-sm" aria-invalid="true" aria-describedby="name-error" />
       </div>
     </div>
     <div class="mt-8 italic text-gray-400 text-sm">

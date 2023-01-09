@@ -10,8 +10,8 @@ import (
 func TestScope_Includes(t *testing.T) {
 	tests := []struct {
 		name     string
-		includes Ruleset
-		excludes Ruleset
+		includes RuleSet
+		excludes RuleSet
 		url      string
 		want     bool
 	}{
@@ -22,7 +22,7 @@ func TestScope_Includes(t *testing.T) {
 		},
 		{
 			name: "include match",
-			includes: Ruleset{
+			includes: RuleSet{
 				{
 					HostRegex: regexp.MustCompile(`^example\.com`),
 				},
@@ -32,12 +32,12 @@ func TestScope_Includes(t *testing.T) {
 		},
 		{
 			name: "include match, exclude mismatch",
-			includes: Ruleset{
+			includes: RuleSet{
 				{
 					HostRegex: regexp.MustCompile(`^example\.com`),
 				},
 			},
-			excludes: Ruleset{
+			excludes: RuleSet{
 				{
 					HostRegex: regexp.MustCompile(`^whatever\.com`),
 				},
@@ -47,12 +47,12 @@ func TestScope_Includes(t *testing.T) {
 		},
 		{
 			name: "include match, exclude match",
-			includes: Ruleset{
+			includes: RuleSet{
 				{
 					HostRegex: regexp.MustCompile(`^example\.com`),
 				},
 			},
-			excludes: Ruleset{
+			excludes: RuleSet{
 				{
 					HostRegex: regexp.MustCompile(`^example\.com`),
 				},

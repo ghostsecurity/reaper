@@ -5,9 +5,9 @@ import (
 	"net/http"
 )
 
-type Ruleset []Rule
+type RuleSet []Rule
 
-func (r Ruleset) Match(request *http.Request) bool {
+func (r RuleSet) Match(request *http.Request) bool {
 	for _, rule := range r {
 		if rule.Match(request) {
 			return true
@@ -16,7 +16,7 @@ func (r Ruleset) Match(request *http.Request) bool {
 	return false
 }
 
-func (r Ruleset) MarshalJSON() ([]byte, error) {
+func (r RuleSet) MarshalJSON() ([]byte, error) {
 	if len(r) == 0 {
 		return []byte("[]"), nil
 	}
