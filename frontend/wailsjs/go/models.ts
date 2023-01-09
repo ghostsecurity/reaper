@@ -104,8 +104,7 @@ export namespace workspace {
 	export class Rule {
 	    id: number;
 	    protocol: string;
-	    // Go type: regexp.Regexp
-	    host?: any;
+	    host: string;
 	    // Go type: regexp.Regexp
 	    path?: any;
 	    ports: number[];
@@ -118,7 +117,7 @@ export namespace workspace {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
 	        this.protocol = source["protocol"];
-	        this.host = this.convertValues(source["host"], null);
+	        this.host = source["host"];
 	        this.path = this.convertValues(source["path"], null);
 	        this.ports = source["ports"];
 	    }

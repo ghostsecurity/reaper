@@ -95,7 +95,7 @@ import RulesEditor  from "./RulesEditor.vue";
       <div class="mt-8">
         <label for="domain" class="block text-sm font-medium text-snow-storm">In Scope Domains <span class="text-gray-400">(comma separated, leave blank to allow all domains)</span></label>
         <div class="relative mt-1 rounded-md shadow-sm">
-          <input v-model="simpleDomains" type="text" name="domains" id="domains" class="block w-full rounded-md bg-polar-night-4 pr-10 focus:outline-none sm:text-sm" aria-invalid="true" aria-describedby="domains-error" />
+          <input v-model="simpleDomains" @blur="saveSimple" type="text" name="domains" id="domains" class="block w-full rounded-md bg-polar-night-4 pr-10 focus:outline-none sm:text-sm" aria-invalid="true" aria-describedby="domains-error" />
         </div>
       </div>
       <div class="mt-8">

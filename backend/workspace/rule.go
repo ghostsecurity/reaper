@@ -8,21 +8,23 @@ import (
 )
 
 type Rule struct {
-	ID        int            `json:"id"`
-	Protocol  string         `json:"protocol"` // e.g. http, https
-	HostRegex *regexp.Regexp `json:"host"`
-	PathRegex *regexp.Regexp `json:"path"`
-	Ports     PortList       `json:"ports"`
+	ID           int            `json:"id"`
+	Protocol     string         `json:"protocol"` // e.g. http, https
+	HostRegexRaw string         `json:"host"`
+	HostRegex    *regexp.Regexp `json:"-"`
+	PathRegexRaw string         `json:"-"`
+	PathRegex    *regexp.Regexp `json:"path"`
+	Ports        PortList       `json:"ports"`
 }
 
 func (r Rule) MarshalJSON() ([]byte, error) {
 	var hostPattern string
 	if r.HostRegex != nil {
-		hostPattern = r.HostRegex.String()
+		hostPattern = r.HostRegexRaw
 	}
 	var pathPattern string
 	if r.PathRegex != nil {
-		pathPattern = r.PathRegex.String()
+		pathPattern = r.PathRegexRaw
 	}
 	if r.Ports == nil {
 		r.Ports = PortList{}
@@ -40,11 +42,15 @@ func (r *Rule) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
 	}
-	r.Protocol = raw["protocol"].(string)
+	if protocol, ok := raw["protocol"].(string); ok && protocol != "" {
+		r.Protocol = protocol
+	}
 	if pattern, ok := raw["host"].(string); ok && pattern != "" {
+		r.HostRegexRaw = pattern
 		r.HostRegex = regexp.MustCompile(pattern)
 	}
 	if pattern, ok := raw["path"].(string); ok && pattern != "" {
+		r.PathRegexRaw = pattern
 		r.PathRegex = regexp.MustCompile(pattern)
 	}
 	if ports, ok := raw["ports"].([]interface{}); ok {
