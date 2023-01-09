@@ -61,6 +61,7 @@ export default /*#__PURE__*/ defineComponent({
       }
       this.simpleScope.include.push(new workspace.Rule({
         host: pattern,
+        ports: [443, 80]
       }))
       this.$emit('save', this.simpleScope)
     },
