@@ -110,6 +110,11 @@ func Load(id string) (*Workspace, error) {
 	return loadFile(file)
 }
 
+func Delete(id string) error {
+	workspacePath := filepath.Join(configdir.LocalConfig(configDirName, workspacesDirName), id)
+	return os.RemoveAll(workspacePath)
+}
+
 func loadFile(file string) (*Workspace, error) {
 	f, err := os.Open(file)
 	if err != nil {

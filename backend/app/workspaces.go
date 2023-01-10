@@ -42,6 +42,12 @@ func (a *App) LoadWorkspace(id string) *workspace.Workspace {
 	return ws
 }
 
+func (a *App) DeleteWorkspace(id string) {
+	if err := workspace.Delete(id); err != nil {
+		a.logger.Errorf("Failed to delete workspace: %s", err)
+	}
+}
+
 func (a *App) SetWorkspace(workspace *workspace.Workspace) {
 	a.workspaceMu.Lock()
 	defer a.workspaceMu.Unlock()

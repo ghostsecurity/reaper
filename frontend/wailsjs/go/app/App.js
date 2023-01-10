@@ -6,6 +6,10 @@ export function CreateWorkspace(arg1) {
   return window['go']['app']['App']['CreateWorkspace'](arg1);
 }
 
+export function DeleteWorkspace(arg1) {
+  return window['go']['app']['App']['DeleteWorkspace'](arg1);
+}
+
 export function GetSettings() {
   return window['go']['app']['App']['GetSettings']();
 }

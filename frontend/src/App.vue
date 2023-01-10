@@ -3,12 +3,12 @@
 
 
 <script lang="ts">
-import {defineComponent} from "vue";
+import { defineComponent } from "vue";
 import { EventsOn } from '../wailsjs/runtime';
 import Settings from "./lib/Settings";
 import setDarkMode from "./lib/theme";
-import {Criteria}  from "./lib/Criteria";
-import {workspace} from "../wailsjs/go/models";
+import { Criteria } from "./lib/Criteria";
+import { workspace } from "../wailsjs/go/models";
 import {
   CreateWorkspace,
   GetSettings,
@@ -17,7 +17,9 @@ import {
   StopProxy,
   SetWorkspace,
   SaveWorkspace,
-  SaveSettings
+  SaveSettings,
+  LoadWorkspace,
+  DeleteWorkspace,
 } from "../wailsjs/go/app/App";
 
 
@@ -87,8 +89,8 @@ export default defineComponent({
     onCriteriaChange(criteria: Criteria) {
       this.criteria = criteria
     },
-    onStructureSelect(parts: Array<string>){
-      let query = "(host is "  + parts[0] + " and path is /" + parts.slice(1).join("/") + ")"
+    onStructureSelect(parts: Array<string>) {
+      let query = "(host is " + parts[0] + " and path is /" + parts.slice(1).join("/") + ")"
       let crit = new Criteria(query);
       this.criteria = crit;
     },
@@ -116,13 +118,27 @@ export default defineComponent({
         this.loadedWorkspaces = true
       })
     },
+    editWorkspace(id: string) {
+      LoadWorkspace(id).then((ws) => {
+        this.currentWorkspace = ws
+        this.showWorkspaceConfig()
+      })
+    },
+    deleteWorkspace(id: string) {
+      DeleteWorkspace(id).then(() => {
+        GetWorkspaces().then((workspaces) => {
+          this.workspaces = workspaces
+          this.loadedWorkspaces = true
+        })
+      })
+    }
   }
 
 })
 </script>
 
 <script lang="ts" setup>
-import { FunnelIcon, FolderIcon, CogIcon,BriefcaseIcon } from '@heroicons/vue/24/outline'
+import { FunnelIcon, FolderIcon, CogIcon, BriefcaseIcon } from '@heroicons/vue/24/outline'
 import Structure from "./components/Structure.vue";
 import Dashboard from "./components/Dashboard.vue";
 import SettingsModal from './components/SettingsModal.vue'
@@ -135,39 +151,52 @@ import WorkspaceSelection from "./components/WorkspaceSelection.vue";
     Loading...
   </div>
   <div v-else-if="!hasWorkspace">
-    <WorkspaceSelection :workspaces="workspaces" :onWorkspaceSelect="selectWorkspace" :onWorkspaceCreate="createWorkspace" />
+    <WorkspaceSelection :workspaces="workspaces" :onWorkspaceSelect="selectWorkspace"
+      :onWorkspaceCreate="createWorkspace" :onWorkspaceConfig="editWorkspace" :onWorkspaceDelete="deleteWorkspace" />
+    <WorkspaceModal :show="isLoaded() && workspaceConfigVisible" :onRequestClose="closeWorkspaceConfig"
+      :onSave="saveWorkspace" :workspace="currentWorkspace" />
   </div>
   <div v-else>
-  <SettingsModal :show="isLoaded() && settingsVisible" :onRequestClose="closeSettings" :onSave="saveSettings" :settings="settings" />
-  <WorkspaceModal :show="isLoaded() && workspaceConfigVisible" :onRequestClose="closeWorkspaceConfig" :onSave="saveWorkspace" :workspace="currentWorkspace" />
-  <div class="fixed pt-1 w-10 bg-polar-night-1a h-full">
-    <button :class="'text-snow-storm-1 hover:bg-polar-night-3 p-1 rounded '+(sidebar === 'structure' ? 'bg-polar-night-4' : '')" @click="setSidebar('structure')">
-      <FolderIcon class="h-6 w-6" aria-hidden="true" title="Structure" />
-    </button>
-    <button :class="'text-snow-storm-1 hover:bg-polar-night-3 p-1 rounded '+(sidebar === 'scope' ? 'bg-polar-night-4' : '')" @click="setSidebar('scope')">
-      <FunnelIcon class="h-6 w-6" aria-hidden="true" title="Scope" />
-    </button>
-  <div class="absolute bottom-0 left-1">
-    <button class="text-snow-storm-1 hover:bg-polar-night-3 p-1 rounded" title="Workspace" @click="showWorkspaceConfig">
-      <BriefcaseIcon class="h-6 w-6" aria-hidden="true" title="Workspace" />
-    </button>
-    <button class="text-snow-storm-1 hover:bg-polar-night-3 p-1 rounded" title="Settings" @click="showSettings">
-      <CogIcon class="h-6 w-6" aria-hidden="true" />
-    </button>
-  </div>
-  </div>
+    <SettingsModal :show="isLoaded() && settingsVisible" :onRequestClose="closeSettings" :onSave="saveSettings"
+      :settings="settings" />
+    <WorkspaceModal :show="isLoaded() && workspaceConfigVisible" :onRequestClose="closeWorkspaceConfig"
+      :onSave="saveWorkspace" :workspace="currentWorkspace" />
+    <div class="fixed pt-1 w-10 bg-polar-night-1a h-full">
+      <button
+        :class="'text-snow-storm-1 hover:bg-polar-night-3 p-1 rounded ' + (sidebar === 'structure' ? 'bg-polar-night-4' : '')"
+        @click="setSidebar('structure')">
+        <FolderIcon class="h-6 w-6" aria-hidden="true" title="Structure" />
+      </button>
+      <button
+        :class="'text-snow-storm-1 hover:bg-polar-night-3 p-1 rounded ' + (sidebar === 'scope' ? 'bg-polar-night-4' : '')"
+        @click="setSidebar('scope')">
+        <FunnelIcon class="h-6 w-6" aria-hidden="true" title="Scope" />
+      </button>
+      <div class="absolute bottom-0 left-1">
+        <button class="text-snow-storm-1 hover:bg-polar-night-3 p-1 rounded" title="Workspace"
+          @click="showWorkspaceConfig">
+          <BriefcaseIcon class="h-6 w-6" aria-hidden="true" title="Workspace" />
+        </button>
+        <button class="text-snow-storm-1 hover:bg-polar-night-3 p-1 rounded" title="Settings" @click="showSettings">
+          <CogIcon class="h-6 w-6" aria-hidden="true" />
+        </button>
+      </div>
+    </div>
 
-  <div class="flex ml-10 h-full">
-  <div :class="['sidebar', 'overflow-auto', 'pr-12', 'border-l-2', 'border-polar-night-1', 'relative', 'py-1', 'h-screen', 'bg-polar-night-1a', 'flex-none', 'w-fit', 'min-w-[10%]', 'max-w-[25%]', (sidebar !== '' ? '' : 'hidden')]">
-    <Structure v-if="sidebar === 'structure'" :expanded="true" :nodes="nodes" :on-select="onStructureSelect"/>
-    <p v-else>
-      not implemented yet
-    </p>
-  </div>
-  <div class="flex-1 w-3/4">
-   <Dashboard @switchWorkspace="switchWorkspace" :criteria="criteria" :onCriteriaChange="onCriteriaChange" :proxy-address="'127.0.0.1:' + settings.ProxyPort" :onWorkspaceConfig="showWorkspaceConfig" :ws="currentWorkspace"/>
-  </div>
-  </div>
+    <div class="flex ml-10 h-full">
+      <div
+        :class="['sidebar', 'overflow-auto', 'pr-12', 'border-l-2', 'border-polar-night-1', 'relative', 'py-1', 'h-screen', 'bg-polar-night-1a', 'flex-none', 'w-fit', 'min-w-[10%]', 'max-w-[25%]', (sidebar !== '' ? '' : 'hidden')]">
+        <Structure v-if="sidebar === 'structure'" :expanded="true" :nodes="nodes" :on-select="onStructureSelect" />
+        <p v-else>
+          not implemented yet
+        </p>
+      </div>
+      <div class="flex-1 w-3/4">
+        <Dashboard @switchWorkspace="switchWorkspace" :criteria="criteria" :onCriteriaChange="onCriteriaChange"
+          :proxy-address="'127.0.0.1:' + settings.ProxyPort" :onWorkspaceConfig="showWorkspaceConfig"
+          :ws="currentWorkspace" />
+      </div>
+    </div>
   </div>
 
 </template>
