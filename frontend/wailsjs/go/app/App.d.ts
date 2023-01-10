@@ -5,6 +5,8 @@ import {settings} from '../models';
 
 export function CreateWorkspace(arg1:workspace.Workspace):Promise<workspace.Workspace>;
 
+export function DeleteWorkspace(arg1:string):Promise<void>;
+
 export function GetSettings():Promise<settings.Settings>;
 
 export function GetWorkspaces():Promise<Array<workspace.Workspace>>;
