@@ -59,7 +59,9 @@ export default /*#__PURE__*/ defineComponent({
     </div>
     <div class="flex items-center justify-between">
       <p class="truncate text-left  text-sm font-medium text-frost flex-1">
-        {{ request.Path }}<span class="text-frost-3" v-if="request.QueryString !== ''">?{{ request.QueryString }}</span>
+        {{ request.Path }}<span class="text-frost-3 max-w-4xl truncate" v-if="request.QueryString !== ''">?{{
+          request.QueryString
+        }}</span>
       </p>
       <div class="ml-2 flex flex-0 text-right">
         <p class=" px-2 text-xs font-semibold leading-5">

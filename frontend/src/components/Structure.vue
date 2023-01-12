@@ -140,19 +140,21 @@ export default /*#__PURE__*/ defineComponent({
     </div>
   </div>
   <ul>
-    <li v-for="node in nodes" class="whitespace-nowrap">
-      <a @click="toggle(node.name)" @contextmenu.prevent="openMenu" @dblclick="onNodeSelect(node)">
-        <span v-if="node.children.length===0" class="w-6 inline-block bg-red h-1"/>
-        <ChevronDownIcon v-else-if="toggled(node.name)" class="w-6 inline"/>
-        <ChevronRightIcon v-else class="w-6 inline"/>
-        <FolderIcon v-if="node.children.length>0" class="text-frost mr-1 w-4 inline"/>
-        <CodeBracketSquareIcon v-else-if="isCode(node.name)" class="text-frost-3 mr-1 w-4 inline"/>
-        <PhotoIcon v-else-if="isPhoto(node.name)" class="text-frost-3 mr-1 w-4 inline"/>
-        <DocumentIcon v-else class="text-frost-3 mr-1 w-4 inline"/>
-      </a>
-      <a @click="onNodeSelect(node)" class="hover:bg-polar-night-3">
-        {{ node.name }}
-      </a>
+    <li v-for="node in nodes" class="whitespace-nowrap text-snow-storm-1">
+      <div class="flex items-center">
+        <a @click="toggle(node.name)" @contextmenu.prevent="openMenu" @dblclick="onNodeSelect(node)">
+          <span v-if="node.children.length===0" class="w-6 inline-block h-1"/>
+          <ChevronDownIcon v-else-if="toggled(node.name)" class="w-4 inline text-gray-500"/>
+          <ChevronRightIcon v-else class="w-4 inline text-gray-500"/>
+          <FolderIcon v-if="node.children.length>0" class="text-frost mr-1 w-4 inline"/>
+          <CodeBracketSquareIcon v-else-if="isCode(node.name)" class="text-frost-3 mr-1 w-4 inline"/>
+          <PhotoIcon v-else-if="isPhoto(node.name)" class="text-frost-3 mr-1 w-4 inline"/>
+          <DocumentIcon v-else class="text-frost-3 mr-1 w-4 inline"/>
+        </a>
+        <a @click="onNodeSelect(node)" class="hover:bg-polar-night-3">
+          {{ node.name }}
+        </a>
+      </div>
       <Structure :on-select="onChildSelect(node.name)" :key="node.name" v-if="toggled(node.name)" :nodes="node.children"
                  :expanded="expanded" :hasParent="true" :shrinkIndex="lastShrink"/>
     </li>
