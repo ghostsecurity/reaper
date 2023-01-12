@@ -1,5 +1,3 @@
-
-
 <script lang="ts">
 import {HttpRequest} from '../lib/Http';
 import {defineComponent, PropType} from "vue";
@@ -21,21 +19,21 @@ export default /*#__PURE__*/ defineComponent({
   },
   methods: {
     onEnabledChange() {
-      if(!this.enabled) {
+      if (!this.enabled) {
         this.request = null
       }
       EventsEmit("InterceptionEnabledChange", this.enabled)
     },
-    forwardRequest(){
+    forwardRequest() {
       EventsEmit("InterceptedRequestChange", this.request)
       this.request = null
     },
-    dropRequest(){
+    dropRequest() {
       EventsEmit("InterceptedRequestDrop", this.request)
       this.request = null
     },
     onChange(raw: string) {
-      if(this.request !== null) {
+      if (this.request !== null) {
         this.request.Raw = raw
       }
     },
@@ -46,7 +44,7 @@ export default /*#__PURE__*/ defineComponent({
 <template>
   <v-card class="text-start">
     <v-card-text>
-       <v-switch
+      <v-switch
           v-model="enabled"
           color="primary"
           label="Intercept Requests"

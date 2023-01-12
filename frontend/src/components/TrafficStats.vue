@@ -12,7 +12,7 @@ export default /*#__PURE__*/ defineComponent({
 <template>
   <div class="d-flex">
     <div class="v-col-6">
-     lol
+      lol
     </div>
     <div class="v-col-6">
       some stats

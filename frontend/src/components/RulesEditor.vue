@@ -21,7 +21,7 @@ export default /*#__PURE__*/ defineComponent({
   emits: ['save'],
   methods: {
     saveRule(rule: workspace.Rule) {
-      let found= false;
+      let found = false;
       this.modifiedRules.forEach((r, i) => {
         if (r.id === rule.id) {
           this.modifiedRules[i] = rule
@@ -36,7 +36,7 @@ export default /*#__PURE__*/ defineComponent({
       this.$emit('save', this.modifiedRules)
     },
     cancelRule(rule: workspace.Rule, saved: boolean) {
-      if(saved) {
+      if (saved) {
         return
       }
       this.removeRule(rule)
@@ -72,10 +72,12 @@ import RuleEditor from "./RuleEditor.vue";
     </div>
     <ul v-else>
       <li v-for="rule in modifiedRules">
-        <RuleEditor :rule="rule" @save="saveRule" @cancel="cancelRule" @remove="removeRule" :key="rule.id" :saved="hasExisting"/>
+        <RuleEditor :rule="rule" @save="saveRule" @cancel="cancelRule" @remove="removeRule" :key="rule.id"
+                    :saved="hasExisting"/>
       </li>
     </ul>
-    <button @click="addRule" class="mt-2 inline-flex items-center rounded-md border border-transparent bg-aurora-4 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+    <button @click="addRule"
+            class="mt-2 inline-flex items-center rounded-md border border-transparent bg-aurora-4 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
       Add Rule
     </button>
   </div>

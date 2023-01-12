@@ -1,11 +1,11 @@
-
 export default class Settings {
-    CACert:         string;
-    CAKey:          string;
-    ProxyPort:      number;
-    ProxyHost:      string;
+    CACert: string;
+    CAKey: string;
+    ProxyPort: number;
+    ProxyHost: string;
     LogLevel: number;
-    DarkMode:       boolean;
+    DarkMode: boolean;
+
     constructor() {
         this.CACert = "";
         this.CAKey = "";

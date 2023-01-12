@@ -1,5 +1,3 @@
-
-
 <script lang="ts">
 import {defineComponent, PropType} from "vue";
 import {HttpRequest, HttpResponse} from "../lib/Http.js";
@@ -31,6 +29,7 @@ export default /*#__PURE__*/ defineComponent({
 tbody {
   max-width: 100% !important;
 }
+
 th {
   font-weight: normal !important;
   max-width: 15vw !important;
@@ -39,6 +38,7 @@ th {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 td {
   max-width: 15vw !important;
   text-align: right;
@@ -47,6 +47,7 @@ td {
   text-overflow: ellipsis;
 
 }
+
 td input {
   width: 100%;
 }

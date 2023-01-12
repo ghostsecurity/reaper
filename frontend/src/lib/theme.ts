@@ -1,6 +1,5 @@
-
-const swapTheme  = (dark: boolean) => {
-    if(dark){
+const swapTheme = (dark: boolean) => {
+    if (dark) {
         document.documentElement.classList.add('dark')
     } else {
         document.documentElement.classList.remove('dark')

@@ -16,10 +16,10 @@ class Criteria {
 
     constructor(input: string) {
         this.Raw = input;
-        try{
+        try {
             this.root = parse(input);
         } catch (e) {
-            this.root =  new Ruleset([
+            this.root = new Ruleset([
                 new Rule(Target.Raw, Comparison.CONTAINS, input)
             ], [], JoinType.AND);
             this.ParseError = e as Error;
@@ -40,9 +40,9 @@ enum Comparison {
 
 let comparisonAliases = new Map<Comparison, string[]>([
     [Comparison.EQUAL, ["eq", "==", "is"]],
-    [Comparison.NOT_EQUAL, ["neq", "!=" ]],
-    [Comparison.CONTAINS, ["contains", "includes", "has", "*=" ]],
-    [Comparison.MATCHES, ["matches", "~" ]],
+    [Comparison.NOT_EQUAL, ["neq", "!="]],
+    [Comparison.CONTAINS, ["contains", "includes", "has", "*="]],
+    [Comparison.MATCHES, ["matches", "~"]],
 ])
 
 enum Target {
@@ -53,11 +53,11 @@ enum Target {
     Raw = "raw",
 }
 
-let targetAliases =  new Map<Target, string[]>([
-    [Target.Scheme, ["scheme", "protocol", "proto" ]],
-    [Target.Host, ["hostname", "host", "domain" ]],
-    [Target.Path, ["path" ]],
-    [Target.Query, [ "querystring", "query", "qs" ]],
+let targetAliases = new Map<Target, string[]>([
+    [Target.Scheme, ["scheme", "protocol", "proto"]],
+    [Target.Host, ["hostname", "host", "domain"]],
+    [Target.Path, ["path"]],
+    [Target.Query, ["querystring", "query", "qs"]],
 ])
 
 enum JoinType {
@@ -68,7 +68,7 @@ enum JoinType {
 
 let joinAliases = new Map<JoinType, string[]>([
     [JoinType.AND, ["and", "&&"]],
-    [JoinType.OR, ["or", "||" ]],
+    [JoinType.OR, ["or", "||"]],
 ])
 
 class Rule {
@@ -113,7 +113,7 @@ class Rule {
             case Comparison.MATCHES:
                 try {
                     return field.match(this.Value) !== null;
-                }catch (e) {
+                } catch (e) {
                     return false;
                 }
             default:
@@ -181,7 +181,7 @@ class Reader {
     }
 
     peekWord(): string {
-       return this.input.slice(this.pos).trimStart().split(" ")[0];
+        return this.input.slice(this.pos).trimStart().split(" ")[0];
     }
 
     readUntil(c: string): string {
@@ -237,16 +237,16 @@ function parseRuleset(reader: Reader, nested: boolean): Ruleset {
     let rulesets: Ruleset[] = [];
     let join: JoinType = JoinType.NONE;
     let expectingRule = true;
-    while (!reader.complete()){
-        if(reader.skipWhitespace()) {
+    while (!reader.complete()) {
+        if (reader.skipWhitespace()) {
             continue;
         }
-        if(nested && reader.peek() === ')') {
+        if (nested && reader.peek() === ')') {
             reader.next();
             expectingRule = false;
             break
         }
-        if(reader.peek() === '(') {
+        if (reader.peek() === '(') {
             reader.next();
             rulesets.push(parseRuleset(reader, true));
             expectingRule = false;
@@ -267,7 +267,7 @@ function parseRuleset(reader: Reader, nested: boolean): Ruleset {
                 }
             })
         })
-        if(newJoin === JoinType.NONE) {
+        if (newJoin === JoinType.NONE) {
             throw new Error("Expected either 'AND' or 'OR', found '" + reader.peekWord() + "'");
         }
         if (join !== JoinType.NONE && join !== newJoin) {
@@ -276,7 +276,7 @@ function parseRuleset(reader: Reader, nested: boolean): Ruleset {
         join = newJoin;
         expectingRule = true;
     }
-    if(join == JoinType.NONE) {
+    if (join == JoinType.NONE) {
         join = JoinType.AND;
     }
     return new Ruleset(rules, rulesets, join);
@@ -296,10 +296,10 @@ function parseRule(reader: Reader): Rule {
             }
         })
     })
-    if(!targetValid) {
+    if (!targetValid) {
         targetAliases.forEach((values, key) => {
             values.forEach(value => {
-                if (reader.peekWord().toLowerCase().startsWith(value.toLowerCase())){
+                if (reader.peekWord().toLowerCase().startsWith(value.toLowerCase())) {
                     target = <Target>key;
                     let entireWord = reader.readWord();
                     reader.prepend(entireWord.substring(value.length));
@@ -308,7 +308,7 @@ function parseRule(reader: Reader): Rule {
             })
         })
     }
-    if(!targetValid) {
+    if (!targetValid) {
         reader.restore();
         throw new Error("invalid target '" + reader.peekWord() + "'")
     }
@@ -324,10 +324,10 @@ function parseRule(reader: Reader): Rule {
             }
         })
     })
-    if(!comparisonValid) {
+    if (!comparisonValid) {
         comparisonAliases.forEach((values, key) => {
             values.forEach(value => {
-                if (reader.peekWord().toLowerCase().startsWith(value.toLowerCase())){
+                if (reader.peekWord().toLowerCase().startsWith(value.toLowerCase())) {
                     comparison = <Comparison>key;
                     let entireWord = reader.readWord();
                     reader.prepend(entireWord.substring(value.length));
@@ -336,7 +336,7 @@ function parseRule(reader: Reader): Rule {
             })
         })
     }
-    if(!comparisonValid) {
+    if (!comparisonValid) {
         reader.restore();
         throw new Error("invalid comparison '" + reader.peekWord() + "'")
     }
@@ -344,7 +344,7 @@ function parseRule(reader: Reader): Rule {
     reader.skipWhitespace()
 
     let value = "";
-    switch(reader.peek()) {
+    switch (reader.peek()) {
         case '"':
             reader.next();
             value = reader.readUntil('"');

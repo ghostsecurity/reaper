@@ -1,5 +1,6 @@
 <script lang="ts">
 import {defineComponent} from "vue";
+
 export default /*#__PURE__*/ defineComponent({
   props: {
     code: {type: Number, required: false},
