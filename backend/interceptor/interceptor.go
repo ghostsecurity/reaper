@@ -1,9 +1,10 @@
 package interceptor
 
 import (
-	"github.com/ghostsecurity/reaper/backend/log"
 	"net/http"
 	"sync"
+
+	"github.com/ghostsecurity/reaper/backend/log"
 )
 
 type Interceptor struct {

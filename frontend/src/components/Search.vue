@@ -54,8 +54,9 @@ import {MagnifyingGlassIcon} from "@heroicons/vue/20/solid";
         </button>
       </span>
     <input v-model="liveQuery" type="search"
+           autocomplete="off" autocapitalize="off" spellcheck="false"
            class="w-full py-2 text-sm text-snow-storm-1 bg-polar-night-2 focus:bg-polar-night-4 focus:text-snow-storm-3 focus:outline-none rounded-md pl-10"
-           placeholder="Search..." autocomplete="off">
+           placeholder="Search...">
   </div>
 </template>
 

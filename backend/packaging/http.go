@@ -18,19 +18,24 @@ type HttpRequest struct {
 	QueryString string
 	Scheme      string
 	Raw         string
-	ID          int64
+	ID          string
+	LocalID     int64
 	Headers     map[string][]string
 	Query       map[string][]string
+	Tags        []string
 }
 
 type HttpResponse struct {
 	Raw        string
 	StatusCode int
-	ID         int64
+	ID         string
+	LocalID    int64
 	Headers    map[string][]string
+	Tags       []string
+	BodySize   int
 }
 
-func PackageHttpRequest(request *http.Request, id int64) (*HttpRequest, error) {
+func PackageHttpRequest(request *http.Request, proxyID string, reqID int64) (*HttpRequest, error) {
 
 	// replace nil body with empty body
 	if request.Body == nil {
@@ -59,7 +64,8 @@ func PackageHttpRequest(request *http.Request, id int64) (*HttpRequest, error) {
 	request.Body = io.NopCloser(localCopy)
 
 	return &HttpRequest{
-		ID:          id,
+		ID:          fmt.Sprintf("%s:%d", proxyID, reqID),
+		LocalID:     reqID,
 		Method:      request.Method,
 		URL:         request.URL.String(),
 		Raw:         buf.String(),
@@ -69,7 +75,61 @@ func PackageHttpRequest(request *http.Request, id int64) (*HttpRequest, error) {
 		Headers:     packageHeaders(request.Header),
 		Query:       request.URL.Query(),
 		Scheme:      request.URL.Scheme,
+		Tags:        tagRequest(request),
 	}, nil
+}
+
+func tagRequest(req *http.Request) []string {
+
+	tags := []string{} // define as empty array for json friendliness
+
+	if req.Header.Get("Authorization") != "" {
+		tags = append(tags, "Auth")
+	}
+
+	if req.Header.Get("Cookie") != "" {
+		tags = append(tags, "Cookies")
+	}
+
+	if tag := tagContentType(req.Header.Get("Content-Type")); tag != "" {
+		tags = append(tags, "Request: "+tag)
+	}
+
+	return tags
+}
+
+func tagResponse(resp *http.Response) []string {
+
+	tags := []string{} // define as empty array for json friendliness
+
+	if resp.Header.Get("Set-Cookie") != "" {
+		tags = append(tags, "Set-Cookie")
+	}
+
+	if tag := tagContentType(resp.Header.Get("Content-Type")); tag != "" {
+		tags = append(tags, "Response: "+tag)
+	}
+
+	return tags
+}
+
+func tagContentType(ct string) string {
+	switch {
+	case strings.Contains(ct, "/json"):
+		return "JSON"
+	case strings.Contains(ct, "/xml"):
+		return "XML"
+	case strings.Contains(ct, "/html"):
+		return "HTML"
+	case strings.Contains(ct, "/javascript"):
+		return "JS"
+	case strings.Contains(ct, "/css"):
+		return "CSS"
+	case strings.Contains(ct, "/plain"):
+		return "Plain"
+	default:
+		return ""
+	}
 }
 
 func packageHeaders(header http.Header) map[string][]string {
@@ -80,7 +140,7 @@ func packageHeaders(header http.Header) map[string][]string {
 	return headers
 }
 
-func PackageHttpResponse(response *http.Response, id int64) (*HttpResponse, error) {
+func PackageHttpResponse(response *http.Response, proxyID string, reqID int64) (*HttpResponse, error) {
 
 	// replace nil body with empty body
 	if response.Body == nil {
@@ -109,10 +169,13 @@ func PackageHttpResponse(response *http.Response, id int64) (*HttpResponse, erro
 	response.Body = io.NopCloser(localCopy)
 
 	return &HttpResponse{
-		ID:         id,
+		ID:         fmt.Sprintf("%s:%d", proxyID, reqID),
+		LocalID:    reqID,
 		Raw:        buf.String(),
 		StatusCode: response.StatusCode,
 		Headers:    packageHeaders(response.Header),
+		Tags:       tagResponse(response),
+		BodySize:   localCopy.Len(),
 	}, nil
 }
 
