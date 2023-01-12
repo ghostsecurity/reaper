@@ -3,12 +3,7 @@ module.exports = {
     browser: true,
     es2021: true,
   },
-  extends: [
-    'eslint:recommended',
-    'plugin:vue/vue3-essential',
-    'plugin:@typescript-eslint/recommended',
-    'airbnb-base',
-  ],
+  extends: ['eslint:recommended', 'plugin:vue/vue3-essential', 'plugin:@typescript-eslint/recommended', 'airbnb-base'],
   overrides: [],
   parser: 'vue-eslint-parser',
   parserOptions: {
@@ -19,6 +14,7 @@ module.exports = {
   plugins: ['vue', '@typescript-eslint'],
   rules: {
     indent: ['error', 2],
+    'object-curly-newline': 'off',
     'linebreak-style': ['error', 'unix'],
     quotes: ['error', 'single'],
     semi: ['error', 'never'],
