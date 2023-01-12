@@ -1,21 +1,23 @@
 <script lang="ts" setup>
-import { PropType } from "vue";
-import { TransitionChild, TransitionRoot, Dialog, DialogPanel } from "@headlessui/vue";
-import SettingsComponent from "./Settings.vue";
-import Settings from "../lib/Settings";
+import { PropType } from 'vue'
+import {
+  TransitionChild, TransitionRoot, Dialog, DialogPanel,
+} from '@headlessui/vue'
+import SettingsComponent from './Settings.vue'
+import Settings from '../lib/Settings' /*eslint-disable-line*/
 
 const props = defineProps({
   show: {
     type: Boolean,
-    required: true
+    required: true,
   },
   onRequestClose: {
     type: Function as PropType<() => void>,
-    required: true
+    required: true,
   },
   settings: { type: Object as PropType<Settings>, required: true },
   onSave: { type: Function, required: true },
-});
+})
 
 function close() {
   props.onRequestClose()
