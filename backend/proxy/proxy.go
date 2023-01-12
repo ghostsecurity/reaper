@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/google/uuid"
+
 	"github.com/elazarl/goproxy"
 	"github.com/ghostsecurity/reaper/backend/log"
 	"github.com/ghostsecurity/reaper/backend/settings"
@@ -19,6 +21,7 @@ type Proxy struct {
 	respFuncs []ProxyResponseFunc
 	logger    *log.Logger
 	addr      string
+	id        string
 }
 
 type proxyLogger struct {
@@ -33,6 +36,7 @@ type ProxyRequestFunc func(*http.Request, int64) (*http.Request, *http.Response)
 type ProxyResponseFunc func(*http.Response, int64) *http.Response
 
 func New(userSettings *settings.Provider, logger *log.Logger) (*Proxy, error) {
+
 	// TODO: allow user to specify which ip to bind to
 	addr := fmt.Sprintf("127.0.0.1:%d", userSettings.Get().ProxyPort)
 	logger.Infof("Creating proxy on %s...", addr)
@@ -80,6 +84,7 @@ func New(userSettings *settings.Provider, logger *log.Logger) (*Proxy, error) {
 		server: srv,
 		logger: logger,
 		addr:   addr,
+		id:     uuid.New().String(),
 	}
 
 	proxy.OnRequest().DoFunc(func(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
@@ -104,6 +109,10 @@ func New(userSettings *settings.Provider, logger *log.Logger) (*Proxy, error) {
 
 func (p *Proxy) Addr() string {
 	return p.addr
+}
+
+func (p *Proxy) ID() string {
+	return p.id
 }
 
 func (p *Proxy) OnRequest(f ProxyRequestFunc) *Proxy {

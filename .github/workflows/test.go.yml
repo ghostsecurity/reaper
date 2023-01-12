@@ -22,7 +22,7 @@ jobs:
         run: make wails && wails doctor
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
       - name: Wails Build
         run: make build
       - name: Run Go tests

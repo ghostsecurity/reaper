@@ -73,7 +73,7 @@ func (a *App) startProxy() {
 		if !a.workspace.Scope.Includes(request) {
 			return request, nil
 		}
-		if packaged, err := packaging.PackageHttpRequest(request, id); err != nil {
+		if packaged, err := packaging.PackageHttpRequest(request, a.proxy.ID(), id); err != nil {
 			a.logger.Errorf("Error packaging request: %s", err)
 		} else {
 			runtime.EventsEmit(a.ctx, EventHttpRequest, packaged)
@@ -103,7 +103,7 @@ func (a *App) startProxy() {
 			return response
 		}
 		a.logger.Debugf("Response %d in scope: %s %s %d", id, response.Request.Method, response.Request.URL, response.StatusCode)
-		if packaged, err := packaging.PackageHttpResponse(response, id); err != nil {
+		if packaged, err := packaging.PackageHttpResponse(response, a.proxy.ID(), id); err != nil {
 			a.logger.Errorf("Error packaging response: %s", err)
 		} else {
 			runtime.EventsEmit(a.ctx, EventHttpResponse, packaged)

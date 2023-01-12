@@ -7,6 +7,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/google/uuid"
+
 	"github.com/ghostsecurity/reaper/backend/highlight"
 	"github.com/ghostsecurity/reaper/backend/interceptor"
 	"github.com/ghostsecurity/reaper/backend/log"
@@ -80,7 +82,7 @@ func (a *App) Startup(ctx context.Context) {
 	})
 
 	a.interceptor = interceptor.New(a.logger.WithPrefix("interceptor"), func(req *http.Request, id int64) {
-		if packaged, err := packaging.PackageHttpRequest(req, id); err != nil {
+		if packaged, err := packaging.PackageHttpRequest(req, a.proxy.ID(), id); err != nil {
 			a.logger.Errorf("Error packaging request: %s", err)
 		} else {
 			runtime.EventsEmit(a.ctx, EventInterceptedRequest, packaged)
@@ -113,7 +115,7 @@ func (a *App) Startup(ctx context.Context) {
 		}
 
 		// TODO: log return value
-		a.interceptor.HandleCallback(final, modified.ID, nil)
+		a.interceptor.HandleCallback(final, modified.LocalID, nil)
 
 	})
 
@@ -142,7 +144,7 @@ func (a *App) Startup(ctx context.Context) {
 			return
 		}
 
-		a.interceptor.HandleCallback(final, modified.ID, a.createReaperMessageResponse(final, "Request dropped."))
+		a.interceptor.HandleCallback(final, modified.LocalID, a.createReaperMessageResponse(final, "Request dropped."))
 	})
 
 	runtime.EventsOn(ctx, EventInterceptionEnabledChange, func(args ...interface{}) {
@@ -171,4 +173,45 @@ func (a *App) Shutdown(_ context.Context) {
 
 func (a *App) HighlightCode(code string) string {
 	return highlight.HTTP(code)
+}
+
+func (a *App) GenerateID() string {
+	return uuid.New().String()
+}
+
+func (a *App) Confirm(title, msg string) bool {
+	result, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+		Type:          runtime.QuestionDialog,
+		Title:         title,
+		Message:       msg,
+		Buttons:       []string{"Yes", "No"},
+		DefaultButton: "No",
+	})
+	if err != nil {
+		a.logger.Errorf("Error showing confirmation: %s", err)
+	}
+	return err == nil && result == "Yes"
+}
+
+func (a *App) Notify(title, msg string) {
+	a.message(title, msg, runtime.InfoDialog)
+}
+
+func (a *App) Warn(title, msg string) {
+	a.message(title, msg, runtime.WarningDialog)
+}
+
+func (a *App) Error(title, msg string) {
+	a.message(title, msg, runtime.ErrorDialog)
+}
+
+func (a *App) message(title, msg string, dialogType runtime.DialogType) {
+	_, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+		Type:    dialogType,
+		Title:   title,
+		Message: msg,
+	})
+	if err != nil {
+		a.logger.Errorf("Error showing notification: %s", err)
+	}
 }

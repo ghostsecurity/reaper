@@ -3,9 +3,15 @@
 import {workspace} from '../models';
 import {settings} from '../models';
 
+export function Confirm(arg1:string,arg2:string):Promise<boolean>;
+
 export function CreateWorkspace(arg1:workspace.Workspace):Promise<workspace.Workspace>;
 
 export function DeleteWorkspace(arg1:string):Promise<void>;
+
+export function Error(arg1:string,arg2:string):Promise<void>;
+
+export function GenerateID():Promise<string>;
 
 export function GetSettings():Promise<settings.Settings>;
 
@@ -14,6 +20,8 @@ export function GetWorkspaces():Promise<Array<workspace.Workspace>>;
 export function HighlightCode(arg1:string):Promise<string>;
 
 export function LoadWorkspace(arg1:string):Promise<workspace.Workspace>;
+
+export function Notify(arg1:string,arg2:string):Promise<void>;
 
 export function SaveSettings(arg1:settings.Settings):Promise<void>;
 
@@ -24,3 +32,5 @@ export function SetWorkspace(arg1:workspace.Workspace):Promise<void>;
 export function StartProxy():Promise<void>;
 
 export function StopProxy():Promise<void>;
+
+export function Warn(arg1:string,arg2:string):Promise<void>;

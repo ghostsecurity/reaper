@@ -1,6 +1,7 @@
 export namespace workspace {
 	
 	export class Request {
+	    id: string;
 	    name: string;
 	    // Go type: packaging.HttpRequest
 	    inner: any;
@@ -13,6 +14,7 @@ export namespace workspace {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
 	        this.name = source["name"];
 	        this.inner = this.convertValues(source["inner"], null);
 	        this.pre_script = source["pre_script"];
@@ -38,6 +40,7 @@ export namespace workspace {
 		}
 	}
 	export class Group {
+	    id: string;
 	    name: string;
 	    requests: Request[];
 	
@@ -47,6 +50,7 @@ export namespace workspace {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
 	        this.name = source["name"];
 	        this.requests = this.convertValues(source["requests"], Request);
 	    }
