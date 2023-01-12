@@ -1,4 +1,3 @@
-
 <template>
   <div
       class="context-menu"
@@ -7,7 +6,7 @@
       tabindex="-1"
       @contextmenu.capture.prevent>
     <ul>
-      <slot :contextData="contextData" />
+      <slot :contextData="contextData"/>
     </ul>
   </div>
 </template>
@@ -30,11 +29,12 @@ export default /*#__PURE__*/ defineComponent({
     return {
       opened: false,
       contextData: "something",
-      clean: () => {},
+      clean: () => {
+      },
     };
   },
   computed: {
-    isVisible(): boolean{
+    isVisible(): boolean {
       return this.opened;
     },
   },
@@ -108,14 +108,13 @@ export default /*#__PURE__*/ defineComponent({
 }
 
 .context-menu:focus {
-   outline: none;
- }
-
-.context-menu ul {
-  padding:0px;
-  margin:0px;
+  outline: none;
 }
 
+.context-menu ul {
+  padding: 0px;
+  margin: 0px;
+}
 
 
 </style>

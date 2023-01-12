@@ -1,5 +1,3 @@
-
-
 <script lang="ts">
 import {defineComponent, PropType} from "vue";
 
@@ -36,7 +34,7 @@ export default /*#__PURE__*/ defineComponent({
     this.updateCode()
   },
   methods: {
-    setHighlighted(highlighted: string){
+    setHighlighted(highlighted: string) {
       this.highlighted = highlighted
       this.busy = false;
     },
@@ -50,7 +48,7 @@ export default /*#__PURE__*/ defineComponent({
 
       this.busy = true
 
-      if(this.onchange !== undefined){
+      if (this.onchange !== undefined) {
         this.onchange(this.buffer)
       }
 
@@ -68,9 +66,11 @@ export default /*#__PURE__*/ defineComponent({
 </script>
 
 <template>
-  <div v-bind:class="'overflow-x-auto ' + (busy?'h-full text-left wrapper plain':'h-full text-left wrapper highlighted min-h-full')">
-    <pre ref="pre" class="h-full min-h-full"  aria-hidden="true"><code v-html="highlighted"></code></pre>
-    <textarea :readonly="readonly" spellcheck="false" ref="textarea" @input="updateCode" @scroll="syncScroll" v-model="buffer"></textarea>
+  <div
+      v-bind:class="'overflow-x-auto ' + (busy?'h-full text-left wrapper plain':'h-full text-left wrapper highlighted min-h-full')">
+    <pre ref="pre" class="h-full min-h-full" aria-hidden="true"><code v-html="highlighted"></code></pre>
+    <textarea :readonly="readonly" spellcheck="false" ref="textarea" @input="updateCode" @scroll="syncScroll"
+              v-model="buffer"></textarea>
   </div>
 </template>
 
@@ -78,12 +78,15 @@ export default /*#__PURE__*/ defineComponent({
 .wrapper {
   position: relative;
 }
-.v-theme--dark .wrapper, .v-theme--ghost .wrapper{
+
+.v-theme--dark .wrapper, .v-theme--ghost .wrapper {
   border-right: 1px solid #444;
 }
-.v-theme--light .wrapper{
+
+.v-theme--light .wrapper {
   border-right: 1px solid #ccc;
 }
+
 textarea, pre {
   position: absolute;
   left: 0;
@@ -97,20 +100,24 @@ textarea, pre {
   padding: 0;
   border: none;
 }
-textarea, pre, code{
+
+textarea, pre, code {
   font-size: 12pt !important;
   font-family: monospace !important;
   line-height: 20pt !important;
   tab-size: 2;
 }
+
 pre {
   z-index: 9;
   padding: 0 !important;
   margin: 0 !important;
 }
+
 .plain pre {
   display: none;
 }
+
 textarea {
   box-shadow: none;
   outline: none;
@@ -120,12 +127,15 @@ textarea {
   caret-color: white;
   background-color: transparent;
 }
+
 textarea:focus {
   outline: none !important;
 }
+
 .highlighted textarea {
   color: transparent;
 }
+
 .plain textarea {
   color: white;
 }

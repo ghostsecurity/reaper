@@ -5,9 +5,7 @@
 </template>
 
 <script lang="ts">
-export default {
-
-}
+export default {}
 </script>
 
 <style scoped>
@@ -27,9 +25,9 @@ export default {
 }
 
 .context-menu-item:hover, .context-menu-item:focus {
-   background: #fff;
-   color:#000;
-   outline: none;
+  background: #fff;
+  color: #000;
+  outline: none;
 }
 </style>
 
