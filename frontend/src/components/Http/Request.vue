@@ -1,23 +1,20 @@
-<script lang="ts">
-import {defineComponent, PropType} from "vue";
-import {HttpRequest, HttpResponse} from "../lib/Http.js";
+<script lang="ts" setup>
+import { PropType } from "vue";
+import { HttpRequest } from "../../lib/Http.js";
 import Code from "./Code.vue";
-import HttpStatus from "./HttpStatus.vue";
 
-export default /*#__PURE__*/ defineComponent({
-  components: {HttpStatus, Code},
-  props: {
-    request: {type: Object as PropType<HttpRequest>, required: true},
-    readonly: {type: Boolean, required: true},
-    onchange: {type: Function as PropType<(raw: string) => void>, required: false},
-  },
+const props = defineProps({
+  request: { type: Object as PropType<HttpRequest>, required: true },
+  readonly: { type: Boolean, required: true },
+  onchange: { type: Function as PropType<(raw: string) => void>, required: false },
 })
+
 </script>
 
 <template>
   <!-- TODO add tabs for headers, tags etc. -->
   <div class="h-full min-h-full w-full">
-    <Code :code="request.Raw" :onchange="onchange" :readonly="readonly" class="h-full"/>
+    <Code :code="request.Raw" :readonly="readonly" class="h-full" />
   </div>
   <!--
   <div class="text-left overflow-y-auto">

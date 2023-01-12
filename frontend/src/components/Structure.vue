@@ -8,18 +8,13 @@ import {
   PhotoIcon
 } from '@heroicons/vue/20/solid'
 import Structure from "./Structure.vue";
-import ContextMenuItem from "./ContextMenu/ContextMenuItem.vue";
 </script>
 
 <script lang="ts">
-import {defineComponent, PropType} from "vue";
-import {workspace} from "../../wailsjs/go/models";
-import ContextMenu from "./ContextMenu/ContextMenu.vue";
+import { defineComponent, PropType } from "vue";
+import { workspace } from "../../wailsjs/go/models";
 
 export default /*#__PURE__*/ defineComponent({
-  components: {
-    ContextMenu,
-  },
   props: {
     nodes: {
       type: Array as PropType<Array<workspace.StructureNode>>,
@@ -116,25 +111,9 @@ export default /*#__PURE__*/ defineComponent({
 </script>
 
 <template>
-  <ContextMenu ref="menu">
-    <template slot-scope="{ contextData }">
-      <ContextMenuItem @click.native="closeMenu">
-        Action 1
-      </ContextMenuItem>
-      <ContextMenuItem @click.native="closeMenu">
-        Action 2
-      </ContextMenuItem>
-      <ContextMenuItem @click.native="closeMenu">
-        Action 3
-      </ContextMenuItem>
-      <ContextMenuItem @click.native="closeMenu">
-        Action 4
-      </ContextMenuItem>
-    </template>
-  </ContextMenu>
   <div v-if="!hasParent && nodes.length === 0">
     <div class="text-center pt-4 pl-8">
-      <FolderIcon class="mx-auto h-12 w-12"/>
+      <FolderIcon class="mx-auto h-12 w-12" />
       <h3 class="mt-2 text-sm font-medium">No requests received</h3>
       <p class="mt-1 text-sm text-snow-storm-1">Configure your browser to use Reaper</p>
     </div>
@@ -142,21 +121,21 @@ export default /*#__PURE__*/ defineComponent({
   <ul>
     <li v-for="node in nodes" class="whitespace-nowrap text-snow-storm-1">
       <div class="flex items-center">
-        <a @click="toggle(node.name)" @contextmenu.prevent="openMenu" @dblclick="onNodeSelect(node)">
-          <span v-if="node.children.length===0" class="w-6 inline-block h-1"/>
-          <ChevronDownIcon v-else-if="toggled(node.name)" class="w-4 inline text-gray-500"/>
-          <ChevronRightIcon v-else class="w-4 inline text-gray-500"/>
-          <FolderIcon v-if="node.children.length>0" class="text-frost mr-1 w-4 inline"/>
-          <CodeBracketSquareIcon v-else-if="isCode(node.name)" class="text-frost-3 mr-1 w-4 inline"/>
-          <PhotoIcon v-else-if="isPhoto(node.name)" class="text-frost-3 mr-1 w-4 inline"/>
-          <DocumentIcon v-else class="text-frost-3 mr-1 w-4 inline"/>
+        <a @click="toggle(node.name)" @dblclick="onNodeSelect(node)">
+          <span v-if="node.children.length === 0" class="w-6 inline-block h-1" />
+          <ChevronDownIcon v-else-if="toggled(node.name)" class="w-4 inline text-gray-500" />
+          <ChevronRightIcon v-else class="w-4 inline text-gray-500" />
+          <FolderIcon v-if="node.children.length > 0" class="text-frost mr-1 w-4 inline" />
+          <CodeBracketSquareIcon v-else-if="isCode(node.name)" class="text-frost-3 mr-1 w-4 inline" />
+          <PhotoIcon v-else-if="isPhoto(node.name)" class="text-frost-3 mr-1 w-4 inline" />
+          <DocumentIcon v-else class="text-frost-3 mr-1 w-4 inline" />
         </a>
         <a @click="onNodeSelect(node)" class="hover:bg-polar-night-3">
           {{ node.name }}
         </a>
       </div>
       <Structure :on-select="onChildSelect(node.name)" :key="node.name" v-if="toggled(node.name)" :nodes="node.children"
-                 :expanded="expanded" :hasParent="true" :shrinkIndex="lastShrink"/>
+        :expanded="expanded" :hasParent="true" :shrinkIndex="lastShrink" />
     </li>
   </ul>
 </template>
@@ -180,19 +159,19 @@ li {
   text-align: left;
 }
 
-li > ul > li {
+li>ul>li {
   padding-left: 1rem;
 }
 
-li > a.expand {
+li>a.expand {
   display: none;
 }
 
-li.shrunk > a.expand {
+li.shrunk>a.expand {
   display: inline;
 }
 
-li.shrunk > a.expanded {
+li.shrunk>a.expanded {
   display: none;
 }
 </style>

@@ -305,7 +305,7 @@ import WorkspaceSelection from "./components/WorkspaceSelection.vue";
     <WorkspaceModal :show="isLoaded() && workspaceConfigVisible" :onRequestClose="closeWorkspaceConfig"
                     :onSave="saveWorkspace" :workspace="currentWorkspace"/>
   </div>
-  <div v-else>
+  <div v-else class="h-full">
     <SettingsModal :show="isLoaded() && settingsVisible" :onRequestClose="closeSettings" :onSave="saveSettings"
                    :settings="settings"/>
     <WorkspaceModal :show="isLoaded() && workspaceConfigVisible" :onRequestClose="closeWorkspaceConfig"
@@ -340,7 +340,7 @@ import WorkspaceSelection from "./components/WorkspaceSelection.vue";
           not implemented yet
         </p>
       </div>
-      <div class="flex-1 w-3/4">
+      <div class="flex-1 w-3/4 h-full">
         <Dashboard @save-request="saveRequest" @unsave-request="unsaveRequest" @request-group-change="setRequestGroup"
                    @request-group-create="createRequestGroup" @switch-workspace="switchWorkspace" :criteria="criteria"
                    :onCriteriaChange="onCriteriaChange" :proxy-address="'127.0.0.1:' + settings.ProxyPort"
