@@ -26,7 +26,7 @@ module.exports = {
     'linebreak-style': ['error', 'unix'],
     quotes: ['error', 'single'],
     semi: ['error', 'never'],
-    'max-len': ['error', { code: 120 }],
+    'max-len': ['error', { code: 120, ignorePattern: '\\s+class\\=.*' }],
     'import/extensions': [
       'error',
       'ignorePackages',
@@ -37,6 +37,7 @@ module.exports = {
         tsx: 'never',
       },
     ],
+    'arrow-parens': ['error', 'as-needed'],
     'no-use-before-define': 'off',
     'no-param-reassign': 'off',
     'no-continue': 'off',
