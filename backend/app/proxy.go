@@ -79,7 +79,13 @@ func (a *App) startProxy() {
 			runtime.EventsEmit(a.ctx, EventHttpRequest, packaged)
 		}
 		// update workspace tree
-		runtime.EventsEmit(a.ctx, EventTreeUpdate, a.workspace.UpdateTree(request).Structure())
+		tree, changed := a.workspace.UpdateTree(request)
+		if changed { // TODO: do we really want to save changes after every tree change?
+			runtime.EventsEmit(a.ctx, EventTreeUpdate, tree.Structure())
+			if err := a.workspace.Save(); err != nil {
+				a.logger.Errorf("Failed to save workspace after tree change: %s", err)
+			}
+		}
 		return request, nil
 	})
 	a.proxy.OnRequest(func(request *http.Request, id int64) (*http.Request, *http.Response) {

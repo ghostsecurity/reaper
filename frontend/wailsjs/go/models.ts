@@ -177,6 +177,7 @@ export namespace workspace {
 		}
 	}
 	export class StructureNode {
+	    id: string;
 	    name: string;
 	    children: StructureNode[];
 	
@@ -186,6 +187,7 @@ export namespace workspace {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
 	        this.name = source["name"];
 	        this.children = this.convertValues(source["children"], StructureNode);
 	    }

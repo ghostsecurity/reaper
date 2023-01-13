@@ -26,7 +26,11 @@ test-js:
 	cd frontend && npm install && npm test
 
 .PHONY: lint
-lint: lint-go
+lint: lint-go lint-js
+
+.PHONY: lint-js
+lint-js:
+	cd frontend && npm install && npm run lint
 
 .PHONY: lint-go
 lint-go:

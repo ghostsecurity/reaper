@@ -13,14 +13,15 @@
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.5",
+    "@heroicons/vue": "^2.0.13",
     "popper.js": "^1.16.1",
     "vue": "^3.2.37",
     "vue-prism-editor": "^2.0.0-alpha.2",
-    "vuetify": "^3.0.1"
+    "vuetify": "^3.0.1",
+    "vitest": "^0.26.3"
   },
   "devDependencies": {
     "@babel/types": "^7.18.10",
-    "@heroicons/vue": "^2.0.13",
     "@mdi/font": "^7.0.96",
     "@tailwindcss/forms": "^0.5.3",
     "@types/prismjs": "^1.26.0",
@@ -42,9 +43,8 @@
     "prettier-plugin-tailwindcss": "^0.2.1",
     "prismjs": "^1.29.0",
     "tailwindcss": "^3.2.4",
-    "typescript": "^4.6.4",
+    "typescript": "^4.9.4",
     "vite": "^3.0.7",
-    "vitest": "^0.26.3",
     "vue-click-outside": "^1.1.0",
     "vue-router": "^4.1.6",
     "vue-tsc": "^0.39.5"
