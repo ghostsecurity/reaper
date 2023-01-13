@@ -3,22 +3,21 @@ import {
   PencilSquareIcon,
   ViewfinderCircleIcon,
 } from '@heroicons/vue/20/solid'
-import { reactive, ref } from "vue";
-import ScopeEditor from "./ScopeEditor.vue";
-import { workspace } from "../../wailsjs/go/models";
-import { PropType } from 'vue'
+import { reactive, ref, PropType } from 'vue'
+import ScopeEditor from './ScopeEditor.vue'
+import { workspace } from '../../wailsjs/go/models'
 
 const props = defineProps({
   ws: {
     type: Object as PropType<workspace.Workspace>,
     required: true,
-  }
+  },
 })
 
-const openTab = ref("overview")
+const openTab = ref('overview')
 const tabs = [
-  { name: 'Overview', icon: PencilSquareIcon, id: "overview" },
-  { name: 'Scope', icon: ViewfinderCircleIcon, id: "scope" },
+  { name: 'Overview', icon: PencilSquareIcon, id: 'overview' },
+  { name: 'Scope', icon: ViewfinderCircleIcon, id: 'scope' },
 ]
 const modifiedWorkspace = reactive(props.ws)
 
@@ -28,10 +27,10 @@ function saveWorkspace() {
   emit('save', modifiedWorkspace)
 }
 
-function setWorkspaceName(event: any) {
-  let name = event.target.value;
-  if (name == "") {
-    name = "Untitled Workspace"
+function setWorkspaceName(event: Event) {
+  let name = (event.target as HTMLInputElement).value
+  if (name === '') {
+    name = 'Untitled Workspace'
   }
   modifiedWorkspace.name = name
 }
@@ -53,8 +52,8 @@ function toggleTab(tabId: string) {
   <div>
     <main class="relative text-left">
       <div class="mx-auto max-w-screen-[100%] px-4 pb-6 sm:px-6 lg:px-8 lg:pb-16">
-        <div
-          class="overflow-hidden rounded-lg bg-snow-storm dark:bg-polar-night shadow text-polar-night dark:text-snow-storm">
+        <div class="overflow-hidden rounded-lg bg-snow-storm dark:bg-polar-night shadow text-polar-night
+         dark:text-snow-storm">
           <div class="lg:grid lg:grid-cols-12 lg:divide-y-0 lg:divide-x divide-snow-storm-3 dark:divide-polar-night-3">
             <aside class="py-6 lg:col-span-3">
               <nav class="space-y-1">
@@ -105,20 +104,20 @@ function toggleTab(tabId: string) {
                 </div>
               </div>
 
-
             </div>
-
 
           </div>
           <div class="divide-y divide-gray-200 pt-6 text-right">
             <div class="px-4 sm:px-6 pb-4">
               <div>
-                <button @click="saveWorkspace" type="button"
-                  class="inline-flex items-center rounded border border-transparent bg-aurora-4 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">
+                <button @click="saveWorkspace" type="button" class="inline-flex items-center rounded border
+                 border-transparent bg-aurora-4 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm
+                  hover:bg-aurora-5 focus:outline-none">
                   Save Changes
                 </button>
-                <button @click="cancel" type="button"
-                  class="ml-2 inline-flex items-center rounded border border-transparent bg-aurora-1 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">
+                <button @click="cancel" type="button" class="ml-2 inline-flex items-center rounded border
+                 border-transparent bg-aurora-1 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm
+                  hover:bg-aurora-5 focus:outline-none">
                   Cancel
                 </button>
               </div>

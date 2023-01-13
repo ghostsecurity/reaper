@@ -1,10 +1,11 @@
 <script lang="ts" setup>
-import { computed, onBeforeMount, reactive, ref } from "vue";
-import { EventsOn } from '../wailsjs/runtime';
-import Settings from "./lib/Settings";
-import setDarkMode from "./lib/theme";
-import { Criteria } from "./lib/Criteria";
-import { workspace } from "../wailsjs/go/models";
+import { computed, onBeforeMount, reactive, ref } from 'vue'
+import { FunnelIcon, FolderIcon, CogIcon, BriefcaseIcon } from '@heroicons/vue/24/outline'
+import { EventsOn } from '../wailsjs/runtime'
+import Settings from './lib/Settings'
+import setDarkMode from './lib/theme'
+import { Criteria } from './lib/Criteria/Criteria'
+import { workspace } from '../wailsjs/go/models'
 import {
   CreateWorkspace,
   GetSettings,
@@ -16,18 +17,17 @@ import {
   LoadWorkspace,
   DeleteWorkspace,
   SaveSettings, GenerateID,
-  Confirm, Notify, Warn, Error
-} from "../wailsjs/go/app/App";
-import { FunnelIcon, FolderIcon, CogIcon, BriefcaseIcon } from '@heroicons/vue/24/outline'
-import Structure from './components/Structure.vue'
-import Dashboard from './components/Dashboard.vue'
+  Confirm, Warn,
+} from '../wailsjs/go/app/App'
+import Structure from './components/TreeStructure.vue'
+import AppDashboard from './components/AppDashboard.vue'
 import SettingsModal from './components/SettingsModal.vue'
 import WorkspaceModal from './components/WorkspaceModal.vue'
 import WorkspaceSelection from './components/WorkspaceSelection.vue'
-import { HttpRequest } from "./lib/Http";
+import { HttpRequest } from './lib/Http'
 
-const settings = reactive(new Settings());
-const currentWorkspace = reactive(new workspace.Workspace({}));
+const settings = reactive(new Settings())
+const currentWorkspace = reactive(new workspace.Workspace({}))
 const workspaces = ref([] as workspace.Workspace[])
 const loadedSettings = ref(false)
 const loadedWorkspaces = ref(false)
@@ -35,14 +35,14 @@ const hasWorkspace = ref(false)
 const settingsVisible = ref(false)
 const workspaceConfigVisible = ref(false)
 const sidebar = ref('')
-const nodes = ref(Array<workspace.StructureNode>())
-const criteria = reactive(new Criteria(""))
+const nodes = ref([] as Array<workspace.StructureNode>)
+const criteria = reactive(new Criteria(''))
 const proxyStatus = ref(false)
-const proxyAddress = ref("")
-const proxyMessage = ref("Starting...")
+const proxyAddress = ref('')
+const proxyMessage = ref('Starting...')
 
 const savedRequestIds = computed(() => {
-  let list = [] as string[];
+  const list = [] as string[]
   currentWorkspace.collection.groups.forEach((group) => {
     group.requests.forEach((req) => {
       list.push(req.inner.ID)
@@ -53,18 +53,18 @@ const savedRequestIds = computed(() => {
 
 onBeforeMount(() => {
   GetSettings().then((stngs: Settings) => {
-    Object.assign(settings, stngs);
-    loadedSettings.value = true;
-    setDarkMode(settings.DarkMode);
+    Object.assign(settings, stngs)
+    loadedSettings.value = true
+    setDarkMode(settings.DarkMode)
     GetWorkspaces().then((spaces) => {
       workspaces.value = spaces
       loadedWorkspaces.value = true
     })
-  });
+  })
   EventsOn('TreeUpdate', (n: Array<workspace.StructureNode>) => {
     nodes.value = n
   })
-  EventsOn("ProxyStatusChange", (up: boolean, addr: string, msg: string) => {
+  EventsOn('ProxyStatusChange', (up: boolean, addr: string, msg: string) => {
     proxyStatus.value = up
     proxyAddress.value = addr
     proxyMessage.value = msg
@@ -75,9 +75,17 @@ function isLoaded(): boolean {
   return loadedSettings.value
 }
 
-function saveSettings(settings: Settings) {
-  SaveSettings(settings)
+function closeSettings() {
+  settingsVisible.value = false
+}
+
+function saveSettings(s: Settings) {
+  SaveSettings(s)
   closeSettings()
+}
+
+function closeWorkspaceConfig() {
+  workspaceConfigVisible.value = false
 }
 
 function saveWorkspace(ws: workspace.Workspace) {
@@ -85,10 +93,6 @@ function saveWorkspace(ws: workspace.Workspace) {
   currentWorkspace.tree.root.children = nodes.value
   SaveWorkspace(ws)
   closeWorkspaceConfig()
-}
-
-function closeSettings() {
-  settingsVisible.value = false
 }
 
 function showSettings() {
@@ -99,26 +103,33 @@ function showWorkspaceConfig() {
   workspaceConfigVisible.value = true
 }
 
-function closeWorkspaceConfig() {
-  workspaceConfigVisible.value = false
-}
-
 function setSidebar(id: string) {
-  sidebar.value = sidebar.value === id ? '' : id;
+  sidebar.value = sidebar.value === id ? '' : id
 }
 
 function onCriteriaChange(c: Criteria) {
   Object.assign(criteria, c)
 }
 function onStructureSelect(parts: Array<string>) {
-  let query = "(host is " + parts[0] + " and path is /" + parts.slice(1).join("/") + ")"
+  const query = `(host is ${parts[0]} and path is /${parts.slice(1).join('/')})`
   Object.assign(criteria, new Criteria(query))
 }
 
-function selectWorkspaceById(id: string) {
-  LoadWorkspace(id).then((ws) => {
-    selectWorkspace(ws)
-  })
+function prepareWorkspace(ws: workspace.Workspace) {
+  // ensure our collection has at least one default group
+  if (ws.collection.groups === null) {
+    ws.collection.groups = [] /* eslint-disable-line */
+  }
+  if (ws.collection.groups.length === 0) {
+    GenerateID().then((id) => {
+      ws.collection.groups.push(new workspace.Group({
+        id,
+        name: 'Default',
+        requests: [],
+      }))
+    })
+  }
+  return ws
 }
 
 function selectWorkspace(ws: workspace.Workspace) {
@@ -134,20 +145,11 @@ function selectWorkspace(ws: workspace.Workspace) {
   })
   // TODO: handle errors here
 }
-function prepareWorkspace(ws: workspace.Workspace) {
-  // ensure our collection has at least one default group
-  if (ws.collection.groups === null) {
-    ws.collection.groups = []
-  }
-  if (ws.collection.groups.length === 0) {
-    GenerateID().then((id) => {
-      ws.collection.groups.push(new workspace.Group({
-        id: id,
-        name: "Default",
-        requests: [],
-      }))
-    })
-  }
+
+function selectWorkspaceById(id: string) {
+  LoadWorkspace(id).then((ws) => {
+    selectWorkspace(ws)
+  })
 }
 
 function createWorkspace(ws: workspace.Workspace) {
@@ -182,11 +184,11 @@ function deleteWorkspace(id: string) {
 }
 
 function setRequestGroup(request: workspace.Request, groupID: string, nextID: string) {
-  const oldGroup = currentWorkspace.collection.groups.find((g) => {
-    return g.requests.find((r: workspace.Request) => {
-      return r.id === request.id
-    }) as (workspace.Request | undefined) !== undefined
-  })
+  const oldGroup = currentWorkspace.collection.groups.find(
+    (g) => g.requests.find(
+      (r: workspace.Request) => r.id === request.id,
+    ) as (workspace.Request | undefined) !== undefined,
+  )
   if (oldGroup !== undefined) {
     oldGroup.requests = oldGroup.requests.filter((item) => item.id !== request.id)
   }
@@ -198,7 +200,7 @@ function setRequestGroup(request: workspace.Request, groupID: string, nextID: st
   if (index === -1) {
     index = 0
   } else {
-    index++
+    index += 1
   }
   group.requests.splice(index, 0, request)
   saveWorkspace(currentWorkspace)
@@ -207,8 +209,8 @@ function setRequestGroup(request: workspace.Request, groupID: string, nextID: st
 function createRequestGroup(name: string) {
   GenerateID().then((id) => {
     currentWorkspace.collection.groups.splice(0, 0, new workspace.Group({
-      id: id,
-      name: name,
+      id,
+      name,
       requests: [],
     }))
   })
@@ -217,11 +219,11 @@ function createRequestGroup(name: string) {
 function saveRequest(request: HttpRequest, groupID: string) {
   let group = currentWorkspace.collection.groups.find((g) => g.id === groupID)
   if (group === undefined) {
-    group = currentWorkspace.collection.groups[0]
+    [group] = currentWorkspace.collection.groups
   }
   GenerateID().then((id) => {
-    let wrapped = new workspace.Request({ id: id, name: '' })
-    wrapped.inner = Object.assign({}, request)
+    const wrapped = new workspace.Request({ id, name: '' })
+    wrapped.inner = { ...request }
     wrapped.inner.Response = null
     if (group) {
       group.requests.push(wrapped)
@@ -231,12 +233,12 @@ function saveRequest(request: HttpRequest, groupID: string) {
 }
 
 function unsaveRequest(request: HttpRequest | workspace.Request) {
-  let id = 'inner' in request ? request.inner.ID : (request as unknown as HttpRequest).ID
-  const group = currentWorkspace.collection.groups.find((g) => {
-    return g.requests.find((r: workspace.Request) => {
-      return r.inner.ID === id
-    }) as (workspace.Request | undefined) !== undefined
-  })
+  const id = 'inner' in request ? request.inner.ID : (request as unknown as HttpRequest).ID
+  const group = currentWorkspace.collection.groups.find(
+    (g) => g.requests.find(
+      (r: workspace.Request) => r.inner.ID === id,
+    ) as (workspace.Request | undefined) !== undefined,
+  )
   if (group !== undefined) {
     group.requests = group.requests.filter((item) => item.inner.ID !== id)
   }
@@ -244,7 +246,6 @@ function unsaveRequest(request: HttpRequest | workspace.Request) {
 }
 
 function reorderGroup(fromID: string, toID: string) {
-
   const group = currentWorkspace.collection.groups.find((g) => g.id === fromID)
 
   // remove from old position
@@ -261,21 +262,21 @@ function reorderGroup(fromID: string, toID: string) {
 }
 
 function duplicateRequest(request: workspace.Request) {
-  const group = currentWorkspace.collection.groups.find((g) => {
-    return g.requests.find((r: workspace.Request) => {
-      return r.id === request.id
-    }) as (workspace.Request | undefined) !== undefined
-  })
+  const group = currentWorkspace.collection.groups.find(
+    (g) => g.requests.find(
+      (r: workspace.Request) => r.id === request.id,
+    ) as (workspace.Request | undefined) !== undefined,
+  )
   if (group === undefined) {
     return
   }
-  let dupName = request.name.endsWith(" (copy)") ? request.name : request.name + " (copy)"
+  const dupName = request.name.endsWith(' (copy)') ? request.name : `${request.name} (copy)`
   GenerateID().then((id) => {
-    let wrapped = new workspace.Request({
-      id: id,
+    const wrapped = new workspace.Request({
+      id,
       name: dupName,
     })
-    wrapped.inner = Object.assign({}, request.inner)
+    wrapped.inner = { ...request.inner }
     wrapped.inner.ID = id // unlink this from the original request
     group.requests.push(wrapped)
     saveWorkspace(currentWorkspace)
@@ -284,15 +285,18 @@ function duplicateRequest(request: workspace.Request) {
 
 function deleteRequestGroup(groupId: string) {
   if (currentWorkspace.collection.groups.length < 2) {
-    Warn("Deletion failed", "Cannot delete this group - there must be at least one group. Try renaming it instead.")
+    Warn('Deletion failed', 'Cannot delete this group - there must be at least one group. Try renaming it instead.')
     return
   }
-  let group = currentWorkspace.collection.groups.find((g) => g.id === groupId)
+  const group = currentWorkspace.collection.groups.find((g) => g.id === groupId)
   if (group === undefined) {
     return
   }
   if (group.requests.length > 0) {
-    Confirm("Confirm deletion", `The group '${group.name}' contains ${group.requests.length}. Are you sure you want to delete it?`).then((confirmed) => {
+    Confirm(
+      'Confirm deletion',
+      `The group '${group.name}' contains ${group.requests.length}. Are you sure you want to delete it?`,
+    ).then((confirmed) => {
       if (confirmed) {
         currentWorkspace.collection.groups = currentWorkspace.collection.groups.filter((g) => g.id !== groupId)
         saveWorkspace(currentWorkspace)
@@ -302,7 +306,7 @@ function deleteRequestGroup(groupId: string) {
 }
 
 function renameRequestGroup(groupId: string, name: string) {
-  let group = currentWorkspace.collection.groups.find((g) => g.id === groupId)
+  const group = currentWorkspace.collection.groups.find((g) => g.id === groupId)
   if (group === undefined) {
     return
   }
@@ -310,7 +314,7 @@ function renameRequestGroup(groupId: string, name: string) {
 }
 
 function renameRequest(requestId: string, name: string) {
-  let request = currentWorkspace.collection.groups.flatMap((g) => g.requests).find((r) => r.id === requestId)
+  const request = currentWorkspace.collection.groups.flatMap((g) => g.requests).find((r) => r.id === requestId)
   if (request === undefined) {
     return
   }
@@ -324,13 +328,13 @@ function renameRequest(requestId: string, name: string) {
     <WorkspaceSelection :workspaces="workspaces" @select="selectWorkspaceById" @create="createWorkspace"
       @edit="editWorkspace" @delete="deleteWorkspace" />
     <WorkspaceModal :show="isLoaded() && workspaceConfigVisible" @close="closeWorkspaceConfig" @save="saveWorkspace"
-      :workspace="currentWorkspace" />
+      :ws="currentWorkspace" />
   </div>
   <div v-else class="h-full">
     <SettingsModal :show="isLoaded() && settingsVisible" @close="closeSettings" @save="saveSettings"
       :settings="settings" />
     <WorkspaceModal :show="isLoaded() && workspaceConfigVisible" @close="closeWorkspaceConfig" @save="saveWorkspace"
-      :workspace="currentWorkspace" />
+      :ws="currentWorkspace" />
     <div class="fixed h-full w-10 bg-polar-night-1a pt-1">
       <button :class="
         'rounded p-1 text-snow-storm-1 hover:bg-polar-night-3 ' + (sidebar === 'structure' ? 'bg-polar-night-4' : '')
@@ -375,13 +379,13 @@ function renameRequest(requestId: string, name: string) {
         <p v-else>not implemented yet</p>
       </div>
       <div class="h-full w-3/4 flex-1">
-        <Dashboard @save-request="saveRequest" @unsave-request="unsaveRequest" @request-group-change="setRequestGroup"
-          @request-group-create="createRequestGroup" @switch-workspace="switchWorkspace" :criteria="criteria"
-          @criteria-change="onCriteriaChange" :proxy-address="'127.0.0.1:' + settings.ProxyPort"
-          @workspace-edit="showWorkspaceConfig" :ws="currentWorkspace" @group-order-change="reorderGroup"
-          @duplicate-request="duplicateRequest" @request-group-delete="deleteRequestGroup"
-          @request-group-rename="renameRequestGroup" @request-rename="renameRequest"
-          :saved-request-ids="savedRequestIds" />
+        <AppDashboard @save-request="saveRequest" @unsave-request="unsaveRequest"
+          @request-group-change="setRequestGroup" @request-group-create="createRequestGroup"
+          @switch-workspace="switchWorkspace" :criteria="criteria" @criteria-change="onCriteriaChange"
+          :proxy-address="'127.0.0.1:' + settings.ProxyPort" @workspace-edit="showWorkspaceConfig"
+          :ws="currentWorkspace" @group-order-change="reorderGroup" @duplicate-request="duplicateRequest"
+          @request-group-delete="deleteRequestGroup" @request-group-rename="renameRequestGroup"
+          @request-rename="renameRequest" :saved-request-ids="savedRequestIds" />
       </div>
     </div>
   </div>

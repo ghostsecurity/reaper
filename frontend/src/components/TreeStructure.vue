@@ -5,11 +5,10 @@ import {
   FolderIcon,
   DocumentIcon,
   CodeBracketSquareIcon,
-  PhotoIcon
+  PhotoIcon,
 } from '@heroicons/vue/20/solid'
-import Structure from "./Structure.vue";
-import { PropType, reactive, ref, watch } from "vue";
-import { workspace } from "../../wailsjs/go/models";
+import { PropType, reactive, ref, watch } from 'vue'
+import { workspace } from '../../wailsjs/go/models'
 
 const props = defineProps({
   nodes: {
@@ -53,7 +52,7 @@ watch(() => props.shrinkIndex, (newVal: number) => {
 function toggle(name: string) {
   visible.set(name, !toggled(name))
   if (!toggled(name)) {
-    lastShrink.value++
+    lastShrink.value += 1
   }
 }
 
@@ -66,7 +65,7 @@ function toggled(name: string) {
 
 function hasExt(name: string, exts: Array<string>) {
   name = name.toLowerCase()
-  for (let i = 0; i < exts.length; i++) {
+  for (let i = 0; i < exts.length; i += 1) {
     if (name.endsWith(exts[i])) {
       return true
     }
@@ -86,7 +85,7 @@ function onNodeSelect(node: workspace.StructureNode) {
   emit('select', [node.name])
 }
 
-function onChildSelect(part: string): (parts: Array<string>) => void {
+function onChildSelect(part: string): (parts: Array<string>) => void { // eslint-disable-line no-unused-vars
   return (parts: Array<string>) => {
     emit('select', [part, ...parts])
   }
@@ -102,7 +101,7 @@ function onChildSelect(part: string): (parts: Array<string>) => void {
     </div>
   </div>
   <ul>
-    <li v-for="node in nodes" class="whitespace-nowrap text-snow-storm-1">
+    <li v-for="node in nodes" class="whitespace-nowrap text-snow-storm-1" :key="node.id">
       <div class="flex items-center">
         <a @click="toggle(node.name)" @dblclick="onNodeSelect(node)">
           <span v-if="node.children.length === 0" class="w-6 inline-block h-1" />
@@ -117,7 +116,7 @@ function onChildSelect(part: string): (parts: Array<string>) => void {
           {{ node.name }}
         </a>
       </div>
-      <Structure @select="onChildSelect(node.name)($event)" :key="node.name" v-if="toggled(node.name)"
+      <TreeStructure @select="onChildSelect(node.name)($event)" :key="node.name" v-if="toggled(node.name)"
         :nodes="node.children" :expanded="expanded" :hasParent="true" :shrinkIndex="lastShrink" />
     </li>
   </ul>

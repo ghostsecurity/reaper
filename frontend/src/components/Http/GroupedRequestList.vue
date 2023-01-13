@@ -1,47 +1,62 @@
 <script lang="ts" setup>
 import { PropType, reactive, ref } from 'vue'
-import { HttpRequest, MethodClass } from '../../lib/Http.js';
-import { Criteria } from "../../lib/Criteria";
-import { workspace } from "../../../wailsjs/go/models";
-import Group = workspace.Group;
-import Request = workspace.Request;
 import {
   MagnifyingGlassCircleIcon, Bars3Icon, FolderPlusIcon, TrashIcon,
   PencilSquareIcon, QuestionMarkCircleIcon,
-  DocumentDuplicateIcon, DocumentArrowUpIcon, ChevronDownIcon, ChevronRightIcon
-} from "@heroicons/vue/20/solid";
+  DocumentDuplicateIcon, DocumentArrowUpIcon, ChevronDownIcon, ChevronRightIcon,
+} from '@heroicons/vue/20/solid'
 import {
   FolderIcon,
   FolderOpenIcon,
-} from "@heroicons/vue/24/outline";
-import InputBox from "../InputBox.vue";
-import RequestItemSummary from "./RequestItemSummary.vue";
+} from '@heroicons/vue/24/outline'
+import { HttpRequest, MethodClass } from '../../lib/Http'
+import { Criteria } from '../../lib/Criteria/Criteria'
+import { workspace } from '../../../wailsjs/go/models'
+import Group = workspace.Group;
+import Request = workspace.Request;
+
+import InputBox from '../InputBox.vue'
+import RequestItemSummary from './RequestItemSummary.vue'
 
 const props = defineProps({
   groups: { type: Array as PropType<Group[]>, required: true },
   selected: { type: String },
   criteria: { type: Object as PropType<Criteria>, required: true },
-  emptyTitle: { type: String, required: false, default: "Nothing found" },
-  emptyMessage: { type: String, required: false, default: `There are no requests/groups yet` },
+  emptyTitle: { type: String, required: false, default: 'Nothing found' },
+  emptyMessage: { type: String, required: false, default: 'There are no requests/groups yet' },
   emptyIcon: { type: Function, required: false, default: QuestionMarkCircleIcon },
 })
 
-const emit = defineEmits(['request-group-change', 'request-group-create', 'group-order-change', 'unsave-request', 'duplicate-request',
-  'request-group-delete', 'request-group-rename', 'request-rename', 'select'])
+const emit = defineEmits([
+  'request-group-change',
+  'request-group-create',
+  'group-order-change',
+  'unsave-request',
+  'duplicate-request',
+  'request-group-delete',
+  'request-group-rename',
+  'request-rename',
+  'select',
+])
 
-const dropGroup = ref("")
+const dropGroup = ref('')
 const dragGroupNest = ref(0)
-const dropRequest = ref("")
+const dropRequest = ref('')
 const dragRequestNest = ref(0)
 const draggingRequest = ref(false) // request or group
 const shrunkenGroups = reactive(new Set<string>())
-const renamingGroup = ref("")
-const renamingRequest = ref("")
+const renamingGroup = ref('')
+const renamingRequest = ref('')
 const creatingGroup = ref(false)
 
 function filterRequests(requests: Array<Request>): Array<Request> {
-  return requests.filter((request) => {
-    return props.criteria.Match(request.inner as HttpRequest)
+  return requests.filter((request) => props.criteria.Match(request.inner as HttpRequest))
+}
+
+function filterGroups(groups: Array<Group>): Array<Group> {
+  return groups.filter((group) => {
+    const requests = filterRequests(group.requests)
+    return requests.length > 0
   })
 }
 
@@ -79,8 +94,8 @@ function onDrop(evt: DragEvent, group: Group, next: Request | null) {
     if (request === undefined) {
       return
     }
-    const nextID = next ? next.id : ""
-    emit("request-group-change", request, group.id, nextID)
+    const nextID = next ? next.id : ''
+    emit('request-group-change', request, group.id, nextID)
     disableRequestDrag(evt as MouseEvent)
   } else {
     // dragging a group
@@ -90,8 +105,8 @@ function onDrop(evt: DragEvent, group: Group, next: Request | null) {
       return
     }
     // move sourceGroup to position of group
-    emit("group-order-change", sourceGroup.id, group.id)
-    dropGroup.value = ""
+    emit('group-order-change', sourceGroup.id, group.id)
+    dropGroup.value = ''
     dragGroupNest.value = 0
   }
 }
@@ -117,7 +132,7 @@ function findItem(evt: MouseEvent, nodeName: string, className: string): HTMLEle
       return null
     }
     target = target.parentElement as HTMLElement
-    count++
+    count += 1
   }
   if (!matchTarget(target, nodeName, className)) {
     return null
@@ -126,45 +141,45 @@ function findItem(evt: MouseEvent, nodeName: string, className: string): HTMLEle
 }
 
 function enableRequestDrag(evt: MouseEvent) {
-  let li = findItem(evt, 'li', 'li-request')
+  const li = findItem(evt, 'li', 'li-request')
   if (li === null) {
     return
   }
-  li.setAttribute("draggable", "true")
+  li.setAttribute('draggable', 'true')
 }
 
 function disableRequestDrag(evt: MouseEvent) {
-  let li = findItem(evt, 'li', 'li-request')
+  const li = findItem(evt, 'li', 'li-request')
   if (li === null) {
     return
   }
-  li.setAttribute("draggable", "false")
-  dropGroup.value = ""
+  li.setAttribute('draggable', 'false')
+  dropGroup.value = ''
   dragGroupNest.value = 0
-  dropRequest.value = ""
+  dropRequest.value = ''
   dragRequestNest.value = 0
 }
 function enableGroupDrag(evt: MouseEvent) {
-  let li = findItem(evt, 'li', 'li-group')
+  const li = findItem(evt, 'li', 'li-group')
   if (li === null) {
     return
   }
-  li.setAttribute("draggable", "true")
+  li.setAttribute('draggable', 'true')
 }
 function disableGroupDrag(evt: MouseEvent) {
-  let li = findItem(evt, 'li', 'li-group')
+  const li = findItem(evt, 'li', 'li-group')
   if (li === null) {
     return
   }
-  li.setAttribute("draggable", "false")
-  dropGroup.value = ""
+  li.setAttribute('draggable', 'false')
+  dropGroup.value = ''
   dragGroupNest.value = 0
-  dropRequest.value = ""
+  dropRequest.value = ''
   dragRequestNest.value = 0
 }
 function dragGroupEnter(groupName: string) {
   if (dropGroup.value === groupName) {
-    dragGroupNest.value++
+    dragGroupNest.value += 1
   } else {
     dragGroupNest.value = 1
   }
@@ -172,16 +187,16 @@ function dragGroupEnter(groupName: string) {
 }
 function dragGroupLeave(groupName: string) {
   if (dropGroup.value === groupName) {
-    dragGroupNest.value--
+    dragGroupNest.value -= 1
     if (dragGroupNest.value <= 0) {
-      dropGroup.value = ""
+      dropGroup.value = ''
       dragGroupNest.value = 0
     }
   }
 }
 function dragRequestEnter(id: string) {
   if (dropRequest.value === id) {
-    dragRequestNest.value++
+    dragRequestNest.value += 1
   } else {
     dragRequestNest.value = 1
     dropRequest.value = id
@@ -189,9 +204,9 @@ function dragRequestEnter(id: string) {
 }
 function dragRequestLeave(id: string) {
   if (dropRequest.value === id) {
-    dragRequestNest.value--
+    dragRequestNest.value -= 1
     if (dragRequestNest.value <= 0) {
-      dropRequest.value = ""
+      dropRequest.value = ''
       dragRequestNest.value = 0
     }
   }
@@ -204,15 +219,15 @@ function expandGroup(group: Group, expand: boolean) {
   }
 }
 function deleteGroup(group: Group) {
-  emit("request-group-delete", group.id)
+  emit('request-group-delete', group.id)
 }
 function renameGroup(groupId: string, name: string) {
-  emit("request-group-rename", groupId, name)
-  renamingGroup.value = ""
+  emit('request-group-rename', groupId, name)
+  renamingGroup.value = ''
 }
 function renameRequest(requestId: string, name: string) {
-  emit("request-rename", requestId, name)
-  renamingRequest.value = ""
+  emit('request-rename', requestId, name)
+  renamingRequest.value = ''
 }
 function createGroup(name: string) {
   emit('request-group-create', name)
@@ -232,13 +247,15 @@ function createGroup(name: string) {
       <!-- shrink/expand buttons here? -->
     </div>
     <div class="flex-0">
-      <button type="button"
-        class="inline-flex items-center rounded-md border border-transparent bg-frost-3 px-4 py-2 text-sm font-medium text-polar-night-1 shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-aurora-5 focus:ring-offset-2">
+      <button type="button" class="inline-flex items-center rounded-md border border-transparent bg-frost-3 px-4 py-2
+      text-sm font-medium text-polar-night-1 shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2
+       focus:ring-aurora-5 focus:ring-offset-2">
         <DocumentArrowUpIcon class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
         <span class="hidden sm:inline">New Request</span>
       </button>
-      <button @click.stop="creatingGroup = true" type="button"
-        class="ml-1 inline-flex items-center rounded-md border border-transparent bg-frost-3 px-4 py-2 text-sm font-medium text-polar-night-1 shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-aurora-5 focus:ring-offset-2">
+      <button @click.stop="creatingGroup = true" type="button" class="ml-1 inline-flex items-center rounded-md border
+       border-transparent bg-frost-3 px-4 py-2 text-sm font-medium text-polar-night-1 shadow-sm hover:bg-aurora-5
+       focus:outline-none focus:ring-2 focus:ring-aurora-5 focus:ring-offset-2">
         <FolderPlusIcon class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
         <span class="hidden sm:inline">New Group</span>
       </button>
@@ -253,7 +270,7 @@ function createGroup(name: string) {
         <p class="mt-1 text-sm text-snow-storm-1">{{ props.emptyMessage }}</p>
       </div>
     </div>
-    <div v-else-if="props.groups.length === 0">
+    <div v-else-if="filterGroups(props.groups).length === 0">
       <div class="text-center pt-8 pl-8">
         <MagnifyingGlassCircleIcon class="mx-auto h-12 w-12" />
         <h3 class="mt-2 text-sm font-medium">No Results</h3>
@@ -292,8 +309,12 @@ function createGroup(name: string) {
                 </a>
               </div>
             </div>
-            <ul v-if="!shrunkenGroups.has(group.id)" role="list"
-              :class="['divide-y divide-polar-night-3', (draggingRequest && dropRequest === '' && group.id === dropGroup ? 'border-t-2 border-aurora-5' : '')]">
+            <ul v-if="!shrunkenGroups.has(group.id)" role="list" :class="[
+              'divide-y divide-polar-night-3',
+              draggingRequest && dropRequest === '' && group.id === dropGroup ?
+                'border-t-2 border-aurora-5' :
+                ''
+            ]">
               <div v-if="filterRequests(group.requests).length === 0">
                 <div class="text-left py-2 pl-8">
                   <h3 class="mt-2 text-sm font-medium">No Requests</h3>
@@ -382,4 +403,3 @@ li a {
   transform: rotate(180deg);
 }
 </style>
-

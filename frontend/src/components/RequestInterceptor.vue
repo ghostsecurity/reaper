@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { HttpRequest } from '../lib/Http';
-import { onMounted, ref } from "vue";
-import { EventsEmit, EventsOn } from "../../wailsjs/runtime";
-import HttpRequestView from "./Http/Request.vue";
+import { onMounted, ref } from 'vue'
+import { EventsEmit, EventsOn } from '../../wailsjs/runtime' // eslint-disable-line import/no-unresolved
+import { HttpRequest } from '../lib/Http'
+import HttpRequestView from './Http/HttpRequest.vue'
 
 const enabled = ref(false)
 const request = ref<HttpRequest | null>(null)
@@ -17,16 +17,16 @@ function onEnabledChange() {
   if (!enabled.value) {
     request.value = null
   }
-  EventsEmit("InterceptionEnabledChange", enabled.value)
+  EventsEmit('InterceptionEnabledChange', enabled.value)
 }
 
 function forwardRequest() {
-  EventsEmit("InterceptedRequestChange", request.value)
+  EventsEmit('InterceptedRequestChange', request.value)
   request.value = null
 }
 
 function dropRequest() {
-  EventsEmit("InterceptedRequestDrop", request.value)
+  EventsEmit('InterceptedRequestDrop', request.value)
   request.value = null
 }
 

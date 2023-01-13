@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { PropType } from 'vue'
 import { TransitionChild, TransitionRoot, Dialog, DialogPanel } from '@headlessui/vue'
-import SettingsComponent from './Settings.vue'
+import SettingsComponent from './SettingsEditor.vue'
 import Settings from '../lib/Settings' /* eslint-disable-line */
 
 const props = defineProps({

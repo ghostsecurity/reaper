@@ -1,13 +1,9 @@
-import { HttpRequest } from './Http'
+import { Target, Comparison, JoinType, Rule } from './Rule'
+import Ruleset from './Ruleset'
+import Reader from './Reader'
+import { HttpRequest } from '../Http'
 
-export {
-  Criteria,
-  Ruleset,
-  Rule,
-  Target,
-  Comparison,
-  JoinType,
-}
+export { Criteria, Ruleset }
 
 class Criteria {
   Raw: string
@@ -21,9 +17,7 @@ class Criteria {
     try {
       this.root = parse(input)
     } catch (e) {
-      this.root = new Ruleset([
-        new Rule(Target.Raw, Comparison.CONTAINS, input),
-      ], [], JoinType.AND)
+      this.root = new Ruleset([new Rule(Target.Raw, Comparison.CONTAINS, input)], [], JoinType.AND)
       this.ParseError = e as Error
     }
   }
@@ -33,27 +27,12 @@ class Criteria {
   }
 }
 
-enum Comparison {
-    EQUAL = 'eq',
-    NOT_EQUAL = 'ne',
-    CONTAINS = 'contains',
-    MATCHES = 'matches',
-}
-
 const comparisonAliases = new Map<Comparison, string[]>([
   [Comparison.EQUAL, ['eq', '==', 'is']],
   [Comparison.NOT_EQUAL, ['neq', '!=']],
   [Comparison.CONTAINS, ['contains', 'includes', 'has', '*=']],
   [Comparison.MATCHES, ['matches', '~']],
 ])
-
-enum Target {
-    Scheme = 'scheme',
-    Host = 'host',
-    Path = 'path',
-    Query = 'query',
-    Raw = 'raw',
-}
 
 const targetAliases = new Map<Target, string[]>([
   [Target.Scheme, ['scheme', 'protocol', 'proto']],
@@ -62,177 +41,10 @@ const targetAliases = new Map<Target, string[]>([
   [Target.Query, ['querystring', 'query', 'qs']],
 ])
 
-enum JoinType {
-    NONE = 'NONE',
-    AND = 'AND',
-    OR = 'OR',
-}
-
 const joinAliases = new Map<JoinType, string[]>([
   [JoinType.AND, ['and', '&&']],
   [JoinType.OR, ['or', '||']],
 ])
-
-class Rule {
-  Target: Target
-
-  Comparison: Comparison
-
-  Value: string
-
-  constructor(target: Target, comparison: Comparison, value: string) {
-    this.Target = target
-    this.Comparison = comparison
-    this.Value = value
-  }
-
-  Match(req: HttpRequest): boolean {
-    let field = ''
-    switch (this.Target) {
-    case Target.Scheme:
-      field = req.Scheme
-      break
-    case Target.Host:
-      field = req.Host
-      break
-    case Target.Path:
-      field = req.Path
-      break
-    case Target.Query:
-      field = req.QueryString
-      break
-    case Target.Raw:
-      field = req.Raw
-      break
-    default:
-      return false
-    }
-    switch (this.Comparison) {
-    case Comparison.EQUAL:
-      return field === this.Value
-    case Comparison.NOT_EQUAL:
-      return field !== this.Value
-    case Comparison.CONTAINS:
-      return field.indexOf(this.Value) > -1
-    case Comparison.MATCHES:
-      try {
-        return field.match(this.Value) !== null
-      } catch (e) {
-        return false
-      }
-    default:
-      return false
-    }
-  }
-}
-
-class Ruleset {
-  JoinType: JoinType = JoinType.AND
-
-  Rulesets: Ruleset[]
-
-  Rules: Rule[]
-
-  constructor(rules: Rule[], rulesets: Ruleset[], join: JoinType) {
-    this.Rules = rules
-    this.Rulesets = rulesets
-    this.JoinType = join
-  }
-
-  Match(req: HttpRequest): boolean {
-    for (const rule of this.Rules) {
-      const ruleResult = rule.Match(req)
-      if (this.JoinType === JoinType.AND) {
-        if (!ruleResult) {
-          return false
-        }
-      } else if (ruleResult) {
-        return true
-      }
-    }
-    for (const ruleset of this.Rulesets) {
-      const ruleResult = ruleset.Match(req)
-      if (this.JoinType === JoinType.AND) {
-        if (!ruleResult) {
-          return false
-        }
-      } else if (ruleResult) {
-        return true
-      }
-    }
-    return this.JoinType === JoinType.AND
-  }
-}
-
-class Reader {
-  input: string
-
-  pos: number
-
-  saved: number
-
-  constructor(input: string) {
-    this.input = input
-    this.pos = 0
-    this.saved = 0
-  }
-
-  next(): string {
-    const current = this.input[this.pos]
-    this.pos++
-    return current
-  }
-
-  peek(): string {
-    return this.input[this.pos]
-  }
-
-  peekWord(): string {
-    return this.input.slice(this.pos).trimStart().split(' ')[0]
-  }
-
-  readUntil(c: string): string {
-    let str = ''
-    while (this.peek() !== c && !this.complete()) {
-      str += this.next()
-    }
-    return str
-  }
-
-  readWord(): string {
-    this.skipWhitespace()
-    let word = ''
-    while (!this.complete() && this.peek() !== ' ' && this.peek() !== ')') {
-      word += this.next()
-    }
-    return word
-  }
-
-  skipWhitespace(): boolean {
-    let skipped = false
-    while (this.peek() == ' ' && !this.complete()) {
-      this.next()
-      skipped = true
-    }
-    return skipped
-  }
-
-  complete(): boolean {
-    return this.pos >= this.input.length
-  }
-
-  save(): void {
-    this.saved = this.pos
-  }
-
-  restore(): void {
-    this.pos = this.saved
-  }
-
-  prepend(c: string): void {
-    this.input = c + this.input
-  }
-}
 
 function parse(query: string): Ruleset {
   const reader = new Reader(query)
@@ -268,7 +80,7 @@ function parseRuleset(reader: Reader, nested: boolean): Ruleset {
     let newJoin = JoinType.NONE
     joinAliases.forEach((aliases, type) => {
       aliases.forEach((alias) => {
-        if (alias.toLowerCase() == reader.peekWord().toLowerCase()) {
+        if (alias.toLowerCase() === reader.peekWord().toLowerCase()) {
           newJoin = <JoinType>type
           reader.readWord()
         }
@@ -283,7 +95,7 @@ function parseRuleset(reader: Reader, nested: boolean): Ruleset {
     join = newJoin
     expectingRule = true
   }
-  if (join == JoinType.NONE) {
+  if (join === JoinType.NONE) {
     join = JoinType.AND
   }
   return new Ruleset(rules, rulesets, join)
@@ -324,7 +136,7 @@ function parseRule(reader: Reader): Rule {
   let comparisonValid = false
   comparisonAliases.forEach((values, key) => {
     values.forEach((value) => {
-      if (value.toLowerCase() == reader.peekWord().toLowerCase()) {
+      if (value.toLowerCase() === reader.peekWord().toLowerCase()) {
         comparison = <Comparison>key
         reader.readWord()
         comparisonValid = true

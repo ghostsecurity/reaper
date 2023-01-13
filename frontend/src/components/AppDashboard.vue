@@ -1,21 +1,21 @@
 <script lang="ts" setup>
-import { onBeforeMount, PropType, reactive, ref, watch } from "vue";
-import { HttpRequest, HttpResponse } from "../lib/Http";
-import { EventsOn } from "../../wailsjs/runtime";
-import { BarsArrowDownIcon, BeakerIcon, StarIcon } from "@heroicons/vue/20/solid";
-import { Criteria } from "../lib/Criteria";
-import { workspace } from "../../wailsjs/go/models";
-import RequestList from "./Http/RequestList.vue";
-import GroupedRequestList from "./Http/GroupedRequestList.vue";
-import WorkspaceMenu from "./WorkspaceMenu.vue";
-import Search from "./Search.vue";
-import IDE from "./Http/IDE.vue";
+import { onBeforeMount, PropType, reactive, ref, watch } from 'vue'
+import { BarsArrowDownIcon, BeakerIcon, StarIcon } from '@heroicons/vue/20/solid'
+import { EventsOn } from '../../wailsjs/runtime'
+import { HttpRequest, HttpResponse } from '../lib/Http'
+import { Criteria } from '../lib/Criteria/Criteria'
+import { workspace } from '../../wailsjs/go/models'
+import RequestList from './Http/RequestList.vue'
+import GroupedRequestList from './Http/GroupedRequestList.vue'
+import WorkspaceMenu from './WorkspaceMenu.vue'
+import Search from './SearchInput.vue'
+import IDE from './Http/IDE.vue'
 
 const props = defineProps({
   ws: { type: Object as PropType<workspace.Workspace>, required: true },
   criteria: { type: Object as PropType<Criteria>, required: true },
   proxyAddress: { type: String, required: true },
-  savedRequestIds: { type: Array as PropType<string[]>, required: false, default: [] },
+  savedRequestIds: { type: Array as PropType<string[]>, required: false, default: () => [] },
 })
 
 const emit = defineEmits([
@@ -31,36 +31,36 @@ const emit = defineEmits([
   'request-group-rename',
   'request-rename',
   'criteria-change',
-  'workspace-edit'
+  'workspace-edit',
 ])
 
-const requests = ref<HttpRequest[]>([]);
-const req = ref<HttpRequest | null>(null);
+const requests = ref<HttpRequest[]>([])
+const req = ref<HttpRequest | null>(null)
 const tabs = ref([
   { name: 'Log Stream', id: 'log', icon: BarsArrowDownIcon, current: true },
   { name: 'Saved Requests', id: 'saved', icon: StarIcon, current: false },
   { name: 'Attack Workflows', id: 'workflows', icon: BeakerIcon, current: false },
 ])
-const liveCriteria = reactive(props.criteria);
-const reqReadOnly = ref(true);
+const liveCriteria = reactive(props.criteria)
+const reqReadOnly = ref(true)
 
 watch(() => props.criteria, (criteria) => {
-  Object.assign(liveCriteria, criteria);
-});
+  Object.assign(liveCriteria, criteria)
+})
 
 onBeforeMount(() => {
-  EventsOn("HttpRequest", (data) => {
-    requests.value.push(data as HttpRequest);
-  });
-  EventsOn("HttpResponse", (response: HttpResponse) => {
-    for (let i = 0; i < requests.value.length; i++) {
+  EventsOn('HttpRequest', (data: HttpRequest) => {
+    requests.value.push(data)
+  })
+  EventsOn('HttpResponse', (response: HttpResponse) => {
+    for (let i = 0; i < requests.value.length; i += 1) {
       if (requests.value[i].ID === response.ID) {
-        requests.value[i].Response = response;
-        break;
+        requests.value[i].Response = response
+        break
       }
     }
-  });
-});
+  })
+})
 
 function examineRequest(request: HttpRequest, readonly: boolean) {
   req.value = request
@@ -71,45 +71,41 @@ function clearRequest() {
   req.value = null
 }
 
+function switchTab(id: string) {
+  tabs.value = tabs.value.map((tab) => {
+    const updatedTab = tab
+    updatedTab.current = updatedTab.id === id
+    return updatedTab
+  })
+}
+
 function selectTab(e: Event) {
   switchTab((e.target as HTMLSelectElement).value)
 }
 
-function switchTab(id: string) {
-  tabs.value.forEach(tab => {
-    tab.current = tab.id === id
-  })
-}
-
 function selectedTab(): string {
-  return tabs.value.find(tab => tab.current)?.id || ''
+  return tabs.value.find((tab) => tab.current)?.id || ''
 }
 
 function onSearch(crit: Criteria) {
-  Object.assign(liveCriteria, crit);
+  Object.assign(liveCriteria, crit)
   emit('criteria-change', crit)
 }
 
 function switchWorkspace() {
-  emit("switch-workspace")
+  emit('switch-workspace')
 }
 
-function unsaveRequest(req: HttpRequest | workspace.Request) {
-  emit("unsave-request", req)
+function unsaveRequest(r: HttpRequest | workspace.Request) {
+  emit('unsave-request', r)
 }
 
-function duplicateRequest(req: workspace.Request) {
-  emit("duplicate-request", req)
+function duplicateRequest(r: workspace.Request) {
+  emit('duplicate-request', r)
 }
 
-function saveRequest(req: HttpRequest, groupID: string) {
-  emit("save-request", req, groupID)
-}
-
-function clearLog() {
-  // TODO: call this from clear button
-  clearRequest()
-  requests.value = []
+function saveRequest(r: HttpRequest, groupID: string) {
+  emit('save-request', r, groupID)
 }
 
 function setRequestGroup(request: workspace.Request, groupID: string, nextID: string) {
@@ -125,15 +121,15 @@ function reorderGroup(fromID: string, toID: string) {
 }
 
 function deleteGroup(groupId: string) {
-  emit("request-group-delete", groupId)
+  emit('request-group-delete', groupId)
 }
 
 function renameGroup(groupId: string, name: string) {
-  emit("request-group-rename", groupId, name)
+  emit('request-group-rename', groupId, name)
 }
 
 function renameRequest(requestId: string, name: string) {
-  emit("request-rename", requestId, name)
+  emit('request-rename', requestId, name)
 }
 </script>
 
@@ -157,12 +153,18 @@ function renameRequest(requestId: string, name: string) {
     <div class="hidden sm:block">
       <div class="border-b dark:border-polar-night-4">
         <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-          <a v-for="tab in tabs" @click="switchTab(tab.id)" :key="tab.name"
-            :class="[tab.current ? 'border-frost text-frost' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500', 'group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm cursor-pointer']"
+          <a v-for="tab in tabs" @click="switchTab(tab.id)" :key="tab.name" :class="[
+          tab.current ?
+            'border-frost text-frost' :
+            'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500',
+          'group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm cursor-pointer']"
             :aria-current="tab.current ? 'page' : undefined">
-            <component :is="tab.icon"
-              :class="[tab.current ? 'text-frost' : 'text-gray-400 group-hover:text-gray-300', '-ml-0.5 mr-2 h-5 w-5']"
-              aria-hidden="true" />
+            <component :is="tab.icon" :class="[
+              tab.current ?
+                'text-frost' :
+                'text-gray-400 group-hover:text-gray-300',
+              '-ml-0.5 mr-2 h-5 w-5'
+            ]" aria-hidden="true" />
             <span>{{ tab.name }}</span>
           </a>
         </nav>

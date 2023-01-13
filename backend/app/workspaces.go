@@ -5,7 +5,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-func (a *App) CreateWorkspace(template workspace.Workspace) *workspace.Workspace {
+func (a *App) CreateWorkspace(template *workspace.Workspace) *workspace.Workspace {
 	ws := workspace.New()
 	ws.Name = template.Name
 	ws.Scope = template.Scope

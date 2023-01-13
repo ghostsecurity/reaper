@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type Tree struct {
@@ -23,6 +25,7 @@ func (t *Tree) Structure() []StructureNode {
 }
 
 type StructureNode struct {
+	ID       string          `json:"id"`
 	Name     string          `json:"name"`
 	Children []StructureNode `json:"children"`
 }
@@ -43,6 +46,7 @@ func (t *StructureNode) Update(parts []string) bool {
 		}
 	}
 	hostNode := StructureNode{
+		ID:   uuid.New().String(),
 		Name: filtered[0],
 	}
 	_ = hostNode.Update(filtered[1:])

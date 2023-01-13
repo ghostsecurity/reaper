@@ -1,28 +1,25 @@
 <script lang="ts" setup>
-import { defineComponent, PropType } from 'vue'
-import { HttpRequest } from '../../lib/Http.js';
-import { Criteria } from "../../lib/Criteria";
-import { RocketLaunchIcon, MagnifyingGlassCircleIcon, StarIcon } from "@heroicons/vue/20/solid";
-import { StarIcon as EmptyStarIcon } from "@heroicons/vue/24/outline";
-import { MethodClass, StatusClass } from "../../lib/Http.js";
-import RequestListItemSummary from "./RequestItemSummary.vue";
+import { PropType } from 'vue'
+import { RocketLaunchIcon, MagnifyingGlassCircleIcon, StarIcon } from '@heroicons/vue/20/solid'
+import { StarIcon as EmptyStarIcon } from '@heroicons/vue/24/outline'
+import { HttpRequest, MethodClass, StatusClass } from '../../lib/Http'
+import { Criteria } from '../../lib/Criteria/Criteria'
+import RequestListItemSummary from './RequestItemSummary.vue'
 
 const props = defineProps({
   requests: { type: Array as PropType<HttpRequest[]>, required: true },
   selected: { type: String },
   criteria: { type: Object as PropType<Criteria>, required: true },
-  emptyTitle: { type: String, required: false, default: "All Systems Go!" },
-  emptyMessage: { type: String, required: false, default: `Reaper is ready to receive requests!` },
+  emptyTitle: { type: String, required: false, default: 'All Systems Go!' },
+  emptyMessage: { type: String, required: false, default: 'Reaper is ready to receive requests!' },
   emptyIcon: { type: Object, required: false, default: RocketLaunchIcon },
-  savedRequestIds: { type: Array as PropType<string[]>, required: false, default: [] },
+  savedRequestIds: { type: Array as PropType<string[]>, required: false, default: () => [] },
 })
 
 const emit = defineEmits(['save-request', 'unsave-request', 'select'])
 
 function filterRequests(requests: Array<HttpRequest>): Array<HttpRequest> {
-  return requests.filter((request) => {
-    return props.criteria.Match(request)
-  })
+  return requests.filter((request) => props.criteria.Match(request))
 }
 
 function selectRequest(request: HttpRequest | null): void {
@@ -59,8 +56,12 @@ function unsaveRequest(req: HttpRequest) {
     <div v-else class="sm:rounded-md bg-snow-storm dark:bg-polar-night-1a h-full">
       <ul role="list" class="divide-y divide-polar-night-3">
         <li v-for="request in filterRequests(requests)" :key="request.ID">
-          <a @click="selectRequest(request)"
-            :class="'block  relative px-4 ' + (request.ID == selected ? 'bg-polar-night-3' : 'hover:bg-gray-50 dark:hover:bg-polar-night-2')">
+          <a @click="selectRequest(request)" :class="[
+            'block  relative px-4 ',
+            request.ID == selected ?
+              'bg-polar-night-3' :
+              'hover:bg-gray-50 dark:hover:bg-polar-night-2'
+          ]">
             <div :class="'left ending ' + MethodClass(request)">{{ request.Method }}</div>
             <div :class="'right ending ' + StatusClass(request)">
               {{ request.Response ? request.Response.StatusCode : '&nbsp;' }}
@@ -116,4 +117,3 @@ li a {
   right: 0px;
 }
 </style>
-

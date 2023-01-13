@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { Criteria } from "../lib/Criteria";
-import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
+import { MagnifyingGlassIcon } from '@heroicons/vue/20/solid'
+import { Criteria } from '../lib/Criteria/Criteria'
 
 const props = defineProps({
   query: {
     type: String,
     required: true,
-  }
+  },
 })
 
 const emit = defineEmits(['search'])
@@ -24,8 +24,7 @@ function search(evt: Event) {
       </button>
     </span>
     <input :value="props.query" @keyup="search" @change="search" @search="search" type="search" autocomplete="off"
-      autocapitalize="off" spellcheck="false"
-      class="w-full py-2 text-sm text-snow-storm-1 bg-polar-night-2 focus:bg-polar-night-4 focus:text-snow-storm-3 focus:outline-none rounded-md pl-10"
-      placeholder="Search...">
+      autocapitalize="off" spellcheck="false" class="w-full py-2 text-sm text-snow-storm-1 bg-polar-night-2
+       focus:bg-polar-night-4 focus:text-snow-storm-3 focus:outline-none rounded-md pl-10" placeholder="Search...">
   </div>
 </template>

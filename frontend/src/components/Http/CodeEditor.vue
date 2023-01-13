@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { watch, ref, onMounted } from "vue";
+import { watch, ref, onMounted } from 'vue'
 
-import { HighlightCode } from "../../../wailsjs/go/app/App";
+import { HighlightCode } from '../../../wailsjs/go/app/App'
 
 const props = defineProps({
   code: { type: String, required: true },
@@ -12,14 +12,14 @@ const buffer = ref(props.code)
 const busy = ref(true)
 const highlighted = ref('')
 const sent = ref('')
-const textarea = ref();
-const pre = ref();
+const textarea = ref()
+const pre = ref()
 
 const emit = defineEmits(['change'])
 
 watch(() => props.code, () => {
   buffer.value = props.code
-  const element = ((textarea.value as any) as HTMLTextAreaElement)
+  const element = (textarea.value as HTMLTextAreaElement)
   element.value = buffer.value
   updateCode()
 })
@@ -34,15 +34,13 @@ function setHighlighted(hl: string) {
 }
 
 function syncScroll() {
-  const tElement = ((textarea.value as any) as HTMLTextAreaElement)
-  const pElement = ((pre.value as any) as HTMLTextAreaElement)
-  pElement.scrollTop = tElement.scrollTop;
-  pElement.scrollLeft = tElement.scrollLeft;
+  const tElement = (textarea.value as HTMLTextAreaElement)
+  const pElement = (pre.value as HTMLTextAreaElement)
+  pElement.scrollTop = tElement.scrollTop
+  pElement.scrollLeft = tElement.scrollLeft
 }
 
-
 function updateCode() {
-
   busy.value = true
 
   emit('change', buffer.value)
@@ -59,8 +57,12 @@ function updateCode() {
 </script>
 
 <template>
-  <div
-    v-bind:class="'overflow-x-auto ' + (busy ? 'h-full text-left wrapper plain' : 'h-full text-left wrapper highlighted min-h-full')">
+  <div :class="[
+    'overflow-x-auto',
+    busy ?
+      'h-full text-left wrapper plain' :
+      'h-full text-left wrapper highlighted min-h-full',
+  ]">
     <pre ref="pre" class="h-full min-h-full" aria-hidden="true"><code v-html="highlighted"></code></pre>
     <textarea :readonly="readonly" spellcheck="false" ref="textarea" @input="updateCode" @scroll="syncScroll"
       v-model="buffer"></textarea>

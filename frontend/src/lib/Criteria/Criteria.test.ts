@@ -1,100 +1,54 @@
 import { test, expect } from 'vitest'
-import { Comparison, Criteria, JoinType, Rule, Ruleset, Target } from './Criteria'
-import { HttpRequest } from './Http'
+import { Criteria } from './Criteria'
+import { Comparison, JoinType, Rule, Target } from './Rule'
+import Ruleset from './Ruleset'
+import { HttpRequest } from '../Http'
 
 test.each([
   {
     input: '',
-    expected: new Ruleset(
-      [],
-      [],
-      JoinType.AND,
-    ),
+    expected: new Ruleset([], [], JoinType.AND),
     expectException: false,
   },
   {
     input: 'invalid query',
-    expected: new Ruleset(
-      [
-        new Rule(Target.Raw, Comparison.CONTAINS, 'invalid query'),
-      ],
-      [],
-      JoinType.AND,
-    ),
+    expected: new Ruleset([new Rule(Target.Raw, Comparison.CONTAINS, 'invalid query')], [], JoinType.AND),
     expectException: true,
   },
   {
     input: 'scheme eq http',
-    expected: new Ruleset(
-      [
-        new Rule(Target.Scheme, Comparison.EQUAL, 'http'),
-      ],
-      [],
-      JoinType.AND,
-    ),
+    expected: new Ruleset([new Rule(Target.Scheme, Comparison.EQUAL, 'http')], [], JoinType.AND),
     expectException: false,
   },
   {
     input: 'scheme == http',
-    expected: new Ruleset(
-      [
-        new Rule(Target.Scheme, Comparison.EQUAL, 'http'),
-      ],
-      [],
-      JoinType.AND,
-    ),
+    expected: new Ruleset([new Rule(Target.Scheme, Comparison.EQUAL, 'http')], [], JoinType.AND),
     expectException: false,
   },
   {
     input: 'scheme==http',
-    expected: new Ruleset(
-      [
-        new Rule(Target.Scheme, Comparison.EQUAL, 'http'),
-      ],
-      [],
-      JoinType.AND,
-    ),
+    expected: new Ruleset([new Rule(Target.Scheme, Comparison.EQUAL, 'http')], [], JoinType.AND),
     expectException: false,
   },
   {
     input: 'scheme=="http"',
-    expected: new Ruleset(
-      [
-        new Rule(Target.Scheme, Comparison.EQUAL, 'http'),
-      ],
-      [],
-      JoinType.AND,
-    ),
+    expected: new Ruleset([new Rule(Target.Scheme, Comparison.EQUAL, 'http')], [], JoinType.AND),
     expectException: false,
   },
   {
     input: 'scheme==\'http\'',
-    expected: new Ruleset(
-      [
-        new Rule(Target.Scheme, Comparison.EQUAL, 'http'),
-      ],
-      [],
-      JoinType.AND,
-    ),
+    expected: new Ruleset([new Rule(Target.Scheme, Comparison.EQUAL, 'http')], [], JoinType.AND),
     expectException: false,
   },
   {
     input: 'scheme == "http"',
-    expected: new Ruleset(
-      [
-        new Rule(Target.Scheme, Comparison.EQUAL, 'http'),
-      ],
-      [],
-      JoinType.AND,
-    ),
+    expected: new Ruleset([new Rule(Target.Scheme, Comparison.EQUAL, 'http')], [], JoinType.AND),
     expectException: false,
   },
   {
     input: 'scheme == "http" AND (host == "example.com" OR host == "example.org")',
     expected: new Ruleset(
-      [
-        new Rule(Target.Scheme, Comparison.EQUAL, 'http'),
-      ],
+      [new Rule(Target.Scheme, Comparison.EQUAL, 'http')],
       [
         new Ruleset(
           [
@@ -112,10 +66,7 @@ test.each([
   {
     input: 'scheme == "http" AND (host == "example.com" OR host == "example.org") AND path contains /foo',
     expected: new Ruleset(
-      [
-        new Rule(Target.Scheme, Comparison.EQUAL, 'http'),
-        new Rule(Target.Path, Comparison.CONTAINS, '/foo'),
-      ],
+      [new Rule(Target.Scheme, Comparison.EQUAL, 'http'), new Rule(Target.Path, Comparison.CONTAINS, '/foo')],
       [
         new Ruleset(
           [
@@ -139,10 +90,7 @@ test.each([
       ],
       [
         new Ruleset(
-          [
-            new Rule(Target.Path, Comparison.CONTAINS, 'api'),
-            new Rule(Target.Path, Comparison.CONTAINS, 'auth'),
-          ],
+          [new Rule(Target.Path, Comparison.CONTAINS, 'api'), new Rule(Target.Path, Comparison.CONTAINS, 'auth')],
           [],
           JoinType.OR,
         ),
@@ -196,11 +144,13 @@ test.each([
   }
   const p = new URL(url)
   const protocol = p.protocol.replace(':', '')
-  expect(criteria.Match(<HttpRequest>{
-    Host: p.host,
-    Path: p.pathname,
-    Scheme: protocol,
-    QueryString: p.search,
-    Raw: `GET ${p.pathname} HTTP/1.1\r\nHost: ${p.host}\r\n\r\n`,
-  })).toEqual(expected)
+  expect(
+    criteria.Match(<HttpRequest>{
+      Host: p.host,
+      Path: p.pathname,
+      Scheme: protocol,
+      QueryString: p.search,
+      Raw: `GET ${p.pathname} HTTP/1.1\r\nHost: ${p.host}\r\n\r\n`,
+    }),
+  ).toEqual(expected)
 })

@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { PropType } from 'vue'
-import { HttpRequest } from '../../lib/Http.js';
+import { HttpRequest } from '../../lib/Http'
 
-const props = defineProps({
-  name: { type: String, required: false, default: "" },
+defineProps({
+  name: { type: String, required: false, default: '' },
   request: { type: Object as PropType<HttpRequest>, required: true },
   showTags: { type: Boolean, required: false, default: true },
 })
@@ -19,23 +19,24 @@ function classForTag(tag: string): string {
     'bg-frost-4',
   ]
   let total = 0
-  for (const c of tag) {
+  const chars = [...tag]
+  chars.forEach((c) => {
     total += c.charCodeAt(0)
-  }
+  })
   return tags[total % tags.length]
 }
 
 function humanSize(size: number): string {
   if (size < 1024) {
-    return size + " B"
+    return `${size} B`
   }
   if (size < 1024 * 1024) {
-    return (size / 1024).toFixed(2) + " KB"
+    return `${(size / 1024).toFixed(2)} KB`
   }
   if (size < 1024 * 1024 * 1024) {
-    return (size / 1024 / 1024).toFixed(2) + " MB"
+    return `${(size / 1024 / 1024).toFixed(2)} MB`
   }
-  return (size / 1024 / 1024 / 1024).toFixed(2) + " GB"
+  return `${(size / 1024 / 1024 / 1024).toFixed(2)} GB`
 }
 </script>
 
@@ -63,14 +64,16 @@ function humanSize(size: number): string {
         </p>
       </div>
       <div v-if="showTags" class="mt-2 flex-0 text-sm text-frost-3 sm:mt-0 text-right">
-        <span v-for="tag in request.Tags"
+        <span v-for="tag in request.Tags" :key="tag"
           :class="['text-polar-night-1 rounded-full px-2.5 py-0.5 text-xs font-medium ml-1', classForTag(tag)]">{{
             tag
           }}</span>
-        <span v-if="request.Response" v-for="tag in request.Response.Tags"
-          :class="['text-polar-night-1 rounded-full px-2.5 py-0.5 text-xs font-medium ml-1', classForTag(tag)]">{{
+        <span v-if="request.Response">
+          <span v-for="tag in request.Response.Tags" :key="tag"
+            :class="['text-polar-night-1 rounded-full px-2.5 py-0.5 text-xs font-medium ml-1', classForTag(tag)]">{{
   tag
-          }}</span>
+            }}</span></span>
+
       </div>
     </div>
   </div>

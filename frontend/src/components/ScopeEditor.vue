@@ -1,8 +1,7 @@
 <script lang="ts" setup>
-import { reactive, ref } from "vue";
-import { workspace } from "../../wailsjs/go/models";
-import { PropType } from 'vue'
-import RulesEditor from "./RulesEditor.vue";
+import { reactive, ref, PropType } from 'vue'
+import { workspace } from '../../wailsjs/go/models'
+import RulesEditor from './RulesEditor.vue'
 
 const props = defineProps({
   scope: {
@@ -21,47 +20,47 @@ const simpleScope = reactive(new workspace.Scope({
   exclude: [],
 }))
 const advancedScope = reactive(props.scope)
-const simpleDomains = ref("")
+const simpleDomains = ref('')
 const includeSubdomains = ref(false)
 const showSimple = ref(props.allowSimpleView)
 const emit = defineEmits(['save'])
 
 function saveInclude(include: workspace.Rule[]) {
   advancedScope.include = include
-  emit('save', Object.assign({}, advancedScope))
+  emit('save', { ...advancedScope })
 }
 
 function saveExclude(exclude: workspace.Rule[]) {
   advancedScope.exclude = exclude
-  emit('save', Object.assign({}, advancedScope))
+  emit('save', { ...advancedScope })
 }
 
 function saveSimple() {
   simpleScope.exclude = []
   simpleScope.include = []
-  let patterns: string[] = []
-  simpleDomains.value.split(",").forEach((domain) => {
+  const patterns: string[] = []
+  simpleDomains.value.split(',').forEach((domain) => {
     domain = domain.trim()
-    if (domain === "") {
+    if (domain === '') {
       return
     }
     patterns.push(escapeForRegExp(domain))
   })
-  let pattern = patterns.join("|")
+  let pattern = patterns.join('|')
   if (includeSubdomains.value) {
-    pattern = `([^\.]+\\.)?${pattern}$`
+    pattern = `([^.]+\\.)?${pattern}$`
   } else {
     pattern = `^${pattern}$`
   }
   simpleScope.include.push(new workspace.Rule({
     host: pattern,
-    ports: [443, 80]
+    ports: [443, 80],
   }))
-  emit('save', Object.assign({}, simpleScope))
+  emit('save', { ...simpleScope })
 }
 
 function escapeForRegExp(target: string) {
-  return target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 </script>
 
@@ -70,14 +69,20 @@ function escapeForRegExp(target: string) {
     <div v-if="allowSimpleView" class="min-h-16 h-16 max-h-16 px-2">
       <div class="border-b dark:border-polar-night-4">
         <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-          <a @click="showSimple = true"
-            :class="[showSimple ? 'border-frost text-frost' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500', 'cursor-pointer group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm']"
-            :aria-current="showSimple ? 'page' : undefined">
+          <a @click="showSimple = true" :class="[
+            showSimple ?
+              'border-frost text-frost' :
+              'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500',
+            'cursor-pointer group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm'
+          ]" :aria-current="showSimple ? 'page' : undefined">
             <span>Simple</span>
           </a>
-          <a @click="showSimple = false"
-            :class="[!showSimple ? 'border-frost text-frost' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500', 'cursor-pointer group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm']"
-            :aria-current="!showSimple ? 'page' : undefined">
+          <a @click="showSimple = false" :class="[
+            !showSimple ?
+              'border-frost text-frost' :
+              'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500',
+            'cursor-pointer group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm'
+          ]" :aria-current="!showSimple ? 'page' : undefined">
             <span>Advanced</span>
           </a>
         </nav>

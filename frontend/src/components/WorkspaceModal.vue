@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { PropType } from "vue";
-import { TransitionChild, TransitionRoot, Dialog, DialogTitle, DialogPanel, MenuButton } from "@headlessui/vue";
-import WorkspaceEditor from "./WorkspaceEditor.vue";
-import { workspace } from "../../wailsjs/go/models";
+import { PropType } from 'vue'
+import { TransitionChild, TransitionRoot, Dialog, DialogPanel } from '@headlessui/vue'
+import WorkspaceEditor from './WorkspaceEditor.vue'
+import { workspace } from '../../wailsjs/go/models'
 
-const props = defineProps({
+defineProps({
   show: { type: Boolean, required: true },
-  workspace: { type: Object as PropType<workspace.Workspace>, required: true },
+  ws: { type: Object as PropType<workspace.Workspace>, required: true },
 })
 
 const emit = defineEmits(['save', 'close'])
@@ -15,8 +15,8 @@ function close() {
   emit('close')
 }
 
-function saveWorkspace(workspace: workspace.Workspace) {
-  emit('save', workspace)
+function saveWorkspace(w: workspace.Workspace) {
+  emit('save', w)
 }
 </script>
 
@@ -36,7 +36,7 @@ function saveWorkspace(workspace: workspace.Workspace) {
             leave-from="opacity-100 translate-y-0 sm:scale-100"
             leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
             <DialogPanel class="relative transform overflow-hidden text-left transition-all">
-              <WorkspaceEditor @save="saveWorkspace" @cancel="close" :ws="props.workspace" />
+              <WorkspaceEditor @save="saveWorkspace" @cancel="close" :ws="ws" />
             </DialogPanel>
           </TransitionChild>
         </div>

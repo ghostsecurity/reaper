@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { PropType, ref, watch } from 'vue'
-import { HttpRequest } from '../../lib/Http.js';
-import Request from "./Request.vue";
-import Response from "./Response.vue";
+import { HttpRequest } from '../../lib/Http'
+import Request from './HttpRequest.vue'
+import Response from './HttpResponse.vue'
 
 const props = defineProps({
   request: { type: Object as PropType<HttpRequest>, required: true },
