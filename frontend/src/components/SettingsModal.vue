@@ -2,7 +2,7 @@
 import { PropType } from 'vue'
 import { TransitionChild, TransitionRoot, Dialog, DialogPanel } from '@headlessui/vue'
 import SettingsComponent from './Settings.vue'
-import Settings from '../lib/Settings' /*eslint-disable-line*/
+import Settings from '../lib/Settings' /* eslint-disable-line */
 
 const props = defineProps({
   show: {
