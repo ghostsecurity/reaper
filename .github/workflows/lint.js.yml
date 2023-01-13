@@ -9,7 +9,7 @@ permissions:
   pull-requests: read
 jobs:
   golangci:
-    name: golangci-lint
+    name: eslint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
