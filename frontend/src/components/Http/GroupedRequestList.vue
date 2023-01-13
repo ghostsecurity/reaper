@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { PropType, ref } from 'vue'
+import { PropType, reactive, ref } from 'vue'
 import { HttpRequest, MethodClass } from '../../lib/Http.js';
 import { Criteria } from "../../lib/Criteria";
 import { workspace } from "../../../wailsjs/go/models";
@@ -34,7 +34,7 @@ const dragGroupNest = ref(0)
 const dropRequest = ref("")
 const dragRequestNest = ref(0)
 const draggingRequest = ref(false) // request or group
-const shrunkenGroups = ref(new Set<string>())
+const shrunkenGroups = reactive(new Set<string>())
 const renamingGroup = ref("")
 const renamingRequest = ref("")
 const creatingGroup = ref(false)
@@ -198,9 +198,9 @@ function dragRequestLeave(id: string) {
 }
 function expandGroup(group: Group, expand: boolean) {
   if (expand) {
-    shrunkenGroups.value.delete(group.id)
+    shrunkenGroups.delete(group.id)
   } else {
-    shrunkenGroups.value.add(group.id)
+    shrunkenGroups.add(group.id)
   }
 }
 function deleteGroup(group: Group) {
@@ -246,14 +246,14 @@ function createGroup(name: string) {
     </div>
   </div>
   <div class="sensible-height overflow-y-auto pt-2">
-    <div v-if="groups.length === 0">
+    <div v-if="props.groups.length === 0">
       <div class="text-center pt-8 pl-8">
-        <component :is="emptyIcon" class="mx-auto h-12 w-12" />
-        <h3 class="mt-2 text-sm font-medium">{{ emptyTitle }}</h3>
-        <p class="mt-1 text-sm text-snow-storm-1">{{ emptyMessage }}</p>
+        <component :is="props.emptyIcon" class="mx-auto h-12 w-12" />
+        <h3 class="mt-2 text-sm font-medium">{{ props.emptyTitle }}</h3>
+        <p class="mt-1 text-sm text-snow-storm-1">{{ props.emptyMessage }}</p>
       </div>
     </div>
-    <div v-else-if="groups.length === 0">
+    <div v-else-if="props.groups.length === 0">
       <div class="text-center pt-8 pl-8">
         <MagnifyingGlassCircleIcon class="mx-auto h-12 w-12" />
         <h3 class="mt-2 text-sm font-medium">No Results</h3>
@@ -262,7 +262,7 @@ function createGroup(name: string) {
     </div>
     <div v-else class="sm:rounded-md bg-snow-storm dark:bg-polar-night-1a h-full">
       <ul role="list" class="divide-y divide-polar-night-3">
-        <li class="li-group pt-4 first:pt-0 bg-polar-night-1" v-for="group in groups" :key="group.id"
+        <li class="li-group pt-4 first:pt-0 bg-polar-night-1" v-for="group in props.groups" :key="group.id"
           @drop="onDrop($event, group, null)" @dragover.prevent @dragenter.prevent="dragGroupEnter(group.id)"
           @dragleave.prevent="dragGroupLeave(group.id)" @dragstart.stop="startGroupDrag($event, group)">
           <div :class="[(!draggingRequest && group.id === dropGroup ? 'border-t-2 border-aurora-5' : '')]">

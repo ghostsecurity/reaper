@@ -15,6 +15,8 @@ const sent = ref('')
 const textarea = ref();
 const pre = ref();
 
+const emit = defineEmits(['change'])
+
 watch(() => props.code, () => {
   buffer.value = props.code
   const element = ((textarea.value as any) as HTMLTextAreaElement)
@@ -38,7 +40,6 @@ function syncScroll() {
   pElement.scrollLeft = tElement.scrollLeft;
 }
 
-const emit = defineEmits(['change'])
 
 function updateCode() {
 

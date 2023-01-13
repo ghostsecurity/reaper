@@ -22,21 +22,21 @@ function selectTab(tab: string) {
 </script>
 
 <template>
-  <div class="smart">
+  <div style="height: calc(100% - 4rem)">
     <div>
       <div class="border-b border:snow-storm-3 dark:border-polar-night-4">
         <nav class="-mb-px flex space-x-8" aria-label="Tabs">
           <a @click="selectTab('request')" :class="['request' == currentTab ?
                        'border-frost text-frost' :
                        'border-transparent text-polar-night-4 hover:text-frost-4 hover:border-frost-4',
-          'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm']"
+          'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm cursor-pointer']"
             :aria-current="'request' == currentTab ? 'page' : undefined">
             Request
           </a>
           <a v-if="request.Response" @click="selectTab('response')" :class="['response' == currentTab ?
           'border-frost text-frost' :
           'border-transparent text-polar-night-4 hover:text-frost-4 hover:border-frost-4',
-          'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm']"
+          'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm cursor-pointer']"
             :aria-current="'response' == currentTab ? 'page' : undefined">
             Response
           </a>
@@ -53,14 +53,3 @@ function selectTab(tab: string) {
     </div>
   </div>
 </template>
-
-<style scoped>
-a {
-  cursor: pointer;
-}
-
-.smart {
-  height: calc(100% - 4rem);
-}
-</style>
-

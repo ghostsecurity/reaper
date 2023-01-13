@@ -40,10 +40,6 @@ function unsaveRequest(req: HttpRequest) {
 }
 </script>
 
-<script lang="ts" setup>
-
-</script>
-
 <template>
   <div class="sensible-height overflow-y-auto ">
     <div v-if="requests.length === 0">

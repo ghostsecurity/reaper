@@ -8,106 +8,89 @@ import {
   PhotoIcon
 } from '@heroicons/vue/20/solid'
 import Structure from "./Structure.vue";
-</script>
-
-<script lang="ts">
-import { defineComponent, PropType } from "vue";
+import { PropType, reactive, ref, watch } from "vue";
 import { workspace } from "../../wailsjs/go/models";
 
-export default /*#__PURE__*/ defineComponent({
-  props: {
-    nodes: {
-      type: Array as PropType<Array<workspace.StructureNode>>,
-      required: true,
-    },
-    expanded: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    hasParent: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    shrinkIndex: {
-      type: Number,
-      required: false,
-      default: 0,
-    },
-    onSelect: {
-      type: Function as PropType<(parts: Array<string>) => void>,
-      required: false,
-    },
+const props = defineProps({
+  nodes: {
+    type: Array as PropType<Array<workspace.StructureNode>>,
+    required: true,
   },
-  data: () => ({
-    visible: new Map<string, boolean>(),
-    lastShrink: 0,
-  }),
-  watch: {
-    shrinkIndex: {
-      handler: function () {
-        if (this.shrinkIndex <= this.lastShrink) {
-          return
-        }
-        this.lastShrink = this.shrinkIndex;
-        if (this.hasParent) {
-          this.nodes.forEach((node) => {
-            this.visible.set(node.name, false)
-          })
-        }
-      },
-      immediate: true,
-    },
+  expanded: {
+    type: Boolean,
+    required: false,
+    default: false,
   },
-  methods: {
-    toggle(name: string) {
-      this.visible.set(name, !this.toggled(name))
-      if (!this.toggled(name)) {
-        this.lastShrink++
-      }
-    },
-    toggled(name: string) {
-      if (this.expanded) {
-        return this.visible.get(name) !== false
-      }
-      return this.visible.get(name) === true
-    },
-    hasExt(name: string, exts: Array<string>) {
-      name = name.toLowerCase()
-      for (let i = 0; i < exts.length; i++) {
-        if (name.endsWith(exts[i])) {
-          return true
-        }
-      }
-      return false
-    },
-    isPhoto(name: string) {
-      return this.hasExt(name, ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp', '.svg'])
-    },
-    isCode(name: string) {
-      return this.hasExt(name, ['.js', '.json', '.css', '.html', '.htm'])
-    },
-    closeMenu() {
-      (this.$refs.menu as any).close()
-    },
-    openMenu(evt: MouseEvent) {
-      (this.$refs.menu as any).open(evt, 'something')
-    },
-    onNodeSelect(node: workspace.StructureNode) {
-      if (this.onSelect) {
-        this.onSelect([node.name])
-      }
-    },
-    onChildSelect(part: string): (parts: Array<string>) => void {
-      return (parts: Array<string>) => {
-        if (this.onSelect) {
-          this.onSelect([part, ...parts])
-        }
-      }
-    },
+  hasParent: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
+  shrinkIndex: {
+    type: Number,
+    required: false,
+    default: 0,
   },
 })
+
+const visible = reactive(new Map<string, boolean>())
+const lastShrink = ref(0)
+
+const emit = defineEmits(['select'])
+
+watch(() => props.shrinkIndex, (newVal: number) => {
+  if (newVal <= lastShrink.value) {
+    return
+  }
+  lastShrink.value = newVal
+  if (props.hasParent) {
+    props.nodes.forEach((node) => {
+      visible.set(node.name, false)
+    })
+  }
+}, { immediate: true })
+
+function toggle(name: string) {
+  visible.set(name, !toggled(name))
+  if (!toggled(name)) {
+    lastShrink.value++
+  }
+}
+
+function toggled(name: string) {
+  if (props.expanded) {
+    return visible.get(name) !== false
+  }
+  return visible.get(name) === true
+}
+
+function hasExt(name: string, exts: Array<string>) {
+  name = name.toLowerCase()
+  for (let i = 0; i < exts.length; i++) {
+    if (name.endsWith(exts[i])) {
+      return true
+    }
+  }
+  return false
+}
+
+function isPhoto(name: string) {
+  return hasExt(name, ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp', '.svg'])
+}
+
+function isCode(name: string) {
+  return hasExt(name, ['.js', '.json', '.css', '.html', '.htm'])
+}
+
+function onNodeSelect(node: workspace.StructureNode) {
+  emit('select', [node.name])
+}
+
+function onChildSelect(part: string): (parts: Array<string>) => void {
+  return (parts: Array<string>) => {
+    emit('select', [part, ...parts])
+  }
+}
 </script>
 
 <template>
@@ -134,8 +117,8 @@ export default /*#__PURE__*/ defineComponent({
           {{ node.name }}
         </a>
       </div>
-      <Structure :on-select="onChildSelect(node.name)" :key="node.name" v-if="toggled(node.name)" :nodes="node.children"
-        :expanded="expanded" :hasParent="true" :shrinkIndex="lastShrink" />
+      <Structure @select="onChildSelect(node.name)($event)" :key="node.name" v-if="toggled(node.name)"
+        :nodes="node.children" :expanded="expanded" :hasParent="true" :shrinkIndex="lastShrink" />
     </li>
   </ul>
 </template>

@@ -28,12 +28,12 @@ const emit = defineEmits(['save'])
 
 function saveInclude(include: workspace.Rule[]) {
   advancedScope.include = include
-  emit('save', advancedScope)
+  emit('save', Object.assign({}, advancedScope))
 }
 
 function saveExclude(exclude: workspace.Rule[]) {
   advancedScope.exclude = exclude
-  emit('save', advancedScope)
+  emit('save', Object.assign({}, advancedScope))
 }
 
 function saveSimple() {
@@ -57,7 +57,7 @@ function saveSimple() {
     host: pattern,
     ports: [443, 80]
   }))
-  emit('save', simpleScope)
+  emit('save', Object.assign({}, simpleScope))
 }
 
 function escapeForRegExp(target: string) {
@@ -123,7 +123,3 @@ function escapeForRegExp(target: string) {
     </div>
   </div>
 </template>
-
-<style scoped>
-
-</style>

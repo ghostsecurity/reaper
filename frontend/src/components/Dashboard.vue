@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onBeforeMount, PropType, ref, watch } from "vue";
+import { onBeforeMount, PropType, reactive, ref, watch } from "vue";
 import { HttpRequest, HttpResponse } from "../lib/Http";
 import { EventsOn } from "../../wailsjs/runtime";
 import { BarsArrowDownIcon, BeakerIcon, StarIcon } from "@heroicons/vue/20/solid";
@@ -31,7 +31,7 @@ const emit = defineEmits([
   'request-group-rename',
   'request-rename',
   'criteria-change',
-  'workspace-config'
+  'workspace-edit'
 ])
 
 const requests = ref<HttpRequest[]>([]);
@@ -41,11 +41,11 @@ const tabs = ref([
   { name: 'Saved Requests', id: 'saved', icon: StarIcon, current: false },
   { name: 'Attack Workflows', id: 'workflows', icon: BeakerIcon, current: false },
 ])
-const liveCriteria = ref(props.criteria);
+const liveCriteria = reactive(props.criteria);
 const reqReadOnly = ref(true);
 
 watch(() => props.criteria, (criteria) => {
-  liveCriteria.value = criteria;
+  Object.assign(liveCriteria, criteria);
 });
 
 onBeforeMount(() => {
@@ -86,7 +86,7 @@ function selectedTab(): string {
 }
 
 function onSearch(crit: Criteria) {
-  liveCriteria.value = crit;
+  Object.assign(liveCriteria, crit);
   emit('criteria-change', crit)
 }
 
@@ -143,7 +143,7 @@ function renameRequest(requestId: string, name: string) {
       <Search @search="onSearch" :query="liveCriteria.Raw" />
     </div>
     <div class="flex-shrink p-0 ml-2">
-      <WorkspaceMenu @workspace-config="emit('workspace-config')" :ws="ws" @switch-workspace="switchWorkspace" />
+      <WorkspaceMenu @edit="emit('workspace-edit')" :ws="ws" @switch="switchWorkspace" />
     </div>
   </div>
   <div class="min-h-16 h-16 max-h-16 px-2">

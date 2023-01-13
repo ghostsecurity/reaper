@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"sync"
 
 	"github.com/kirsle/configdir"
 
@@ -33,6 +34,7 @@ type Workspace struct {
 	Scope      Scope      `json:"scope"`
 	Collection Collection `json:"collection"`
 	Tree       Tree       `json:"tree"`
+	mu         sync.Mutex
 	// TODO: flows
 }
 
@@ -132,6 +134,9 @@ func loadFile(file string) (*Workspace, error) {
 
 func (w *Workspace) Save() error {
 
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
 	file, err := getWorkspacePath(w.ID)
 	if err != nil {
 		return fmt.Errorf("failed to locate workspace path: %w", err)
@@ -154,7 +159,11 @@ func (w *Workspace) Save() error {
 	return nil
 }
 
-func (w *Workspace) UpdateTree(request *http.Request) *Tree {
-	w.Tree.Update(request)
-	return &w.Tree
+func (w *Workspace) UpdateTree(request *http.Request) (*Tree, bool) {
+
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	changed := w.Tree.Update(request)
+	return &w.Tree, changed
 }

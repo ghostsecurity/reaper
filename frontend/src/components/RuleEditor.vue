@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { defineComponent, reactive, ref } from "vue";
+import { reactive, ref } from "vue";
 import { workspace } from "../../wailsjs/go/models";
 import { PropType } from 'vue'
 import { CheckIcon, XMarkIcon, PencilIcon, TrashIcon } from "@heroicons/vue/20/solid";
@@ -23,17 +23,21 @@ function save() {
   editing.value = false
   savedLocally.value = true
 }
+
 function cancel() {
   editing.value = false
   Object.assign(modifiedRule, props.rule)
   emit('cancel', Object.assign({}, props.rule), savedLocally.value)
 }
+
 function remove() {
   emit('remove', Object.assign({}, modifiedRule))
 }
+
 function portsString(): string {
   return modifiedRule.ports.join(",")
 }
+
 function changePorts(e: Event) {
   let raw = (e.target as HTMLInputElement).value;
   if (raw === "") {

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { HttpRequest } from '../lib/Http';
-import { defineComponent, onMounted, PropType, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { EventsEmit, EventsOn } from "../../wailsjs/runtime";
 import HttpRequestView from "./Http/Request.vue";
 
@@ -48,7 +48,7 @@ function onChange(raw: string) {
       </div>
     </v-card-text>
   </v-card>
-  <HttpRequestView v-if="request !== null" :request="request" :readonly="false" :onchange="onChange" />
+  <HttpRequestView v-if="request !== null" :request="request" :readonly="false" @change="onChange" />
 </template>
 
 <style scoped>
