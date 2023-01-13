@@ -8,6 +8,7 @@
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx,.vue src",
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
