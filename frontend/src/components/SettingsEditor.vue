@@ -66,8 +66,8 @@ function setProxyPort(event: Event) {
     <main class="relative text-left">
       <div class="mx-auto max-w-2xl px-4 pb-6 sm:px-6 lg:px-8 lg:pb-16">
         <div
-          class="divide-y divide-snow-storm-3 overflow-hidden rounded-lg bg-snow-storm text-polar-night shadow dark:divide-polar-night-3 dark:bg-polar-night dark:text-snow-storm">
-          <div class="divide-snow-storm-3 dark:divide-polar-night-3 lg:grid lg:grid-cols-12 lg:divide-y-0 lg:divide-x">
+          class="divide-y divide-snow-storm-1 overflow-hidden rounded-lg bg-snow-storm text-polar-night shadow dark:divide-polar-night-3 dark:bg-polar-night dark:text-snow-storm">
+          <div class="divide-snow-storm-1 dark:divide-polar-night-3 lg:grid lg:grid-cols-12 lg:divide-y-0 lg:divide-x">
             <aside class="py-6 lg:col-span-3">
               <nav class="space-y-1">
                 <a
@@ -76,13 +76,16 @@ function setProxyPort(event: Event) {
                   :key="tab.name"
                   :class="[
                     tab.id === openTab
-                      ? 'border-frost-3 bg-polar-night-4'
-                      : 'border-transparent hover:bg-polar-night-3',
+                      ? 'border-frost-3 bg-snow-storm-1 dark:bg-polar-night-4'
+                      : 'border-transparent hover:bg-snow-storm-1 dark:hover:bg-polar-night-3',
                     'group flex cursor-pointer items-center border-l-4 px-3 py-2 text-sm font-medium',
                   ]"
                   :aria-current="tab.id === openTab ? 'page' : undefined">
-                  <component :is="tab.icon" :class="['-ml-1 mr-3 h-6 w-6 flex-shrink-0']" aria-hidden="true" />
-                  <span class="truncate">{{ tab.name }}</span>
+                  <component
+                    :is="tab.icon"
+                    class="-ml-1 mr-3 h-6 w-6 flex-shrink-0 text-polar-night-4 dark:text-snow-storm-1"
+                    aria-hidden="true" />
+                  <span class="truncate text-polar-night-4/90 dark:text-snow-storm-1/90">{{ tab.name }}</span>
                 </a>
               </nav>
             </aside>
@@ -131,18 +134,18 @@ function setProxyPort(event: Event) {
                 <div class="py-6 px-4 sm:p-6 lg:pb-8">
                   <div>
                     <h2 class="text-lg font-medium leading-6">Proxy</h2>
-                    <p class="mt-1 text-sm">Customise proxy settings to suit your workflow.</p>
+                    <p class="text-sm">Customise proxy settings to suit your workflow.</p>
                   </div>
 
                   <div class="mt-8">
                     <label for="port" class="block text-sm font-medium text-snow-storm">Port</label>
-                    <div class="relative mt-1 rounded-md shadow-sm">
+                    <div class="relative mt-1 rounded-md">
                       <input
                         @change="setProxyPort"
-                        type="text"
+                        type="number"
                         name="port"
                         id="port"
-                        class="block w-20 rounded-md bg-polar-night-4 focus:border-frost-4 focus:outline-none focus:ring-frost-4 sm:text-sm"
+                        class="block w-20 rounded-md bg-snow-storm-1 focus:border-frost-4 focus:outline-none focus:ring-frost-4 dark:bg-polar-night-4 sm:text-sm"
                         :value="modifiedSettings.ProxyPort"
                         aria-invalid="true"
                         aria-describedby="port-error"
