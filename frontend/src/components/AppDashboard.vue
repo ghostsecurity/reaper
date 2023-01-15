@@ -215,11 +215,15 @@ function renameRequest(requestId: string, name: string) {
     </div>
 
     <!-- TODO: intercept stuff here -->
-    <div v-if="false" class="flex-0 min-w- ml-2 h-full w-[50%] border-l border-polar-night-2 pl-2">
+    <div
+      v-if="false"
+      class="flex-0 min-w- ml-2 h-full w-[50%] border-l border-snow-storm-1 pl-2 dark:border-polar-night-3">
       intercept ui here
     </div>
 
-    <div v-else-if="req" class="flex-0 min-w- ml-2 h-full w-[50%] border-l border-polar-night-2 pl-2">
+    <div
+      v-else-if="req"
+      class="flex-0 min-w- ml-2 h-full w-[50%] border-l border-snow-storm-1 pl-2 dark:border-polar-night-3">
       <IDE :request="req" :readonly="reqReadOnly" @close="clearRequest" />
     </div>
   </div>
