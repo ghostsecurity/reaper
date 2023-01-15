@@ -112,7 +112,7 @@ function setProxyPort(event: Event) {
                         @update:modelValue="setDarkMode"
                         v-model="modifiedSettings.DarkMode"
                         :class="[
-                          modifiedSettings.DarkMode ? 'bg-aurora-4' : 'bg-polar-night-3',
+                          modifiedSettings.DarkMode ? 'bg-frost-4' : 'bg-polar-night-4/50',
                           'relative ml-4 inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full',
                           'border-2 border-transparent transition-colors duration-200 ease-in-out',
                         ]">
@@ -195,9 +195,9 @@ function setProxyPort(event: Event) {
             </form>
           </div>
           <div class="p-4 text-right">
-            <div>
-              <ButtonConfirm @click="saveSettings">Save Changes</ButtonConfirm>
+            <div class="space-x-2">
               <ButtonCancel @click="cancel">Cancel</ButtonCancel>
+              <ButtonConfirm @click="saveSettings">Save Changes</ButtonConfirm>
             </div>
           </div>
         </div>
