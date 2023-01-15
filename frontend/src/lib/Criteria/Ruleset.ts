@@ -18,7 +18,7 @@ export default class Ruleset {
     const NoMatch = {}
     const Match = {}
     try {
-      this.Rules.forEach((rule) => {
+      this.Rules.forEach(rule => {
         const ruleResult = rule.Match(req)
         if (this.JoinType === JoinType.AND) {
           if (!ruleResult) {
@@ -28,7 +28,7 @@ export default class Ruleset {
           throw Match
         }
       })
-      this.Rulesets.forEach((ruleset) => {
+      this.Rulesets.forEach(ruleset => {
         const ruleResult = ruleset.Match(req)
         if (this.JoinType === JoinType.AND) {
           if (!ruleResult) {

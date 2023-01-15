@@ -34,7 +34,7 @@ function setDarkMode(darkMode: boolean) {
  */
 function toggleDarkMode() {
   // toggle class="dark" on top level html element
-  let isDarkMode = document.documentElement.classList.toggle('dark')
+  const isDarkMode = document.documentElement.classList.toggle('dark')
 
   window.localStorage.darkMode = isDarkMode
 }

@@ -189,8 +189,9 @@ function deleteWorkspace(id: string) {
 
 function setRequestGroup(request: workspace.Request, groupID: string, nextID: string) {
   const oldGroup = currentWorkspace.collection.groups.find(
-    g =>
-      (g.requests.find((r: workspace.Request) => r.id === request.id) as workspace.Request | undefined) !== undefined,
+    // TODO: maybe this can be cleaned up?
+    // eslint-disable-next-line
+    g => (g.requests.find((r: workspace.Request) => r.id === request.id) as workspace.Request | undefined) !== undefined,
   )
   if (oldGroup !== undefined) {
     oldGroup.requests = oldGroup.requests.filter(item => item.id !== request.id)
@@ -226,7 +227,8 @@ function createRequestGroup(name: string) {
 function saveRequest(request: HttpRequest, groupID: string) {
   let group = currentWorkspace.collection.groups.find(g => g.id === groupID)
   if (group === undefined) {
-    ;[group] = currentWorkspace.collection.groups
+    // TODO: lint fix?
+    ;[group] = currentWorkspace.collection.groups // eslint-disable-line
   }
   GenerateID().then(id => {
     const wrapped = new workspace.Request({ id, name: '' })
@@ -269,6 +271,8 @@ function reorderGroup(fromID: string, toID: string) {
 function duplicateRequest(request: workspace.Request) {
   const group = currentWorkspace.collection.groups.find(
     g =>
+      // TODO: maybe this can be cleaned up?
+      // eslint-disable-next-line
       (g.requests.find((r: workspace.Request) => r.id === request.id) as workspace.Request | undefined) !== undefined,
   )
   if (group === undefined) {

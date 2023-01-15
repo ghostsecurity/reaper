@@ -15,9 +15,9 @@ module.exports = {
       used in the Nord website.
       #f2f4f8 - light bg
       #242933 - dark bg
-      
+
       Nord - published palette
-      
+
       Polar Night: Backgrounds (dark to light
       #2e3440
       #3b4252
@@ -83,5 +83,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require('@tailwindcss/forms')],
+  plugins: [require('@tailwindcss/forms')] /* eslint-disable-line */,
 }
