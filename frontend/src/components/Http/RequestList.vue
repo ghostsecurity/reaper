@@ -47,10 +47,10 @@ function unsaveRequest(req: HttpRequest) {
       </div>
     </div>
     <div v-else-if="filterRequests(requests).length === 0">
-      <div class="pt-8 pl-8 text-center">
+      <div class="pt-8 pl-8 text-center text-frost-3">
         <MagnifyingGlassCircleIcon class="mx-auto h-12 w-12" />
-        <h3 class="mt-2 text-sm font-medium">No Results</h3>
-        <p class="mt-1 text-sm text-snow-storm-1">No requests match your search criteria</p>
+        <h3 class="mt-2 text-sm font-bold">No Results</h3>
+        <p class="mt-1 text-sm">No requests match your search criteria</p>
       </div>
     </div>
     <div v-else class="h-full sm:rounded-md">
