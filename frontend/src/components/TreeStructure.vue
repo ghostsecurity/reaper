@@ -106,7 +106,7 @@ function onChildSelect(part: string): (parts: Array<string>) => void {
     </div>
   </div>
   <ul>
-    <li v-for="node in nodes" class="whitespace-nowrap text-snow-storm-1" :key="node.id">
+    <li v-for="node in nodes" class="whitespace-nowrap text-sm text-snow-storm-1" :key="node.id">
       <div class="flex items-center">
         <a @click="toggle(node.name)" @dblclick="onNodeSelect(node)">
           <span v-if="node.children.length === 0" class="inline-block h-1 w-6" />
@@ -118,7 +118,7 @@ function onChildSelect(part: string): (parts: Array<string>) => void {
           <DocumentIcon v-else class="mr-1 inline w-4 text-frost-3" />
         </a>
         <a @click="onNodeSelect(node)" class="hover:bg-polar-night-3">
-          {{ node.name }}
+          {{ node.name }} {{ !toggled(node.name) && node.children.length > 1 ? node.children.length : '' }}
         </a>
       </div>
       <TreeStructure
