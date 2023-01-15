@@ -26,6 +26,17 @@ const emit = defineEmits(['save', 'cancel'])
 
 function setDarkMode(darkMode: boolean) {
   modifiedSettings.DarkMode = darkMode
+  toggleDarkMode()
+}
+
+/**
+ * TODO: remove this temp fix for dark mode toggle -jml
+ */
+function toggleDarkMode() {
+  // toggle class="dark" on top level html element
+  let isDarkMode = document.documentElement.classList.toggle('dark')
+
+  window.localStorage.darkMode = isDarkMode
 }
 
 function saveSettings() {
