@@ -29,7 +29,7 @@ export function MethodClass(req: HttpRequest): string {
   switch (req.Method) {
   case 'GET':
     return 'bg-frost-3'
-  case 'POST':
+  case 'OPTIONS':
     return 'bg-frost-1'
   case 'PUT':
     return 'bg-frost-4'
@@ -39,7 +39,7 @@ export function MethodClass(req: HttpRequest): string {
     return 'bg-aurora-4'
   case 'CONNECT':
     return 'bg-aurora-3'
-  case 'OPTIONS':
+  case 'POST':
     return 'bg-aurora-2'
   case 'TRACE':
     return 'bg-aurora-1'

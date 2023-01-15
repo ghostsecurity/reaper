@@ -37,7 +37,7 @@ function humanSize(size: number): string {
       <span class="rounded-md bg-polar-night-3 px-3 py-1">{{ name }}</span>
     </div>
     <div class="flex items-center justify-between">
-      <p class="flex-1 truncate text-left text-sm font-medium text-frost">
+      <p class="flex-1 truncate text-left text-sm font-medium text-frost-4 dark:text-frost">
         {{ request.Path }}
         <span class="max-w-4xl truncate text-frost-3" v-if="request.QueryString !== ''">
           ?{{ request.QueryString }}
@@ -45,17 +45,19 @@ function humanSize(size: number): string {
       </p>
       <div class="flex-0 ml-2 flex text-right">
         <p class="px-2 text-xs font-semibold leading-5">
-          <span v-if="request.Response" class="text-snow-storm-1">{{ humanSize(request.Response.BodySize) }}</span>
+          <span v-if="request.Response" class="text-polar-night-1a dark:text-snow-storm-1">
+            {{ humanSize(request.Response.BodySize) }}
+          </span>
         </p>
       </div>
     </div>
     <div class="mt-2 sm:flex sm:justify-between">
       <div class="flex-1">
-        <p class="flex items-center text-sm text-frost-3">
+        <p class="flex items-center text-sm text-frost-3 dark:text-frost-3">
           {{ request.Host }}
         </p>
       </div>
-      <div v-if="showTags" class="flex-0 mt-2 text-right text-sm text-frost-3 sm:mt-0">
+      <div v-if="showTags" class="flex-0 mt-2 text-right text-sm text-pink-500 sm:mt-0">
         <span
           v-for="tag in request.Tags"
           :key="tag"
