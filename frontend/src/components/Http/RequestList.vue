@@ -40,10 +40,10 @@ function unsaveRequest(req: HttpRequest) {
 <template>
   <div class="sensible-height overflow-y-auto">
     <div v-if="requests.length === 0">
-      <div class="pt-8 pl-8 text-center">
+      <div class="pt-8 pl-8 text-center text-frost-3">
         <component :is="emptyIcon" class="mx-auto h-12 w-12" />
         <h3 class="mt-2 text-sm font-medium">{{ emptyTitle }}</h3>
-        <p class="mt-1 text-sm text-snow-storm-1">{{ emptyMessage }}</p>
+        <p class="mt-1 text-sm">{{ emptyMessage }}</p>
       </div>
     </div>
     <div v-else-if="filterRequests(requests).length === 0">

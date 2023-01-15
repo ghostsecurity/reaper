@@ -16,8 +16,10 @@ import {
   SaveWorkspace,
   LoadWorkspace,
   DeleteWorkspace,
-  SaveSettings, GenerateID,
-  Confirm, Warn,
+  SaveSettings,
+  GenerateID,
+  Confirm,
+  Warn,
 } from '../wailsjs/go/app/App'
 import Structure from './components/TreeStructure.vue'
 import AppDashboard from './components/AppDashboard.vue'
@@ -43,8 +45,8 @@ const proxyMessage = ref('Starting...')
 
 const savedRequestIds = computed(() => {
   const list = [] as string[]
-  currentWorkspace.collection.groups.forEach((group) => {
-    group.requests.forEach((req) => {
+  currentWorkspace.collection.groups.forEach(group => {
+    group.requests.forEach(req => {
       list.push(req.inner.ID)
     })
   })
@@ -56,7 +58,7 @@ onBeforeMount(() => {
     Object.assign(settings, stngs)
     loadedSettings.value = true
     setDarkMode(settings.DarkMode)
-    GetWorkspaces().then((spaces) => {
+    GetWorkspaces().then(spaces => {
       workspaces.value = spaces
       loadedWorkspaces.value = true
     })
@@ -121,12 +123,14 @@ function prepareWorkspace(ws: workspace.Workspace) {
     ws.collection.groups = [] /* eslint-disable-line */
   }
   if (ws.collection.groups.length === 0) {
-    GenerateID().then((id) => {
-      ws.collection.groups.push(new workspace.Group({
-        id,
-        name: 'Default',
-        requests: [],
-      }))
+    GenerateID().then(id => {
+      ws.collection.groups.push(
+        new workspace.Group({
+          id,
+          name: 'Default',
+          requests: [],
+        }),
+      )
     })
   }
   return ws
@@ -147,7 +151,7 @@ function selectWorkspace(ws: workspace.Workspace) {
 }
 
 function selectWorkspaceById(id: string) {
-  LoadWorkspace(id).then((ws) => {
+  LoadWorkspace(id).then(ws => {
     selectWorkspace(ws)
   })
 }
@@ -161,14 +165,14 @@ function createWorkspace(ws: workspace.Workspace) {
 function switchWorkspace() {
   loadedWorkspaces.value = false
   hasWorkspace.value = false
-  GetWorkspaces().then((spaces) => {
+  GetWorkspaces().then(spaces => {
     workspaces.value = spaces
     loadedWorkspaces.value = true
   })
 }
 
 function editWorkspace(id: string) {
-  LoadWorkspace(id).then((ws) => {
+  LoadWorkspace(id).then(ws => {
     Object.assign(currentWorkspace, ws)
     showWorkspaceConfig()
   })
@@ -176,7 +180,7 @@ function editWorkspace(id: string) {
 
 function deleteWorkspace(id: string) {
   DeleteWorkspace(id).then(() => {
-    GetWorkspaces().then((spaces) => {
+    GetWorkspaces().then(spaces => {
       workspaces.value = spaces
       loadedWorkspaces.value = true
     })
@@ -185,18 +189,17 @@ function deleteWorkspace(id: string) {
 
 function setRequestGroup(request: workspace.Request, groupID: string, nextID: string) {
   const oldGroup = currentWorkspace.collection.groups.find(
-    (g) => g.requests.find(
-      (r: workspace.Request) => r.id === request.id,
-    ) as (workspace.Request | undefined) !== undefined,
+    g =>
+      (g.requests.find((r: workspace.Request) => r.id === request.id) as workspace.Request | undefined) !== undefined,
   )
   if (oldGroup !== undefined) {
-    oldGroup.requests = oldGroup.requests.filter((item) => item.id !== request.id)
+    oldGroup.requests = oldGroup.requests.filter(item => item.id !== request.id)
   }
-  const group = currentWorkspace.collection.groups.find((g) => g.id === groupID)
+  const group = currentWorkspace.collection.groups.find(g => g.id === groupID)
   if (group === undefined) {
     return
   }
-  let index = group.requests.findIndex((r) => r.id === nextID)
+  let index = group.requests.findIndex(r => r.id === nextID)
   if (index === -1) {
     index = 0
   } else {
@@ -207,21 +210,25 @@ function setRequestGroup(request: workspace.Request, groupID: string, nextID: st
 }
 
 function createRequestGroup(name: string) {
-  GenerateID().then((id) => {
-    currentWorkspace.collection.groups.splice(0, 0, new workspace.Group({
-      id,
-      name,
-      requests: [],
-    }))
+  GenerateID().then(id => {
+    currentWorkspace.collection.groups.splice(
+      0,
+      0,
+      new workspace.Group({
+        id,
+        name,
+        requests: [],
+      }),
+    )
   })
 }
 
 function saveRequest(request: HttpRequest, groupID: string) {
-  let group = currentWorkspace.collection.groups.find((g) => g.id === groupID)
+  let group = currentWorkspace.collection.groups.find(g => g.id === groupID)
   if (group === undefined) {
-    [group] = currentWorkspace.collection.groups
+    ;[group] = currentWorkspace.collection.groups
   }
-  GenerateID().then((id) => {
+  GenerateID().then(id => {
     const wrapped = new workspace.Request({ id, name: '' })
     wrapped.inner = { ...request }
     wrapped.inner.Response = null
@@ -235,24 +242,22 @@ function saveRequest(request: HttpRequest, groupID: string) {
 function unsaveRequest(request: HttpRequest | workspace.Request) {
   const id = 'inner' in request ? request.inner.ID : (request as unknown as HttpRequest).ID
   const group = currentWorkspace.collection.groups.find(
-    (g) => g.requests.find(
-      (r: workspace.Request) => r.inner.ID === id,
-    ) as (workspace.Request | undefined) !== undefined,
+    g => (g.requests.find((r: workspace.Request) => r.inner.ID === id) as workspace.Request | undefined) !== undefined,
   )
   if (group !== undefined) {
-    group.requests = group.requests.filter((item) => item.inner.ID !== id)
+    group.requests = group.requests.filter(item => item.inner.ID !== id)
   }
   saveWorkspace(currentWorkspace)
 }
 
 function reorderGroup(fromID: string, toID: string) {
-  const group = currentWorkspace.collection.groups.find((g) => g.id === fromID)
+  const group = currentWorkspace.collection.groups.find(g => g.id === fromID)
 
   // remove from old position
-  currentWorkspace.collection.groups = currentWorkspace.collection.groups.filter((g) => g.id !== fromID)
+  currentWorkspace.collection.groups = currentWorkspace.collection.groups.filter(g => g.id !== fromID)
 
   // find new position
-  let index = currentWorkspace.collection.groups.findIndex((g) => g.id === toID)
+  let index = currentWorkspace.collection.groups.findIndex(g => g.id === toID)
 
   if (index === -1) {
     index = 0
@@ -263,15 +268,14 @@ function reorderGroup(fromID: string, toID: string) {
 
 function duplicateRequest(request: workspace.Request) {
   const group = currentWorkspace.collection.groups.find(
-    (g) => g.requests.find(
-      (r: workspace.Request) => r.id === request.id,
-    ) as (workspace.Request | undefined) !== undefined,
+    g =>
+      (g.requests.find((r: workspace.Request) => r.id === request.id) as workspace.Request | undefined) !== undefined,
   )
   if (group === undefined) {
     return
   }
   const dupName = request.name.endsWith(' (copy)') ? request.name : `${request.name} (copy)`
-  GenerateID().then((id) => {
+  GenerateID().then(id => {
     const wrapped = new workspace.Request({
       id,
       name: dupName,
@@ -288,7 +292,7 @@ function deleteRequestGroup(groupId: string) {
     Warn('Deletion failed', 'Cannot delete this group - there must be at least one group. Try renaming it instead.')
     return
   }
-  const group = currentWorkspace.collection.groups.find((g) => g.id === groupId)
+  const group = currentWorkspace.collection.groups.find(g => g.id === groupId)
   if (group === undefined) {
     return
   }
@@ -296,9 +300,9 @@ function deleteRequestGroup(groupId: string) {
     Confirm(
       'Confirm deletion',
       `The group '${group.name}' contains ${group.requests.length}. Are you sure you want to delete it?`,
-    ).then((confirmed) => {
+    ).then(confirmed => {
       if (confirmed) {
-        currentWorkspace.collection.groups = currentWorkspace.collection.groups.filter((g) => g.id !== groupId)
+        currentWorkspace.collection.groups = currentWorkspace.collection.groups.filter(g => g.id !== groupId)
         saveWorkspace(currentWorkspace)
       }
     })
@@ -306,7 +310,7 @@ function deleteRequestGroup(groupId: string) {
 }
 
 function renameRequestGroup(groupId: string, name: string) {
-  const group = currentWorkspace.collection.groups.find((g) => g.id === groupId)
+  const group = currentWorkspace.collection.groups.find(g => g.id === groupId)
   if (group === undefined) {
     return
   }
@@ -314,7 +318,7 @@ function renameRequestGroup(groupId: string, name: string) {
 }
 
 function renameRequest(requestId: string, name: string) {
-  const request = currentWorkspace.collection.groups.flatMap((g) => g.requests).find((r) => r.id === requestId)
+  const request = currentWorkspace.collection.groups.flatMap(g => g.requests).find(r => r.id === requestId)
   if (request === undefined) {
     return
   }
@@ -325,29 +329,48 @@ function renameRequest(requestId: string, name: string) {
 <template>
   <div v-if="!isLoaded()">Loading...</div>
   <div v-else-if="!hasWorkspace">
-    <WorkspaceSelection :workspaces="workspaces" @select="selectWorkspaceById" @create="createWorkspace"
-      @edit="editWorkspace" @delete="deleteWorkspace" />
-    <WorkspaceModal :show="isLoaded() && workspaceConfigVisible" @close="closeWorkspaceConfig" @save="saveWorkspace"
+    <WorkspaceSelection
+      :workspaces="workspaces"
+      @select="selectWorkspaceById"
+      @create="createWorkspace"
+      @edit="editWorkspace"
+      @delete="deleteWorkspace" />
+    <WorkspaceModal
+      :show="isLoaded() && workspaceConfigVisible"
+      @close="closeWorkspaceConfig"
+      @save="saveWorkspace"
       :ws="currentWorkspace" />
   </div>
   <div v-else class="h-full">
-    <SettingsModal :show="isLoaded() && settingsVisible" @close="closeSettings" @save="saveSettings"
+    <SettingsModal
+      :show="isLoaded() && settingsVisible"
+      @close="closeSettings"
+      @save="saveSettings"
       :settings="settings" />
-    <WorkspaceModal :show="isLoaded() && workspaceConfigVisible" @close="closeWorkspaceConfig" @save="saveWorkspace"
+    <WorkspaceModal
+      :show="isLoaded() && workspaceConfigVisible"
+      @close="closeWorkspaceConfig"
+      @save="saveWorkspace"
       :ws="currentWorkspace" />
     <div class="fixed h-full w-10 bg-polar-night-1a pt-1">
-      <button :class="
-        'rounded p-1 text-snow-storm-1 hover:bg-polar-night-3 ' + (sidebar === 'structure' ? 'bg-polar-night-4' : '')
-      " @click="setSidebar('structure')">
+      <button
+        :class="
+          'rounded p-1 text-snow-storm-1 hover:bg-polar-night-3 ' + (sidebar === 'structure' ? 'bg-polar-night-4' : '')
+        "
+        @click="setSidebar('structure')">
         <FolderIcon class="h-6 w-6" aria-hidden="true" title="Structure" />
       </button>
-      <button :class="
-        'rounded p-1 text-snow-storm-1 hover:bg-polar-night-3 ' + (sidebar === 'scope' ? 'bg-polar-night-4' : '')
-      " @click="setSidebar('scope')">
+      <button
+        :class="
+          'rounded p-1 text-snow-storm-1 hover:bg-polar-night-3 ' + (sidebar === 'scope' ? 'bg-polar-night-4' : '')
+        "
+        @click="setSidebar('scope')">
         <FunnelIcon class="h-6 w-6" aria-hidden="true" title="Scope" />
       </button>
       <div class="absolute bottom-0 left-1">
-        <button class="rounded p-1 text-snow-storm-1 hover:bg-polar-night-3" title="Workspace"
+        <button
+          class="rounded p-1 text-snow-storm-1 hover:bg-polar-night-3"
+          title="Workspace"
           @click="showWorkspaceConfig">
           <BriefcaseIcon class="h-6 w-6" aria-hidden="true" title="Workspace" />
         </button>
@@ -358,34 +381,45 @@ function renameRequest(requestId: string, name: string) {
     </div>
 
     <div class="ml-10 flex h-full">
-      <div :class="[
-        'sidebar',
-        'resize-x',
-        'overflow-auto',
-        'pr-12',
-        'border-l-2',
-        'border-polar-night-1',
-        'relative',
-        'py-1',
-        'h-screen',
-        'bg-polar-night-1a',
-        'flex-none',
-        'w-fit',
-        'min-w-[10%]',
-        'max-w-[25%]',
-        sidebar !== '' ? '' : 'hidden',
-      ]">
+      <div
+        :class="[
+          'sidebar',
+          'resize-x',
+          'overflow-auto',
+          'pr-12',
+          'border-l-2',
+          'border-polar-night-1',
+          'relative',
+          'py-1',
+          'h-screen',
+          'bg-polar-night-1a',
+          'flex-none',
+          'w-fit',
+          'min-w-[10%]',
+          'max-w-[25%]',
+          sidebar !== '' ? '' : 'hidden',
+        ]">
         <Structure v-if="sidebar === 'structure'" :expanded="true" :nodes="nodes" @select="onStructureSelect" />
         <p v-else>not implemented yet</p>
       </div>
       <div class="h-full w-3/4 flex-1">
-        <AppDashboard @save-request="saveRequest" @unsave-request="unsaveRequest"
-          @request-group-change="setRequestGroup" @request-group-create="createRequestGroup"
-          @switch-workspace="switchWorkspace" :criteria="criteria" @criteria-change="onCriteriaChange"
-          :proxy-address="'127.0.0.1:' + settings.ProxyPort" @workspace-edit="showWorkspaceConfig"
-          :ws="currentWorkspace" @group-order-change="reorderGroup" @duplicate-request="duplicateRequest"
-          @request-group-delete="deleteRequestGroup" @request-group-rename="renameRequestGroup"
-          @request-rename="renameRequest" :saved-request-ids="savedRequestIds" />
+        <AppDashboard
+          :criteria="criteria"
+          :proxy-address="'127.0.0.1:' + settings.ProxyPort"
+          :ws="currentWorkspace"
+          :saved-request-ids="savedRequestIds"
+          @save-request="saveRequest"
+          @unsave-request="unsaveRequest"
+          @request-group-change="setRequestGroup"
+          @request-group-create="createRequestGroup"
+          @switch-workspace="switchWorkspace"
+          @criteria-change="onCriteriaChange"
+          @workspace-edit="showWorkspaceConfig"
+          @group-order-change="reorderGroup"
+          @duplicate-request="duplicateRequest"
+          @request-group-delete="deleteRequestGroup"
+          @request-group-rename="renameRequestGroup"
+          @request-rename="renameRequest" />
       </div>
     </div>
   </div>
