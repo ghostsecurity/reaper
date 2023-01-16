@@ -1,28 +1,28 @@
 interface HttpRequest {
-    ID: string
-    LocalID: number
-    Method: string
-    Scheme: string
-    URL: string
-    Host: string
-    Path: string
-    QueryString: string
-    Raw: string
-    Response: HttpResponse | null
-    Headers: { [key: string]: Array<string> }
-    Query: { [key: string]: Array<string> }
-    Tags: Array<string>
+  ID: string
+  LocalID: number
+  Method: string
+  Scheme: string
+  URL: string
+  Host: string
+  Path: string
+  QueryString: string
+  Body: string
+  Response: HttpResponse | null
+  Headers: { [key: string]: Array<string> }
+  Query: { [key: string]: Array<string> }
+  Tags: Array<string>
 }
 
 interface HttpResponse {
-    ID: string
-    LocalID: number
-    Raw: string
-    StatusCode: number
-    Request: HttpRequest | null
-    Headers: { [key: string]: Array<string> }
-    Tags: Array<string>
-    BodySize: number
+  ID: string
+  LocalID: number
+  Body: string
+  StatusCode: number
+  Request: HttpRequest | null
+  Headers: { [key: string]: Array<string> }
+  Tags: Array<string>
+  BodySize: number
 }
 
 export function MethodClass(req: HttpRequest): string {
@@ -60,11 +60,14 @@ export function StatusClass(req: HttpRequest): string {
   }
   if (status >= 200 && status < 300) {
     return 'bg-aurora-4'
-  } if (status >= 300 && status < 400) {
+  }
+  if (status >= 300 && status < 400) {
     return 'bg-aurora-3'
-  } if (status >= 400 && status < 500) {
+  }
+  if (status >= 400 && status < 500) {
     return 'bg-aurora-2'
-  } if (status >= 500 && status < 600) {
+  }
+  if (status >= 500 && status < 600) {
     return 'bg-aurora-1'
   }
   return ''
@@ -72,7 +75,4 @@ export function StatusClass(req: HttpRequest): string {
 
 export {}
 
-export type {
-  HttpRequest,
-  HttpResponse,
-}
+export type { HttpRequest, HttpResponse }

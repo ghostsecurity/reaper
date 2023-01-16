@@ -17,7 +17,7 @@ class Criteria {
     try {
       this.root = parse(input)
     } catch (e) {
-      this.root = new Ruleset([new Rule(Target.Raw, Comparison.CONTAINS, input)], [], JoinType.AND)
+      this.root = new Ruleset([new Rule(Target.Body, Comparison.CONTAINS, input)], [], JoinType.AND)
       this.ParseError = e as Error
     }
   }
@@ -104,7 +104,7 @@ function parseRuleset(reader: Reader, nested: boolean): Ruleset {
 function parseRule(reader: Reader): Rule {
   reader.save()
 
-  let target = Target.Raw
+  let target = Target.Body
   let targetValid = false
   targetAliases.forEach((values, key) => {
     values.forEach(value => {

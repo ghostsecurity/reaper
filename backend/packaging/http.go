@@ -2,7 +2,6 @@
 package packaging
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"io"
@@ -17,7 +16,7 @@ type HttpRequest struct {
 	Path        string
 	QueryString string
 	Scheme      string
-	Raw         string
+	Body        string
 	ID          string
 	LocalID     int64
 	Headers     map[string][]string
@@ -26,7 +25,7 @@ type HttpRequest struct {
 }
 
 type HttpResponse struct {
-	Raw        string
+	Body       string
 	StatusCode int
 	ID         string
 	LocalID    int64
@@ -54,21 +53,12 @@ func PackageHttpRequest(request *http.Request, proxyID string, reqID int64) (*Ht
 	// restore original body for entire request write
 	request.Body = io.NopCloser(backup)
 
-	// write entire request
-	var buf bytes.Buffer
-	if err := request.Write(&buf); err != nil {
-		return nil, fmt.Errorf("failed to write request: %w", err)
-	}
-
-	// restore original body for local copy
-	request.Body = io.NopCloser(localCopy)
-
 	return &HttpRequest{
 		ID:          fmt.Sprintf("%s:%d", proxyID, reqID),
 		LocalID:     reqID,
 		Method:      request.Method,
 		URL:         request.URL.String(),
-		Raw:         buf.String(),
+		Body:        localCopy.String(),
 		Host:        request.Host,
 		Path:        request.URL.Path,
 		QueryString: request.URL.RawQuery,
@@ -159,30 +149,21 @@ func PackageHttpResponse(response *http.Response, proxyID string, reqID int64) (
 	// restore original body for entire response write
 	response.Body = io.NopCloser(backup)
 
-	// write entire response
-	var buf bytes.Buffer
-	if err := response.Write(&buf); err != nil {
-		return nil, fmt.Errorf("failed to write response: %w", err)
-	}
-
-	// restore original body for local copy
-	response.Body = io.NopCloser(localCopy)
-
 	return &HttpResponse{
 		ID:         fmt.Sprintf("%s:%d", proxyID, reqID),
 		LocalID:    reqID,
-		Raw:        buf.String(),
+		BodySize:   localCopy.Len(),
+		Body:       localCopy.String(),
 		StatusCode: response.StatusCode,
 		Headers:    packageHeaders(response.Header),
 		Tags:       tagResponse(response),
-		BodySize:   localCopy.Len(),
 	}, nil
 }
 
 func UnpackageHttpRequest(h *HttpRequest) (*http.Request, error) {
-	return http.ReadRequest(bufio.NewReader(strings.NewReader(h.Raw)))
+	return nil, fmt.Errorf("not implemented")
 }
 
 func UnpackageHttpResponse(h *HttpResponse, req *http.Request) (*http.Response, error) {
-	return http.ReadResponse(bufio.NewReader(strings.NewReader(h.Raw)), req)
+	return nil, fmt.Errorf("not implemented")
 }

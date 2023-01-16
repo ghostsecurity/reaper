@@ -240,179 +240,144 @@ function createGroup(name: string) {
 </script>
 
 <template>
-  <InputBox
-    v-if="creatingGroup"
-    title="New Group"
-    message="Enter the group name."
-    @cancel="creatingGroup = false"
+  <InputBox v-if="creatingGroup" title="New Group" message="Enter the group name." @cancel="creatingGroup = false"
     @confirm="createGroup($event)" />
-  <InputBox
-    v-if="renamingGroup"
-    title="Rename group"
-    message="Enter the new group name."
-    @cancel="renamingGroup = ''"
+  <InputBox v-if="renamingGroup" title="Rename group" message="Enter the new group name." @cancel="renamingGroup = ''"
     @confirm="renameGroup(renamingGroup, $event)" />
-  <InputBox
-    v-else-if="renamingRequest"
-    title="Rename request"
-    message="Enter the new request name."
-    @cancel="renamingRequest = ''"
-    @confirm="renameRequest(renamingRequest, $event)" />
-  <div class="flex h-10 max-h-10 w-full text-left">
-    <div class="flex-1">
-      <!-- shrink/expand buttons here? -->
-    </div>
-    <div class="flex-0">
-      <button
-        type="button"
-        class="inline-flex items-center rounded-md border border-transparent bg-frost-3 px-4 py-2 text-sm font-medium text-polar-night-1 shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-aurora-5 focus:ring-offset-2">
-        <DocumentArrowUpIcon class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-        <span class="hidden sm:inline">New Request</span>
-      </button>
-      <button
-        @click.stop="creatingGroup = true"
-        type="button"
-        class="ml-1 inline-flex items-center rounded-md border border-transparent bg-frost-3 px-4 py-2 text-sm font-medium text-polar-night-1 shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-aurora-5 focus:ring-offset-2">
-        <FolderPlusIcon class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-        <span class="hidden sm:inline">New Group</span>
-      </button>
-    </div>
-  </div>
-  <div class="sensible-height overflow-y-auto pt-2">
-    <div v-if="props.groups.length === 0">
-      <div class="pt-8 pl-8 text-center">
-        <component :is="props.emptyIcon" class="mx-auto h-12 w-12" />
-        <h3 class="mt-2 text-sm font-medium">{{ props.emptyTitle }}</h3>
-        <p class="mt-1 text-sm text-snow-storm-1">{{ props.emptyMessage }}</p>
+  <InputBox v-else-if="renamingRequest" title="Rename request" message="Enter the new request name."
+    @cancel="renamingRequest = ''" @confirm="renameRequest(renamingRequest, $event)" />
+  <div class="flex flex-col h-full">
+    <div class="flex-none">
+      <div class="flex h-10 max-h-10 w-full text-left">
+        <div class="flex-1">
+          <!-- shrink/expand buttons here? -->
+        </div>
+        <div class="flex-0">
+          <button type="button"
+            class="inline-flex items-center rounded-md border border-transparent bg-frost-3 px-4 py-2 text-sm font-medium text-polar-night-1 shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-aurora-5 focus:ring-offset-2">
+            <DocumentArrowUpIcon class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+            <span class="hidden sm:inline">New Request</span>
+          </button>
+          <button @click.stop="creatingGroup = true" type="button"
+            class="ml-1 inline-flex items-center rounded-md border border-transparent bg-frost-3 px-4 py-2 text-sm font-medium text-polar-night-1 shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-aurora-5 focus:ring-offset-2">
+            <FolderPlusIcon class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+            <span class="hidden sm:inline">New Group</span>
+          </button>
+        </div>
       </div>
     </div>
-    <div v-else-if="filterGroups(props.groups).length === 0">
-      <div class="pt-8 pl-8 text-center">
-        <MagnifyingGlassCircleIcon class="mx-auto h-12 w-12" />
-        <h3 class="mt-2 text-sm font-medium">No Results</h3>
-        <p class="mt-1 text-sm text-snow-storm-1">No requests match your search criteria</p>
-      </div>
-    </div>
-    <div v-else class="h-full bg-snow-storm dark:bg-polar-night-1a sm:rounded-md">
-      <ul role="list" class="divide-y divide-polar-night-3">
-        <li
-          class="li-group bg-polar-night-1 pt-4 first:pt-0"
-          v-for="group in props.groups"
-          :key="group.id"
-          @drop="onDrop($event, group, null)"
-          @dragover.prevent
-          @dragenter.prevent="dragGroupEnter(group.id)"
-          @dragleave.prevent="dragGroupLeave(group.id)"
-          @dragstart.stop="startGroupDrag($event, group)">
-          <div :class="[!draggingRequest && group.id === dropGroup ? 'border-t-2 border-aurora-5' : '']">
-            <div :class="['flex', !shrunkenGroups.has(group.id) ? 'border-b border-polar-night-4' : '']">
-              <div
-                :class="['drag-handle mb-1 flex-1 pb-1 text-left']"
-                @click.prevent.stop
-                @mousedown.stop="enableGroupDrag"
-                @mouseup.stop="disableGroupDrag">
-                <a v-if="!shrunkenGroups.has(group.id)" @click="expandGroup(group, false)">
-                  <ChevronDownIcon class="-mt-1 inline h-5 w-5" />
-                  <FolderOpenIcon class="-mt-1 inline h-5 w-5" />
-                </a>
-                <a v-else @click="expandGroup(group, true)">
-                  <ChevronRightIcon class="-mt-1 inline h-5 w-5" />
-                  <FolderIcon class="-mt-1 inline h-5 w-5" />
-                </a>
-                <span class="ml-1">{{ group.name ? group.name : 'Untitled' }}</span>
-                <span class="ml-1 text-sm text-gray-500">
-                  -
-                  {{
-                    `${filterRequests(group.requests).length} of ${group.requests.length} ${
-                      group.requests.length === 1 ? 'request' : 'requests'
-                    }`
-                  }}
-                </span>
-              </div>
-              <div class="flex-0">
-                <a @click.stop="renamingGroup = group.id" class="cursor-pointer text-gray-400 hover:text-frost-2">
-                  <PencilSquareIcon class="inline h-4 w-4" />
-                </a>
-                <a @click.stop="deleteGroup(group)" class="cursor-pointer text-gray-400 hover:text-aurora-1">
-                  <TrashIcon class="inline h-4 w-4" />
-                </a>
-              </div>
-            </div>
-            <ul
-              v-if="!shrunkenGroups.has(group.id)"
-              role="list"
-              :class="[
-                'divide-y divide-polar-night-3',
-                draggingRequest && dropRequest === '' && group.id === dropGroup ? 'border-t-2 border-aurora-5' : '',
-              ]">
-              <div v-if="filterRequests(group.requests).length === 0">
-                <div class="py-2 pl-8 text-left">
-                  <h3 class="mt-2 text-sm font-medium">No Requests</h3>
-                  <p class="mt-1 text-sm text-snow-storm-1">There are no requests in this group</p>
+    <div class="flex-auto overflow-y-hidden">
+      <div class="max-h-full overflow-y-auto">
+        <div v-if="props.groups.length === 0">
+          <div class="pt-8 pl-8 text-center">
+            <component :is="props.emptyIcon" class="mx-auto h-12 w-12" />
+            <h3 class="mt-2 text-sm font-medium">{{ props.emptyTitle }}</h3>
+            <p class="mt-1 text-sm text-snow-storm-1">{{ props.emptyMessage }}</p>
+          </div>
+        </div>
+        <div v-else-if="filterGroups(props.groups).length === 0">
+          <div class="pt-8 pl-8 text-center">
+            <MagnifyingGlassCircleIcon class="mx-auto h-12 w-12" />
+            <h3 class="mt-2 text-sm font-medium">No Results</h3>
+            <p class="mt-1 text-sm text-snow-storm-1">No requests match your search criteria</p>
+          </div>
+        </div>
+        <div v-else class="h-full sm:rounded-md">
+          <ul role="list" class="divide-y divide-polar-night-3">
+            <li class="li-group pt-4 first:pt-0" v-for="group in props.groups" :key="group.id"
+              @drop="onDrop($event, group, null)" @dragover.prevent @dragenter.prevent="dragGroupEnter(group.id)"
+              @dragleave.prevent="dragGroupLeave(group.id)" @dragstart.stop="startGroupDrag($event, group)">
+              <div :class="[!draggingRequest && group.id === dropGroup ? 'border-t-2 border-aurora-5' : '']">
+                <div :class="['flex', !shrunkenGroups.has(group.id) ? 'border-b border-polar-night-4' : '']">
+                  <div :class="['drag-handle mb-1 flex-1 pb-1 text-left']" @click.prevent.stop
+                    @mousedown.stop="enableGroupDrag" @mouseup.stop="disableGroupDrag">
+                    <a v-if="!shrunkenGroups.has(group.id)" @click="expandGroup(group, false)">
+                      <ChevronDownIcon class="-mt-1 inline h-5 w-5" />
+                      <FolderOpenIcon class="-mt-1 inline h-5 w-5" />
+                    </a>
+                    <a v-else @click="expandGroup(group, true)">
+                      <ChevronRightIcon class="-mt-1 inline h-5 w-5" />
+                      <FolderIcon class="-mt-1 inline h-5 w-5" />
+                    </a>
+                    <span class="ml-1">{{ group.name ? group.name : 'Untitled' }}</span>
+                    <span class="ml-1 text-sm text-gray-500">
+                      -
+                      {{
+                      `${filterRequests(group.requests).length} of ${group.requests.length}`
+                      }}
+                      {{
+                        group.requests.length === 1 ? 'request' : 'requests'
+                      }}
+                    </span>
+                  </div>
+                  <div class="flex-0">
+                    <a @click.stop="renamingGroup = group.id" class="cursor-pointer text-gray-400 hover:text-frost-2">
+                      <PencilSquareIcon class="inline h-4 w-4" />
+                    </a>
+                    <a @click.stop="deleteGroup(group)" class="cursor-pointer text-gray-400 hover:text-aurora-1">
+                      <TrashIcon class="inline h-4 w-4" />
+                    </a>
+                  </div>
                 </div>
-              </div>
-              <li
-                class="li-request bg-snow-storm dark:bg-polar-night-1a"
-                v-else
-                v-for="outer in filterRequests(group.requests)"
-                :key="outer.id"
-                @drop.stop="onDrop($event, group, outer)"
-                @dragover.prevent
-                @dragenter.prevent="dragRequestEnter(outer.id)"
-                @dragleave.prevent="dragRequestLeave(outer.id)"
-                @dragstart.stop="startRequestDrag($event, outer)"
-                @dragend="disableRequestDrag">
-                <a
-                  :class="[
-                    'relative block pl-4',
-                    outer.id === selected ? 'bg-polar-night-3' : 'hover:bg-gray-50 dark:hover:bg-polar-night-2',
-                    draggingRequest && dropRequest === outer.id ? 'border-b-2 border-aurora-5' : '',
-                  ]"
-                  @click="selectRequest(outer.inner)">
-                  <div :class="['left ending truncate', MethodClass(outer.inner)]">{{ outer.inner.Method }}</div>
-                  <div class="py-4 pl-4 sm:pl-6">
-                    <div class="flex">
-                      <div
-                        @click.prevent.stop
-                        @mousedown.stop="enableRequestDrag"
-                        @mouseup.stop="disableRequestDrag"
-                        class="flex-0 drag-handle m-auto pl-0 pr-4">
-                        <Bars3Icon class="h-6 w-6" />
-                      </div>
-                      <div class="flex-1">
-                        <RequestItemSummary :request="outer.inner" :name="outer.name" :show-tags="false" />
-                      </div>
-                      <div class="flex-0 pl-4 pr-2 pt-2 text-gray-400">
-                        <a
-                          @click.stop="renamingRequest = outer.id"
-                          title="Rename"
-                          class="cursor-pointer hover:text-frost-2">
-                          <PencilSquareIcon class="inline h-6 w-6" />
-                        </a>
-                        <a @click.stop="$emit('duplicate-request', outer)" class="cursor-pointer hover:text-aurora-3">
-                          <DocumentDuplicateIcon class="inline h-6 w-6" />
-                        </a>
-                        <a @click.stop="$emit('unsave-request', outer)" class="cursor-pointer hover:text-aurora-1">
-                          <TrashIcon class="inline h-6 w-6" />
-                        </a>
-                      </div>
+                <ul v-if="!shrunkenGroups.has(group.id)" role="list" :class="[
+                  'divide-y divide-polar-night-3',
+                  draggingRequest && dropRequest === '' && group.id === dropGroup ? 'border-t-2 border-aurora-5' : '',
+                ]">
+                  <div v-if="filterRequests(group.requests).length === 0">
+                    <div class="py-2 pl-8 text-left">
+                      <h3 class="mt-2 text-sm font-medium">No Requests</h3>
+                      <p class="mt-1 text-sm text-snow-storm-1">There are no requests in this group</p>
                     </div>
                   </div>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </li>
-      </ul>
+                  <li class="li-request bg-snow-storm dark:bg-polar-night-1a" v-else
+                    v-for="outer in filterRequests(group.requests)" :key="outer.id"
+                    @drop.stop="onDrop($event, group, outer)" @dragover.prevent
+                    @dragenter.prevent="dragRequestEnter(outer.id)" @dragleave.prevent="dragRequestLeave(outer.id)"
+                    @dragstart.stop="startRequestDrag($event, outer)" @dragend="disableRequestDrag">
+                    <a :class="[
+                      'relative block pl-4',
+                      outer.id === selected ? 'bg-polar-night-3' : 'hover:bg-gray-50 dark:hover:bg-polar-night-2',
+                      draggingRequest && dropRequest === outer.id ? 'border-b-2 border-aurora-5' : '',
+                    ]" @click="selectRequest(outer.inner)">
+                      <div :class="['left ending truncate', MethodClass(outer.inner)]">{{ outer.inner.Method }}</div>
+                      <div class="py-4 pl-4 sm:pl-6">
+                        <div class="flex">
+                          <div @click.prevent.stop @mousedown.stop="enableRequestDrag"
+                            @mouseup.stop="disableRequestDrag" class="flex-0 drag-handle m-auto pl-0 pr-4">
+                            <Bars3Icon class="h-6 w-6" />
+                          </div>
+                          <div class="flex-1">
+                            <RequestItemSummary :request="outer.inner" :name="outer.name" :show-tags="false" />
+                          </div>
+                          <div class="flex-0 pl-4 pr-2 pt-2 text-gray-400">
+                            <a @click.stop="renamingRequest = outer.id" title="Rename"
+                              class="cursor-pointer hover:text-frost-2">
+                              <PencilSquareIcon class="inline h-6 w-6" />
+                            </a>
+                            <a @click.stop="$emit('duplicate-request', outer)"
+                              class="cursor-pointer hover:text-aurora-3">
+                              <DocumentDuplicateIcon class="inline h-6 w-6" />
+                            </a>
+                            <a @click.stop="$emit('unsave-request', outer)" class="cursor-pointer hover:text-aurora-1">
+                              <TrashIcon class="inline h-6 w-6" />
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
+
 </template>
 
 <style scoped>
-.sensible-height {
-  max-height: calc(100vh - 10.5rem);
-}
-
 .li-group * {
   pointer-events: none;
 }

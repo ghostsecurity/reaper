@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import { watch, ref, onMounted } from 'vue'
 
-import { HighlightCode } from '../../../wailsjs/go/app/App'
+import { HighlightHTTP, HighlightBody } from '../../../wailsjs/go/app/App'
 
 const props = defineProps({
   code: { type: String, required: true },
   readonly: { type: Boolean, required: true },
+  http: { type: Boolean, default: false },
 })
 
 const buffer = ref(props.code)
@@ -53,25 +54,26 @@ function updateCode() {
     sent.value += ' '
   }
 
-  HighlightCode(sent.value).then((hl: string) => {
-    setHighlighted(hl)
-  })
+  if (props.http) {
+    HighlightHTTP(sent.value).then((hl: string) => {
+      setHighlighted(hl)
+    })
+  } else {
+    // TODO: content type
+    HighlightBody(sent.value, 'application/json').then((hl: string) => {
+      setHighlighted(hl)
+    })
+  }
 }
 </script>
 
 <template>
-  <div
-    :class="[
-      'overflow-x-auto',
-      busy ? 'wrapper plain h-full text-left' : 'wrapper highlighted h-full min-h-full text-left',
-    ]">
+  <div :class="[
+    'overflow-x-auto',
+    busy ? 'wrapper plain h-full text-left' : 'wrapper highlighted h-full min-h-full text-left',
+  ]">
     <pre ref="pre" class="h-full min-h-full" aria-hidden="true"><code v-html="highlighted"></code></pre>
-    <textarea
-      :readonly="readonly"
-      spellcheck="false"
-      ref="textarea"
-      @input="updateCode"
-      @scroll="syncScroll"
+    <textarea :readonly="readonly" spellcheck="false" ref="textarea" @input="updateCode" @scroll="syncScroll"
       v-model="buffer"></textarea>
   </div>
 </template>
@@ -98,21 +100,37 @@ pre {
   width: 100%;
   height: 100%;
   white-space: pre;
-  /*nowrap;*/
   overflow-wrap: normal;
   overflow: auto;
-  overflow-x: scroll !important;
+  overflow-x: auto !important;
   padding: 0;
   border: none;
+
 }
 
 textarea,
-pre,
 code {
   font-size: 1.05em !important;
   font-family: monospace !important;
   line-height: 1.2em !important;
   tab-size: 2;
+  word-spacing: 0;
+  letter-spacing: 0;
+  font-weight: 400;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: optimizeLegibility;
+  text-transform: none;
+  text-align: left;
+  text-indent: 0;
+  text-shadow: none;
+  text-decoration: none;
+  text-decoration-line: none;
+  text-decoration-style: solid;
+  writing-mode: horizontal-tb;
+  white-space: pre;
+  font-feature-settings: normal;
+  overflow-wrap: normal;
 }
 
 pre {

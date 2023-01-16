@@ -30,8 +30,12 @@ export function GetWorkspaces() {
   return window['go']['app']['App']['GetWorkspaces']();
 }
 
-export function HighlightCode(arg1) {
-  return window['go']['app']['App']['HighlightCode'](arg1);
+export function HighlightBody(arg1, arg2) {
+  return window['go']['app']['App']['HighlightBody'](arg1, arg2);
+}
+
+export function HighlightHTTP(arg1) {
+  return window['go']['app']['App']['HighlightHTTP'](arg1);
 }
 
 export function LoadWorkspace(arg1) {

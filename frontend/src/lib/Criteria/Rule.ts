@@ -12,7 +12,7 @@ enum Target {
   Host = 'host',
   Path = 'path',
   Query = 'query',
-  Raw = 'raw',
+  Body = 'body',
 }
 
 enum JoinType {
@@ -49,8 +49,8 @@ class Rule {
     case Target.Query:
       field = req.QueryString
       break
-    case Target.Raw:
-      field = req.Raw
+    case Target.Body:
+      field = req.Body
       break
     default:
       return false

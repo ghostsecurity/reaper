@@ -32,7 +32,8 @@ function dropRequest() {
 
 function onChange(raw: string) {
   if (request.value !== null) {
-    request.value.Raw = raw
+    // TODO
+    // request.value.Raw = raw
   }
 }
 </script>

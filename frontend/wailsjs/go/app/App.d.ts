@@ -17,7 +17,9 @@ export function GetSettings():Promise<settings.Settings>;
 
 export function GetWorkspaces():Promise<Array<workspace.Workspace>>;
 
-export function HighlightCode(arg1:string):Promise<string>;
+export function HighlightBody(arg1:string,arg2:string):Promise<string>;
+
+export function HighlightHTTP(arg1:string):Promise<string>;
 
 export function LoadWorkspace(arg1:string):Promise<workspace.Workspace>;
 

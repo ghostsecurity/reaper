@@ -171,8 +171,12 @@ func (a *App) Shutdown(_ context.Context) {
 	}
 }
 
-func (a *App) HighlightCode(code string) string {
+func (a *App) HighlightHTTP(code string) string {
 	return highlight.HTTP(code)
+}
+
+func (a *App) HighlightBody(body, contentType string) string {
+	return highlight.Body(body, contentType)
 }
 
 func (a *App) GenerateID() string {
