@@ -37,17 +37,21 @@ const lastShrink = ref(0)
 
 const emit = defineEmits(['select'])
 
-watch(() => props.shrinkIndex, (newVal: number) => {
-  if (newVal <= lastShrink.value) {
-    return
-  }
-  lastShrink.value = newVal
-  if (props.hasParent) {
-    props.nodes.forEach((node) => {
-      visible.set(node.name, false)
-    })
-  }
-}, { immediate: true })
+watch(
+  () => props.shrinkIndex,
+  (newVal: number) => {
+    if (newVal <= lastShrink.value) {
+      return
+    }
+    lastShrink.value = newVal
+    if (props.hasParent) {
+      props.nodes.forEach(node => {
+        visible.set(node.name, false)
+      })
+    }
+  },
+  { immediate: true },
+)
 
 function toggle(name: string) {
   visible.set(name, !toggled(name))
@@ -85,7 +89,8 @@ function onNodeSelect(node: workspace.StructureNode) {
   emit('select', [node.name])
 }
 
-function onChildSelect(part: string): (parts: Array<string>) => void { // eslint-disable-line no-unused-vars
+function onChildSelect(part: string): (parts: Array<string>) => void {
+  // eslint-disable-line no-unused-vars
   return (parts: Array<string>) => {
     emit('select', [part, ...parts])
   }
@@ -94,30 +99,36 @@ function onChildSelect(part: string): (parts: Array<string>) => void { // eslint
 
 <template>
   <div v-if="!hasParent && nodes.length === 0">
-    <div class="text-center pt-4 pl-8">
+    <div class="pt-4 pl-8 text-center text-frost-3">
       <FolderIcon class="mx-auto h-12 w-12" />
-      <h3 class="mt-2 text-sm font-medium">No requests received</h3>
-      <p class="mt-1 text-sm text-snow-storm-1">Configure your browser to use Reaper</p>
+      <h3 class="mt-2 text-sm font-bold">No requests received</h3>
+      <p class="mt-1 text-sm">Configure your browser to use Reaper</p>
     </div>
   </div>
   <ul>
-    <li v-for="node in nodes" class="whitespace-nowrap text-snow-storm-1" :key="node.id">
+    <li v-for="node in nodes" class="whitespace-nowrap text-sm text-snow-storm-1" :key="node.id">
       <div class="flex items-center">
         <a @click="toggle(node.name)" @dblclick="onNodeSelect(node)">
-          <span v-if="node.children.length === 0" class="w-6 inline-block h-1" />
-          <ChevronDownIcon v-else-if="toggled(node.name)" class="w-4 inline text-gray-500" />
-          <ChevronRightIcon v-else class="w-4 inline text-gray-500" />
-          <FolderIcon v-if="node.children.length > 0" class="text-frost mr-1 w-4 inline" />
-          <CodeBracketSquareIcon v-else-if="isCode(node.name)" class="text-frost-3 mr-1 w-4 inline" />
-          <PhotoIcon v-else-if="isPhoto(node.name)" class="text-frost-3 mr-1 w-4 inline" />
-          <DocumentIcon v-else class="text-frost-3 mr-1 w-4 inline" />
+          <span v-if="node.children.length === 0" class="inline-block h-1 w-6" />
+          <ChevronDownIcon v-else-if="toggled(node.name)" class="inline w-4 text-gray-500" />
+          <ChevronRightIcon v-else class="inline w-4 text-gray-500" />
+          <FolderIcon v-if="node.children.length > 0" class="mr-1 inline w-4 text-frost" />
+          <CodeBracketSquareIcon v-else-if="isCode(node.name)" class="mr-1 inline w-4 text-frost-3" />
+          <PhotoIcon v-else-if="isPhoto(node.name)" class="mr-1 inline w-4 text-frost-3" />
+          <DocumentIcon v-else class="mr-1 inline w-4 text-frost-3" />
         </a>
         <a @click="onNodeSelect(node)" class="hover:bg-polar-night-3">
-          {{ node.name }}
+          {{ node.name }} {{ !toggled(node.name) && node.children.length > 1 ? node.children.length : '' }}
         </a>
       </div>
-      <TreeStructure @select="onChildSelect(node.name)($event)" :key="node.name" v-if="toggled(node.name)"
-        :nodes="node.children" :expanded="expanded" :hasParent="true" :shrinkIndex="lastShrink" />
+      <TreeStructure
+        @select="onChildSelect(node.name)($event)"
+        :key="node.name"
+        v-if="toggled(node.name)"
+        :nodes="node.children"
+        :expanded="expanded"
+        :hasParent="true"
+        :shrinkIndex="lastShrink" />
     </li>
   </ul>
 </template>
@@ -141,19 +152,19 @@ li {
   text-align: left;
 }
 
-li>ul>li {
+li > ul > li {
   padding-left: 1rem;
 }
 
-li>a.expand {
+li > a.expand {
   display: none;
 }
 
-li.shrunk>a.expand {
+li.shrunk > a.expand {
   display: inline;
 }
 
-li.shrunk>a.expanded {
+li.shrunk > a.expanded {
   display: none;
 }
 </style>

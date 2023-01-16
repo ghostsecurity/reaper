@@ -79,7 +79,7 @@ function parseRuleset(reader: Reader, nested: boolean): Ruleset {
 
     let newJoin = JoinType.NONE
     joinAliases.forEach((aliases, type) => {
-      aliases.forEach((alias) => {
+      aliases.forEach(alias => {
         if (alias.toLowerCase() === reader.peekWord().toLowerCase()) {
           newJoin = <JoinType>type
           reader.readWord()
@@ -107,7 +107,7 @@ function parseRule(reader: Reader): Rule {
   let target = Target.Raw
   let targetValid = false
   targetAliases.forEach((values, key) => {
-    values.forEach((value) => {
+    values.forEach(value => {
       if (value.toLowerCase() === reader.peekWord().toLowerCase()) {
         target = <Target>key
         reader.readWord()
@@ -117,7 +117,7 @@ function parseRule(reader: Reader): Rule {
   })
   if (!targetValid) {
     targetAliases.forEach((values, key) => {
-      values.forEach((value) => {
+      values.forEach(value => {
         if (reader.peekWord().toLowerCase().startsWith(value.toLowerCase())) {
           target = <Target>key
           const entireWord = reader.readWord()
@@ -135,7 +135,7 @@ function parseRule(reader: Reader): Rule {
   let comparison = Comparison.CONTAINS
   let comparisonValid = false
   comparisonAliases.forEach((values, key) => {
-    values.forEach((value) => {
+    values.forEach(value => {
       if (value.toLowerCase() === reader.peekWord().toLowerCase()) {
         comparison = <Comparison>key
         reader.readWord()
@@ -145,7 +145,7 @@ function parseRule(reader: Reader): Rule {
   })
   if (!comparisonValid) {
     comparisonAliases.forEach((values, key) => {
-      values.forEach((value) => {
+      values.forEach(value => {
         if (reader.peekWord().toLowerCase().startsWith(value.toLowerCase())) {
           comparison = <Comparison>key
           const entireWord = reader.readWord()

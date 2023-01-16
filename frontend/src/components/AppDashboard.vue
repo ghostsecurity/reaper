@@ -44,9 +44,12 @@ const tabs = ref([
 const liveCriteria = reactive(props.criteria)
 const reqReadOnly = ref(true)
 
-watch(() => props.criteria, (criteria) => {
-  Object.assign(liveCriteria, criteria)
-})
+watch(
+  () => props.criteria,
+  criteria => {
+    Object.assign(liveCriteria, criteria)
+  },
+)
 
 onBeforeMount(() => {
   EventsOn('HttpRequest', (data: HttpRequest) => {
@@ -72,7 +75,7 @@ function clearRequest() {
 }
 
 function switchTab(id: string) {
-  tabs.value = tabs.value.map((tab) => {
+  tabs.value = tabs.value.map(tab => {
     const updatedTab = tab
     updatedTab.current = updatedTab.id === id
     return updatedTab
@@ -84,7 +87,7 @@ function selectTab(e: Event) {
 }
 
 function selectedTab(): string {
-  return tabs.value.find((tab) => tab.current)?.id || ''
+  return tabs.value.find(tab => tab.current)?.id || ''
 }
 
 function onSearch(crit: Criteria) {
@@ -134,67 +137,93 @@ function renameRequest(requestId: string, name: string) {
 </script>
 
 <template>
-  <div class="min-h-16 h-16 max-h-16 flex p-2">
+  <div class="min-h-16 flex h-16 max-h-16 p-2">
     <div class="flex-grow text-left">
       <Search @search="onSearch" :query="liveCriteria.Raw" />
     </div>
-    <div class="flex-shrink p-0 ml-2">
+    <div class="ml-2 flex-shrink p-0">
       <WorkspaceMenu @edit="emit('workspace-edit')" :ws="ws" @switch="switchWorkspace" />
     </div>
   </div>
   <div class="min-h-16 h-16 max-h-16 px-2">
     <div class="sm:hidden">
       <label for="tabs" class="sr-only">Select a tab</label>
-      <select @change="selectTab" id="tabs" name="tabs"
-        class="bg-polar-night-2 text-snow-storm-1 block w-full rounded-md focus:border-frost focus:ring-frost">
+      <select
+        @change="selectTab"
+        id="tabs"
+        name="tabs"
+        class="block w-full rounded-md bg-polar-night-2 text-snow-storm-1 focus:border-frost focus:ring-frost">
         <option v-for="tab in tabs" :key="tab.id" :selected="tab.current" :value="tab.id">{{ tab.name }}</option>
       </select>
     </div>
     <div class="hidden sm:block">
       <div class="border-b dark:border-polar-night-4">
         <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-          <a v-for="tab in tabs" @click="switchTab(tab.id)" :key="tab.name" :class="[
-          tab.current ?
-            'border-frost text-frost' :
-            'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500',
-          'group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm cursor-pointer']"
+          <a
+            v-for="tab in tabs"
+            @click="switchTab(tab.id)"
+            :key="tab.name"
+            :class="[
+              tab.current
+                ? 'border-frost text-frost'
+                : 'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-200',
+              'group inline-flex cursor-pointer items-center border-b-2 py-4 px-1 text-sm font-medium',
+            ]"
             :aria-current="tab.current ? 'page' : undefined">
-            <component :is="tab.icon" :class="[
-              tab.current ?
-                'text-frost' :
-                'text-gray-400 group-hover:text-gray-300',
-              '-ml-0.5 mr-2 h-5 w-5'
-            ]" aria-hidden="true" />
+            <component
+              :is="tab.icon"
+              :class="[tab.current ? 'text-frost' : 'text-gray-400 group-hover:text-gray-300', '-ml-0.5 mr-2 h-5 w-5']"
+              aria-hidden="true" />
             <span>{{ tab.name }}</span>
           </a>
         </nav>
       </div>
     </div>
   </div>
-  <div class="px-2 flex h-full">
+  <div class="flex h-full px-2">
     <div class="flex-1">
-      <RequestList @save-request="saveRequest" @unsave-request="unsaveRequest" :saved-request-ids="savedRequestIds"
-        :key="liveCriteria.Raw" v-if="selectedTab() === 'log'"
-        :empty-message="'Reaper is ready to receive requests at ' + proxyAddress" :requests="requests"
-        @select="examineRequest($event, true)" :selected="req ? req.ID : ''" :criteria="liveCriteria" />
-      <GroupedRequestList :key="liveCriteria.Raw" v-if="selectedTab() === 'saved'"
-        :groups="ws.collection.groups ? ws.collection.groups : []" @select="examineRequest($event, false)"
-        :selected="req ? req.ID : ''" :criteria="liveCriteria" :empty-title="'No saved requests'"
-        :empty-message="'Save some requests from the log stream to access them here'" :empty-icon="StarIcon"
-        @request-group-change="setRequestGroup" @request-group-create="createRequestGroup"
-        @group-order-change="reorderGroup" @unsave-request="unsaveRequest" @duplicate-request="duplicateRequest"
-        @request-group-delete="deleteGroup" @request-rename="renameRequest" @request-group-rename="renameGroup" />
-      <div v-if="selectedTab() === 'workflows'">
-        TODO: Attack Workflows
-      </div>
+      <RequestList
+        @save-request="saveRequest"
+        @unsave-request="unsaveRequest"
+        :saved-request-ids="savedRequestIds"
+        :key="liveCriteria.Raw"
+        v-if="selectedTab() === 'log'"
+        :empty-message="'Reaper is ready to receive requests at ' + proxyAddress"
+        :requests="requests"
+        @select="examineRequest($event, true)"
+        :selected="req ? req.ID : ''"
+        :criteria="liveCriteria" />
+      <GroupedRequestList
+        :key="liveCriteria.Raw"
+        v-if="selectedTab() === 'saved'"
+        :groups="ws.collection.groups ? ws.collection.groups : []"
+        @select="examineRequest($event, false)"
+        :selected="req ? req.ID : ''"
+        :criteria="liveCriteria"
+        :empty-title="'No saved requests'"
+        :empty-message="'Save some requests from the log stream to access them here'"
+        :empty-icon="StarIcon"
+        @request-group-change="setRequestGroup"
+        @request-group-create="createRequestGroup"
+        @group-order-change="reorderGroup"
+        @unsave-request="unsaveRequest"
+        @duplicate-request="duplicateRequest"
+        @request-group-delete="deleteGroup"
+        @request-rename="renameRequest"
+        @request-group-rename="renameGroup" />
+      <div v-if="selectedTab() === 'workflows'">TODO: Attack Workflows</div>
     </div>
 
     <!-- TODO: intercept stuff here -->
-    <div v-if="false" class="flex-0 w-[50%] min-w- pl-2 ml-2 border-l border-polar-night-2 h-full">
+    <div
+      v-if="false"
+      class="flex-0 min-w- ml-2 h-full w-[50%] border-l border-snow-storm-1 pl-2 dark:border-polar-night-3">
       intercept ui here
     </div>
 
-    <div v-else-if="req" class="flex-0 w-[50%] min-w- pl-2 ml-2 border-l border-polar-night-2 h-full">
+    <div
+      v-else-if="req"
+      class="flex-0 min-w- ml-2 h-full w-[50%] border-l border-snow-storm-1 pl-2 dark:border-polar-night-3">
       <IDE :request="req" :readonly="reqReadOnly" @close="clearRequest" />
     </div>
   </div>

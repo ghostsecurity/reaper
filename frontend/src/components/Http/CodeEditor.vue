@@ -17,12 +17,15 @@ const pre = ref()
 
 const emit = defineEmits(['change'])
 
-watch(() => props.code, () => {
-  buffer.value = props.code
-  const element = (textarea.value as HTMLTextAreaElement)
-  element.value = buffer.value
-  updateCode()
-})
+watch(
+  () => props.code,
+  () => {
+    buffer.value = props.code
+    const element = textarea.value as HTMLTextAreaElement
+    element.value = buffer.value
+    updateCode()
+  },
+)
 
 onMounted(() => {
   updateCode()
@@ -34,8 +37,8 @@ function setHighlighted(hl: string) {
 }
 
 function syncScroll() {
-  const tElement = (textarea.value as HTMLTextAreaElement)
-  const pElement = (pre.value as HTMLTextAreaElement)
+  const tElement = textarea.value as HTMLTextAreaElement
+  const pElement = pre.value as HTMLTextAreaElement
   pElement.scrollTop = tElement.scrollTop
   pElement.scrollLeft = tElement.scrollLeft
 }
@@ -57,14 +60,18 @@ function updateCode() {
 </script>
 
 <template>
-  <div :class="[
-    'overflow-x-auto',
-    busy ?
-      'h-full text-left wrapper plain' :
-      'h-full text-left wrapper highlighted min-h-full',
-  ]">
+  <div
+    :class="[
+      'overflow-x-auto',
+      busy ? 'wrapper plain h-full text-left' : 'wrapper highlighted h-full min-h-full text-left',
+    ]">
     <pre ref="pre" class="h-full min-h-full" aria-hidden="true"><code v-html="highlighted"></code></pre>
-    <textarea :readonly="readonly" spellcheck="false" ref="textarea" @input="updateCode" @scroll="syncScroll"
+    <textarea
+      :readonly="readonly"
+      spellcheck="false"
+      ref="textarea"
+      @input="updateCode"
+      @scroll="syncScroll"
       v-model="buffer"></textarea>
   </div>
 </template>
@@ -102,9 +109,9 @@ pre {
 textarea,
 pre,
 code {
-  font-size: 12pt !important;
+  font-size: 1.05em !important;
   font-family: monospace !important;
-  line-height: 20pt !important;
+  line-height: 1.2em !important;
   tab-size: 2;
 }
 
