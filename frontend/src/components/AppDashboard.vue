@@ -43,11 +43,43 @@ const tabs = ref([
 ])
 const liveCriteria = reactive(props.criteria)
 const reqReadOnly = ref(true)
+const fullscreenIDE = ref(false)
 
 const root = ref()
 const leftPanel = ref()
+const rightPanel = ref()
 const handle = ref()
 const resizing = ref(false)
+
+const readOnlyActions = new Map<string, string>([
+  ['save', 'Save'],
+  ['export-har', 'Export HAR'],
+  ['export-curl', 'Export Curl'],
+])
+
+const writeActions = new Map<string, string>([
+  ['send', 'Send'],
+  ['export-har', 'Export HAR'],
+  ['export-curl', 'Export Curl'],
+])
+
+function ideAction(action: string) {
+  switch (action) {
+  case 'send':
+    console.log('not implemented')
+    break
+  case 'save':
+    console.log('not implemented')
+    break
+  default:
+    throw new Error(`unknown action ${action}`)
+  }
+}
+
+function toggleFullscreenIDE() {
+  fullscreenIDE.value = !fullscreenIDE.value
+  setDefaultSizing()
+}
 
 watch(
   () => props.criteria,
@@ -85,11 +117,19 @@ onMounted(() => {
     // Arbitrary minimum width set on box A, otherwise its inner content will collapse to width of 0
     const boxAminWidth = 475
 
+    rightPanel.value.style.width = `${Math.min(
+      Math.max(400, root.value.offsetWidth - (pointerRelativeXpos + 10)), // 8px padding + 2px border
+      root.value.offsetWidth - boxAminWidth,
+    )}px`
+    rightPanel.value.style.flexGrow = 0
+    rightPanel.value.style.flexShrink = 0
+
     // Resize box A
     // * 8px is the left/right spacing between .handler and its inner pseudo-element
     // * Set flex-grow to 0 to prevent it from growing
-    leftPanel.value.style.width = `${(Math.max(boxAminWidth, pointerRelativeXpos - 8))}px`
-    leftPanel.value.style.flexGrow = 0
+    // leftPanel.value.style.width = `${Math.max(boxAminWidth, pointerRelativeXpos - 8)}px`
+    // leftPanel.value.style.flexGrow = 0
+    // leftPanel.value.style.flexShrink = 0
   })
   root.value.addEventListener('mouseup', () => {
     resizing.value = false
@@ -102,8 +142,20 @@ function examineRequest(request: HttpRequest, readonly: boolean) {
 }
 
 function clearRequest() {
+  fullscreenIDE.value = false
   req.value = null
-  leftPanel.value.style.flexGrow = 1
+  setDefaultSizing()
+}
+
+function setDefaultSizing() {
+  if (leftPanel.value !== null) {
+    leftPanel.value.style.flexGrow = 1
+    leftPanel.value.style.flexShrink = 1
+  }
+  if (rightPanel.value !== null) {
+    rightPanel.value.style.flexGrow = 1
+    rightPanel.value.style.flexShrink = 1
+  }
 }
 
 function switchTab(id: string) {
@@ -166,19 +218,14 @@ function renameGroup(groupId: string, name: string) {
 function renameRequest(requestId: string, name: string) {
   emit('request-rename', requestId, name)
 }
-
-function ideAction(action: string) {
-  console.log(action)
-}
 </script>
 
 <template>
-  <div ref="root" class="h-full flex">
-
+  <div ref="root" class="flex h-full overflow-x-hidden">
     <!-- main content with search, tabs etc. -->
-    <div ref="leftPanel" class="flex-auto box-border">
-      <div class="flex flex-col h-full px-2">
-        <div class="min-h-16 flex h-16 max-h-16 py-2 flex-shrink">
+    <div v-if="!fullscreenIDE" ref="leftPanel" class="box-border flex-auto">
+      <div class="flex h-full flex-col px-2">
+        <div class="min-h-16 flex h-16 max-h-16 flex-shrink py-2">
           <div class="flex-grow text-left">
             <Search @search="onSearch" :query="liveCriteria.Raw" />
           </div>
@@ -189,7 +236,10 @@ function ideAction(action: string) {
         <div class="min-h-16 h-16 max-h-16 flex-shrink">
           <div class="sm:hidden">
             <label for="tabs" class="sr-only">Select a tab</label>
-            <select @change="selectTab" id="tabs" name="tabs"
+            <select
+              @change="selectTab"
+              id="tabs"
+              name="tabs"
               class="block w-full rounded-md bg-polar-night-2 text-snow-storm-1 focus:border-frost focus:ring-frost">
               <option v-for="tab in tabs" :key="tab.id" :selected="tab.current" :value="tab.id">{{ tab.name }}</option>
             </select>
@@ -197,52 +247,83 @@ function ideAction(action: string) {
           <div class="hidden sm:block">
             <div class="border-b dark:border-polar-night-4">
               <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                <a v-for="tab in tabs" @click="switchTab(tab.id)" :key="tab.name" :class="[
-                  tab.current
-                    ? 'border-frost text-frost'
-                    : 'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-200',
-                  'group inline-flex cursor-pointer items-center border-b-2 py-4 px-1 text-sm font-medium',
-                ]" :aria-current="tab.current ? 'page' : undefined">
-                  <component :is="tab.icon" :class="[
-                    tab.current ?
-                      'text-frost' :
-                      'text-gray-400 group-hover:text-gray-300',
-                    '-ml-0.5 mr-2 h-5 w-5'
-                  ]" aria-hidden="true" />
+                <a
+                  v-for="tab in tabs"
+                  @click="switchTab(tab.id)"
+                  :key="tab.name"
+                  :class="[
+                    tab.current
+                      ? 'border-frost text-frost'
+                      : 'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-200',
+                    'group inline-flex cursor-pointer items-center border-b-2 py-4 px-1 text-sm font-medium',
+                  ]"
+                  :aria-current="tab.current ? 'page' : undefined">
+                  <component
+                    :is="tab.icon"
+                    :class="[
+                      tab.current ? 'text-frost' : 'text-gray-400 group-hover:text-gray-300',
+                      '-ml-0.5 mr-2 h-5 w-5',
+                    ]"
+                    aria-hidden="true" />
                   <span>{{ tab.name }}</span>
                 </a>
               </nav>
             </div>
           </div>
         </div>
-        <div class="flex-auto overflow-y-hidden my-2">
-          <RequestList @save-request="saveRequest" @unsave-request="unsaveRequest" :saved-request-ids="savedRequestIds"
-            :key="liveCriteria.Raw" v-if="selectedTab() === 'log'"
-            :empty-message="'Reaper is ready to receive requests at ' + proxyAddress" :requests="requests"
-            @select="examineRequest($event, true)" :selected="req ? req.ID : ''" :criteria="liveCriteria" />
-          <GroupedRequestList :key="liveCriteria.Raw" v-if="selectedTab() === 'saved'"
-            :groups="ws.collection.groups ? ws.collection.groups : []" @select="examineRequest($event, false)"
-            :selected="req ? req.ID : ''" :criteria="liveCriteria" :empty-title="'No saved requests'"
-            :empty-message="'Save some requests from the log stream to access them here'" :empty-icon="StarIcon"
-            @request-group-change="setRequestGroup" @request-group-create="createRequestGroup"
-            @group-order-change="reorderGroup" @unsave-request="unsaveRequest" @duplicate-request="duplicateRequest"
-            @request-group-delete="deleteGroup" @request-rename="renameRequest" @request-group-rename="renameGroup" />
+        <div class="my-2 flex-auto overflow-y-hidden">
+          <RequestList
+            @save-request="saveRequest"
+            @unsave-request="unsaveRequest"
+            :saved-request-ids="savedRequestIds"
+            :key="liveCriteria.Raw"
+            v-if="selectedTab() === 'log'"
+            :empty-message="'Reaper is ready to receive requests at ' + proxyAddress"
+            :requests="requests"
+            @select="examineRequest($event, true)"
+            :selected="req ? req.ID : ''"
+            :criteria="liveCriteria" />
+          <GroupedRequestList
+            :key="liveCriteria.Raw"
+            v-if="selectedTab() === 'saved'"
+            :groups="ws.collection.groups ? ws.collection.groups : []"
+            @select="examineRequest($event, false)"
+            :selected="req ? req.ID : ''"
+            :criteria="liveCriteria"
+            :empty-title="'No saved requests'"
+            :empty-message="'Save some requests from the log stream to access them here'"
+            :empty-icon="StarIcon"
+            @request-group-change="setRequestGroup"
+            @request-group-create="createRequestGroup"
+            @group-order-change="reorderGroup"
+            @unsave-request="unsaveRequest"
+            @duplicate-request="duplicateRequest"
+            @request-group-delete="deleteGroup"
+            @request-rename="renameRequest"
+            @request-group-rename="renameGroup" />
           <div v-if="selectedTab() === 'workflows'">TODO: Attack Workflows</div>
         </div>
       </div>
     </div>
 
     <!-- resize handle -->
-    <div v-if="req" @mousedown.prevent="resizing = true" ref="handle"
-      class="flex-none w-0.5 cursor-ew-resize bg-gray-500 dark:bg-polar-night-4">
-    </div>
+    <div
+      v-if="req && !fullscreenIDE"
+      @mousedown.prevent="resizing = true"
+      ref="handle"
+      class="w-0.5 flex-none cursor-ew-resize bg-gray-500 dark:bg-polar-night-4"></div>
 
     <!-- request viewer/editor -->
-    <div v-if="req" class="flex-auto mx-2 h-full px-2 box-border">
-      <IDE :request="req" :readonly="reqReadOnly" @action="ideAction" @close="clearRequest"
-        :actions="new Map<string, string>(reqReadOnly ? [['save', 'Save']] : [['send', 'Send']])" />
+    <div v-if="req" ref="rightPanel" class="mx-2 box-border h-full flex-auto overflow-hidden px-2">
+      <IDE
+        :request="req"
+        :readonly="reqReadOnly"
+        @action="ideAction"
+        @close="clearRequest"
+        :fullscreen="fullscreenIDE"
+        @fullscreen="toggleFullscreenIDE"
+        @headers-update="req.Headers = $event"
+        :actions="reqReadOnly ? readOnlyActions : writeActions" />
     </div>
-
   </div>
-
 </template>
