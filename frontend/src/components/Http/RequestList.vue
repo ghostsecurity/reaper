@@ -4,7 +4,7 @@ import { RocketLaunchIcon, MagnifyingGlassCircleIcon, StarIcon } from '@heroicon
 import { StarIcon as EmptyStarIcon } from '@heroicons/vue/24/outline'
 import { HttpRequest, MethodClass, StatusClass } from '../../lib/Http'
 import { Criteria } from '../../lib/Criteria/Criteria'
-import RequestListItemSummary from './RequestItemSummary.vue'
+import RequestItemSummary from './RequestItemSummary.vue'
 
 const props = defineProps({
   requests: { type: Array as PropType<HttpRequest[]>, required: true },
@@ -17,6 +17,18 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['save-request', 'unsave-request', 'select'])
+
+function getActions(request: HttpRequest): Map<string, string> {
+  const actions = new Map<string, string>([
+    ['something', 'Something'],
+  ])
+  if (isSaved(request.ID)) {
+    actions.set('unsave', 'Unsave')
+  } else {
+    actions.set('save', 'Save')
+  }
+  return actions
+}
 
 function filterRequests(requests: Array<HttpRequest>): Array<HttpRequest> {
   return requests.filter(request => props.criteria.Match(request))
@@ -35,10 +47,23 @@ function saveRequest(req: HttpRequest, groupID: string) {
 function unsaveRequest(req: HttpRequest) {
   emit('unsave-request', req)
 }
+
+function actionRequest(action: string, r: HttpRequest) {
+  switch (action) {
+    case 'save':
+      saveRequest(r, '')
+      break
+    case 'unsave':
+      unsaveRequest(r)
+      break
+    default:
+      break
+  }
+}
 </script>
 
 <template>
-  <div class="overflow-y-auto max-h-full max-w-full">
+  <div class="overflow-y-auto h-full max-h-full max-w-full">
     <div v-if="requests.length === 0">
       <div class="pt-8 pl-8 text-center text-frost-3">
         <component :is="emptyIcon" class="mx-auto h-12 w-12" />
@@ -55,28 +80,21 @@ function unsaveRequest(req: HttpRequest) {
     </div>
     <div v-else>
       <ul role="list" class="space-y-1">
-        <li
-          class="bg-snow-storm-2 dark:bg-polar-night-1a"
-          v-for="request in filterRequests(requests)"
-          :key="request.ID">
-          <a
-            @click="selectRequest(request)"
-            :class="[
-              'relative  block px-4 ',
-              request.ID == selected
-                ? 'bg-snow-storm-1 dark:bg-polar-night-3'
-                : 'hover:bg-snow-storm-1 dark:hover:bg-polar-night-2',
-            ]">
-            <div
-              :class="
-                'left ending text-xs font-semibold text-snow-storm dark:text-polar-night ' + MethodClass(request)
-              ">
+        <li class="bg-snow-storm-2 dark:bg-polar-night-1a" v-for="request in filterRequests(requests)" :key="request.ID">
+          <a @click="selectRequest(request)" :class="[
+            'relative  block px-4 ',
+            request.ID == selected
+              ? 'bg-snow-storm-1 dark:bg-polar-night-3'
+              : 'hover:bg-snow-storm-1 dark:hover:bg-polar-night-2',
+          ]">
+            <div :class="
+              'left ending text-xs font-semibold text-snow-storm dark:text-polar-night ' + MethodClass(request)
+            ">
               {{ request.Method }}
             </div>
-            <div
-              :class="
-                'right ending text-xs font-semibold text-snow-storm dark:text-polar-night ' + StatusClass(request)
-              ">
+            <div :class="
+              'right ending text-xs font-semibold text-snow-storm dark:text-polar-night ' + StatusClass(request)
+            ">
               {{ request.Response ? request.Response.StatusCode : '&nbsp;' }}
             </div>
             <div class="px-2 py-1 sm:px-4 sm:py-2">
@@ -90,7 +108,8 @@ function unsaveRequest(req: HttpRequest) {
                   </a>
                 </div>
                 <div class="flex-1">
-                  <RequestListItemSummary :request="request" />
+                  <RequestItemSummary :request="request" :actions="getActions(request)"
+                    @action="actionRequest($event, request)" />
                 </div>
               </div>
             </div>

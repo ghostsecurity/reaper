@@ -7,7 +7,6 @@ import {
   TrashIcon,
   PencilSquareIcon,
   QuestionMarkCircleIcon,
-  DocumentDuplicateIcon,
   DocumentArrowUpIcon,
   ChevronDownIcon,
   ChevronRightIcon,
@@ -41,6 +40,12 @@ const emit = defineEmits([
   'request-group-rename',
   'request-rename',
   'select',
+])
+
+const requestActions = new Map<string, string>([
+  ['rename', 'Rename'],
+  ['duplicate', 'Duplicate'],
+  ['delete', 'Delete'],
 ])
 
 const dropGroup = ref('')
@@ -249,6 +254,22 @@ function findCurrentName() {
   })
   return name
 }
+
+function actionRequest(action: string, request: Request) {
+  switch (action) {
+    case 'delete':
+      emit('unsave-request', request)
+      break
+    case 'duplicate':
+      emit('duplicate-request', request)
+      break
+    case 'rename':
+      renamingRequest.value = request.id
+      break
+    default:
+      break
+  }
+}
 </script>
 
 <template>
@@ -279,7 +300,7 @@ function findCurrentName() {
       </div>
     </div>
     <div class="flex-auto overflow-y-hidden">
-      <div class="max-h-full overflow-y-auto">
+      <div class="max-h-full">
         <div v-if="props.groups.length === 0">
           <div class="pt-8 pl-8 text-center">
             <component :is="props.emptyIcon" class="mx-auto h-12 w-12" />
@@ -328,7 +349,7 @@ function findCurrentName() {
                   </div>
                 </div>
                 <ul v-if="!shrunkenGroups.has(group.id)" role="list" :class="[
-                  'divide-y divide-polar-night-3',
+                  'divide-y divide-polar-night-3 space-y-1',
                   draggingRequest && dropRequest === '' && group.id === dropGroup ? 'border-t-2 border-aurora-5' : '',
                 ]">
                   <div v-if="filterRequests(group.requests).length === 0">
@@ -347,28 +368,19 @@ function findCurrentName() {
                       outer.id === selected ? 'bg-polar-night-3' : 'hover:bg-gray-50 dark:hover:bg-polar-night-2',
                       draggingRequest && dropRequest === outer.id ? 'border-b-2 border-aurora-5' : '',
                     ]" @click="selectRequest(outer.inner)">
-                      <div :class="['left ending truncate', MethodClass(outer.inner)]">{{ outer.inner.Method }}</div>
-                      <div class="py-4 pl-4 sm:pl-6">
+                      <div
+                        :class="['left ending truncate text-xs font-semibold text-snow-storm dark:text-polar-night', MethodClass(outer.inner)]">
+                        {{ outer.inner.Method }}</div>
+                      <div class="py-1 px-2">
                         <div class="flex">
-                          <div class="flex-0 drag-handle m-auto pl-0 pr-4" @click.prevent.stop
+                          <div class="flex-0 drag-handle m-auto pl-1 pr-3" @click.prevent.stop
                             @mousedown.stop="enableRequestDrag" @mouseup.stop="disableRequestDrag">
                             <Bars3Icon class="h-6 w-6" />
                           </div>
                           <div class="flex-1">
                             <RequestItemSummary :request="outer.inner" :name="outer.name" :show-tags="false"
-                              @rename="renamingRequest = outer.id" />
-                          </div>
-                          <div class="flex-0 pl-4 pr-2 pt-2 text-gray-400">
-                            <a @click.stop="renamingRequest = outer.id" title="Rename"
-                              class="cursor-pointer hover:text-frost-2">
-                              <PencilSquareIcon class="inline h-6 w-6" />
-                            </a>
-                            <a @click.stop="$emit('duplicate-request', outer)" class="cursor-pointer hover:text-aurora-3">
-                              <DocumentDuplicateIcon class="inline h-6 w-6" />
-                            </a>
-                            <a @click.stop="$emit('unsave-request', outer)" class="cursor-pointer hover:text-aurora-1">
-                              <TrashIcon class="inline h-6 w-6" />
-                            </a>
+                              @rename="renamingRequest = outer.id" :actions="requestActions"
+                              @action="actionRequest($event, outer)" :show-response="false" />
                           </div>
                         </div>
                       </div>
