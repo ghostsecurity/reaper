@@ -17,7 +17,17 @@ class Criteria {
     try {
       this.root = parse(input)
     } catch (e) {
-      this.root = new Ruleset([new Rule(Target.Raw, Comparison.CONTAINS, input)], [], JoinType.AND)
+      this.root = new Ruleset(
+        [
+          new Rule(Target.Body, Comparison.CONTAINS, input),
+          new Rule(Target.Path, Comparison.CONTAINS, input),
+          new Rule(Target.Query, Comparison.CONTAINS, input),
+          new Rule(Target.Host, Comparison.CONTAINS, input),
+          new Rule(Target.Scheme, Comparison.CONTAINS, input),
+        ],
+        [],
+        JoinType.OR,
+      )
       this.ParseError = e as Error
     }
   }
@@ -104,7 +114,7 @@ function parseRuleset(reader: Reader, nested: boolean): Ruleset {
 function parseRule(reader: Reader): Rule {
   reader.save()
 
-  let target = Target.Raw
+  let target = Target.Body
   let targetValid = false
   targetAliases.forEach((values, key) => {
     values.forEach(value => {
@@ -164,18 +174,18 @@ function parseRule(reader: Reader): Rule {
 
   let value = ''
   switch (reader.peek()) {
-  case '"':
-    reader.next()
-    value = reader.readUntil('"')
-    reader.next()
-    break
-  case '\'':
-    reader.next()
-    value = reader.readUntil('\'')
-    reader.next()
-    break
-  default:
-    value = reader.readWord()
+    case '"':
+      reader.next()
+      value = reader.readUntil('"')
+      reader.next()
+      break
+    case '\'':
+      reader.next()
+      value = reader.readUntil('\'')
+      reader.next()
+      break
+    default:
+      value = reader.readWord()
   }
 
   return new Rule(target, comparison, value)

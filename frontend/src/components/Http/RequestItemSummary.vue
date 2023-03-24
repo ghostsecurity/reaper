@@ -8,6 +8,8 @@ defineProps({
   showTags: { type: Boolean, required: false, default: true },
 })
 
+const emit = defineEmits(['rename'])
+
 function classForTag(tag: string): string {
   const tags = ['bg-aurora-3', 'bg-aurora-4', 'bg-aurora-5', 'bg-frost-1', 'bg-frost-2', 'bg-frost-3', 'bg-frost-4']
   let total = 0
@@ -34,14 +36,14 @@ function humanSize(size: number): string {
 <template>
   <div class="relative">
     <div v-if="name !== ''" class="absolute left-0 top-3 w-full text-center text-sm">
-      <span class="rounded-md bg-polar-night-3 px-3 py-1">{{ name }}</span>
+      <a class="rounded-md bg-polar-night-3 px-3 py-1" style="pointer-events: all" @click.prevent.stop="emit('rename')">
+        {{ name }}
+      </a>
     </div>
     <div class="flex items-center justify-between">
-      <p class="flex-1 truncate text-left text-sm font-medium text-frost-4 dark:text-frost">
+      <p class="flex-1 max-w-4xl truncate text-left text-sm font-medium text-frost-4 dark:text-frost">
         {{ request.Path }}
-        <span class="max-w-4xl truncate text-frost-3" v-if="request.QueryString !== ''">
-          ?{{ request.QueryString }}
-        </span>
+        <span class="text-frost-3" v-if="request.QueryString !== ''">?{{ request.QueryString }}</span>
       </p>
       <div class="flex-0 ml-2 flex text-right">
         <p class="px-2 text-xs font-semibold leading-5">

@@ -51,7 +51,7 @@ function saveSimple() {
   let pattern = patterns.join('|')
   if (includeSubdomains.value) {
     pattern = `([^.]+\\.)?${pattern}$`
-  } else {
+  } else if (pattern !== '') {
     pattern = `^${pattern}$`
   }
   simpleScope.include.push(

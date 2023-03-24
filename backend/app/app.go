@@ -2,10 +2,15 @@ package app
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
+	"fmt"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -160,7 +165,66 @@ func (a *App) Startup(ctx context.Context) {
 		a.interceptor.SetEnabled(enabled)
 	})
 
+	runtime.EventsOn(ctx, EventSendRequest, func(args ...interface{}) {
+		for _, arg := range args {
+			if req, ok := arg.(packaging.HttpRequest); ok {
+				a.sendRequest(req)
+			} else if m, ok := arg.(map[string]interface{}); ok {
+				data, err := json.Marshal(m)
+				if err != nil {
+					a.logger.Errorf("failed to marshal request: %s", err)
+					continue
+				}
+				var req packaging.HttpRequest
+				if err := json.Unmarshal(data, &req); err != nil {
+					a.logger.Errorf("failed to unmarshal request: %s", err)
+					continue
+				}
+				a.sendRequest(req)
+			} else {
+				a.logger.Errorf("Expected HttpRequest, got %T: %#v", arg, arg)
+			}
+		}
+	})
+
 	a.logger.Infof("Startup complete!")
+}
+
+func (a *App) sendRequest(request packaging.HttpRequest) {
+	req, err := packaging.UnpackageHttpRequest(&request)
+	if err != nil {
+		a.logger.Errorf("failed to unpack request: %s", err)
+		return
+	}
+	port := a.userSettings.Get().ProxyPort
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+		Proxy: http.ProxyURL(
+			&url.URL{
+				Scheme: "http",
+				Host:   fmt.Sprintf("127.0.0.1:%d", port),
+			},
+		),
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
+	proxyClient := http.Client{
+		Timeout:   time.Minute,
+		Transport: transport,
+	}
+	if _, err := proxyClient.Do(req); err != nil {
+		a.logger.Errorf("failed to send request: %s", err)
+		return
+	}
 }
 
 // Shutdown is called when the app is shutting down - we can cleanly stop the proxy here
@@ -171,8 +235,12 @@ func (a *App) Shutdown(_ context.Context) {
 	}
 }
 
-func (a *App) HighlightCode(code string) string {
+func (a *App) HighlightHTTP(code string) string {
 	return highlight.HTTP(code)
+}
+
+func (a *App) HighlightBody(body, contentType string) string {
+	return highlight.Body(body, contentType)
 }
 
 func (a *App) GenerateID() string {

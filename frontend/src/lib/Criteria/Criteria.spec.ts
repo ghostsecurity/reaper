@@ -12,7 +12,17 @@ test.each([
   },
   {
     input: 'invalid query',
-    expected: new Ruleset([new Rule(Target.Raw, Comparison.CONTAINS, 'invalid query')], [], JoinType.AND),
+    expected: new Ruleset(
+      [
+        new Rule(Target.Body, Comparison.CONTAINS, 'invalid query'),
+        new Rule(Target.Path, Comparison.CONTAINS, 'invalid query'),
+        new Rule(Target.Query, Comparison.CONTAINS, 'invalid query'),
+        new Rule(Target.Host, Comparison.CONTAINS, 'invalid query'),
+        new Rule(Target.Scheme, Comparison.CONTAINS, 'invalid query'),
+      ],
+      [],
+      JoinType.OR,
+    ),
     expectException: true,
   },
   {
@@ -150,7 +160,8 @@ test.each([
       Path: p.pathname,
       Scheme: protocol,
       QueryString: p.search,
-      Raw: `GET ${p.pathname} HTTP/1.1\r\nHost: ${p.host}\r\n\r\n`,
+      Method: 'GET',
+      Body: '',
     }),
   ).toEqual(expected)
 })

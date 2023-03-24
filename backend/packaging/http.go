@@ -2,13 +2,18 @@
 package packaging
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"strings"
 )
+
+type KeyValue struct {
+	Key   string
+	Value string
+}
 
 type HttpRequest struct {
 	Method      string
@@ -17,20 +22,20 @@ type HttpRequest struct {
 	Path        string
 	QueryString string
 	Scheme      string
-	Raw         string
+	Body        string
 	ID          string
 	LocalID     int64
-	Headers     map[string][]string
-	Query       map[string][]string
+	Headers     []KeyValue
+	Query       []KeyValue
 	Tags        []string
 }
 
 type HttpResponse struct {
-	Raw        string
+	Body       string
 	StatusCode int
 	ID         string
 	LocalID    int64
-	Headers    map[string][]string
+	Headers    []KeyValue
 	Tags       []string
 	BodySize   int
 }
@@ -54,26 +59,17 @@ func PackageHttpRequest(request *http.Request, proxyID string, reqID int64) (*Ht
 	// restore original body for entire request write
 	request.Body = io.NopCloser(backup)
 
-	// write entire request
-	var buf bytes.Buffer
-	if err := request.Write(&buf); err != nil {
-		return nil, fmt.Errorf("failed to write request: %w", err)
-	}
-
-	// restore original body for local copy
-	request.Body = io.NopCloser(localCopy)
-
 	return &HttpRequest{
 		ID:          fmt.Sprintf("%s:%d", proxyID, reqID),
 		LocalID:     reqID,
 		Method:      request.Method,
 		URL:         request.URL.String(),
-		Raw:         buf.String(),
+		Body:        localCopy.String(),
 		Host:        request.Host,
 		Path:        request.URL.Path,
 		QueryString: request.URL.RawQuery,
-		Headers:     packageHeaders(request.Header),
-		Query:       request.URL.Query(),
+		Headers:     packageMap(request.Header),
+		Query:       packageMap(request.URL.Query()),
 		Scheme:      request.URL.Scheme,
 		Tags:        tagRequest(request),
 	}, nil
@@ -132,11 +128,19 @@ func tagContentType(ct string) string {
 	}
 }
 
-func packageHeaders(header http.Header) map[string][]string {
-	headers := make(map[string][]string)
-	for k, v := range header {
-		headers[k] = v
+func packageMap(header map[string][]string) []KeyValue {
+	headers := []KeyValue{} // nolint
+	for key, values := range header {
+		for _, value := range values {
+			headers = append(headers, KeyValue{
+				Key:   key,
+				Value: value,
+			})
+		}
 	}
+	sort.Slice(headers, func(i, j int) bool {
+		return headers[i].Key < headers[j].Key
+	})
 	return headers
 }
 
@@ -159,30 +163,28 @@ func PackageHttpResponse(response *http.Response, proxyID string, reqID int64) (
 	// restore original body for entire response write
 	response.Body = io.NopCloser(backup)
 
-	// write entire response
-	var buf bytes.Buffer
-	if err := response.Write(&buf); err != nil {
-		return nil, fmt.Errorf("failed to write response: %w", err)
-	}
-
-	// restore original body for local copy
-	response.Body = io.NopCloser(localCopy)
-
 	return &HttpResponse{
 		ID:         fmt.Sprintf("%s:%d", proxyID, reqID),
 		LocalID:    reqID,
-		Raw:        buf.String(),
-		StatusCode: response.StatusCode,
-		Headers:    packageHeaders(response.Header),
-		Tags:       tagResponse(response),
 		BodySize:   localCopy.Len(),
+		Body:       localCopy.String(),
+		StatusCode: response.StatusCode,
+		Headers:    packageMap(response.Header),
+		Tags:       tagResponse(response),
 	}, nil
 }
 
 func UnpackageHttpRequest(h *HttpRequest) (*http.Request, error) {
-	return http.ReadRequest(bufio.NewReader(strings.NewReader(h.Raw)))
+	req, err := http.NewRequest(h.Method, h.URL, strings.NewReader(h.Body))
+	if err != nil {
+		return nil, err
+	}
+	for _, header := range h.Headers {
+		req.Header.Add(header.Key, header.Value)
+	}
+	return req, nil
 }
 
 func UnpackageHttpResponse(h *HttpResponse, req *http.Request) (*http.Response, error) {
-	return http.ReadResponse(bufio.NewReader(strings.NewReader(h.Raw)), req)
+	return nil, fmt.Errorf("not implemented")
 }

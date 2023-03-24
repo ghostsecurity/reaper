@@ -38,7 +38,7 @@ function unsaveRequest(req: HttpRequest) {
 </script>
 
 <template>
-  <div class="sensible-height overflow-y-auto">
+  <div class="overflow-y-auto max-h-full max-w-full">
     <div v-if="requests.length === 0">
       <div class="pt-8 pl-8 text-center text-frost-3">
         <component :is="emptyIcon" class="mx-auto h-12 w-12" />
@@ -53,7 +53,7 @@ function unsaveRequest(req: HttpRequest) {
         <p class="mt-1 text-sm">No requests match your search criteria</p>
       </div>
     </div>
-    <div v-else class="h-full sm:rounded-md">
+    <div v-else>
       <ul role="list" class="space-y-1">
         <li
           class="bg-snow-storm-2 dark:bg-polar-night-1a"
@@ -102,10 +102,6 @@ function unsaveRequest(req: HttpRequest) {
 </template>
 
 <style scoped>
-.sensible-height {
-  max-height: calc(100vh - 8rem);
-}
-
 li a {
   cursor: pointer;
   border-radius: 6px;

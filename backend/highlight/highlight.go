@@ -4,10 +4,11 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"strings"
+
 	"github.com/alecthomas/chroma"
 	"github.com/alecthomas/chroma/formatters/html"
 	"github.com/alecthomas/chroma/lexers"
-	"strings"
 )
 
 var customStyle = chroma.MustNewStyle("ghost", chroma.StyleEntries{
@@ -76,17 +77,31 @@ func HTTP(raw string) string {
 		}
 	}
 
+	buf := bytes.NewBuffer(nil)
+
+	if len(headers) > 0 {
+		buf.Write([]byte("<br/>"))
+		if len(body) == 0 {
+			buf.Write([]byte("<br/>"))
+		}
+	}
+
+	return highlightedHeaders + buf.String() + Body(body, ct)
+}
+
+func Body(body string, contentType string) string {
+
 	var bodyLexer chroma.Lexer
 	switch {
-	case strings.HasPrefix(ct, "text/html"):
+	case strings.HasPrefix(contentType, "text/html"):
 		bodyLexer = lexers.Get("html")
-	case strings.HasPrefix(ct, "text/javascript"):
+	case strings.HasPrefix(contentType, "text/javascript"):
 		bodyLexer = lexers.Get("javascript")
-	case strings.HasPrefix(ct, "text/css"):
+	case strings.HasPrefix(contentType, "text/css"):
 		bodyLexer = lexers.Get("css")
-	case strings.HasPrefix(ct, "text/xml"):
+	case strings.HasPrefix(contentType, "text/xml"):
 		bodyLexer = lexers.Get("xml")
-	case strings.Contains(ct, "json"):
+	case strings.Contains(contentType, "json"):
 		bodyLexer = lexers.Get("json")
 	default:
 		bodyLexer = lexers.Get("plaintext")
@@ -107,18 +122,13 @@ func HTTP(raw string) string {
 
 	buf := bytes.NewBuffer(nil)
 
-	if len(headers) > 0 {
-		buf.Write([]byte("<br/>"))
-		if len(body) == 0 {
-			buf.Write([]byte("<br/>"))
-		}
-	}
-
 	formatter := html.New(html.PreventSurroundingPre(true))
 	if err := formatter.Format(buf, customStyle, bodyIter); err != nil {
 		return ""
 	}
-	return highlightedHeaders + buf.String()
+
+	// TODO: do we need an extra <br/> here when empty?
+	return buf.String()
 }
 
 func highlightHeaders(raw string, style *chroma.Style) (string, error) {

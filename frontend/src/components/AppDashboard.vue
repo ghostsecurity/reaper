@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onBeforeMount, PropType, reactive, ref, watch } from 'vue'
+import { onBeforeMount, onMounted, PropType, reactive, ref, watch } from 'vue'
 import { BarsArrowDownIcon, BeakerIcon, StarIcon } from '@heroicons/vue/20/solid'
 import { EventsOn } from '../../wailsjs/runtime'
 import { HttpRequest, HttpResponse } from '../lib/Http'
@@ -32,6 +32,9 @@ const emit = defineEmits([
   'request-rename',
   'criteria-change',
   'workspace-edit',
+  'copy-request-as-curl',
+  'send-request',
+  'update-request',
 ])
 
 const requests = ref<HttpRequest[]>([])
@@ -43,6 +46,44 @@ const tabs = ref([
 ])
 const liveCriteria = reactive(props.criteria)
 const reqReadOnly = ref(true)
+const fullscreenIDE = ref(false)
+
+const root = ref()
+const leftPanel = ref()
+const rightPanel = ref()
+const handle = ref()
+const resizing = ref(false)
+
+let sendingReq: HttpRequest | null = null
+
+const readOnlyActions = new Map<string, string>([
+  ['send', 'Resend'],
+  ['copy-curl', 'Copy as curl'],
+])
+
+const writeActions = new Map<string, string>([
+  ['send', 'Send'],
+  ['copy-curl', 'Copy as curl'],
+])
+
+function ideAction(action: string) {
+  switch (action) {
+    case 'send':
+      sendingReq = req.value
+      switchTab('log')
+      emit('send-request', req.value)
+      break
+    case 'copy-curl':
+      break
+    default:
+      throw new Error(`unknown action ${action}`)
+  }
+}
+
+function toggleFullscreenIDE() {
+  fullscreenIDE.value = !fullscreenIDE.value
+  setDefaultSizing()
+}
 
 watch(
   () => props.criteria,
@@ -51,27 +92,96 @@ watch(
   },
 )
 
+function compareRequests(a: HttpRequest, b: HttpRequest) {
+  if (a.Method !== b.Method) {
+    return false
+  }
+  if (a.URL !== b.URL) {
+    return false
+  }
+  if (a.Body !== b.Body) {
+    return false
+  }
+  return true
+}
+
 onBeforeMount(() => {
   EventsOn('HttpRequest', (data: HttpRequest) => {
     requests.value.push(data)
+    if (sendingReq !== null && compareRequests(data, sendingReq)) {
+      sendingReq = data
+      examineRequest(data, true)
+    }
   })
   EventsOn('HttpResponse', (response: HttpResponse) => {
     for (let i = 0; i < requests.value.length; i += 1) {
       if (requests.value[i].ID === response.ID) {
         requests.value[i].Response = response
+        const r = requests.value[i]
+        if (sendingReq !== null && compareRequests(r, sendingReq)) {
+          sendingReq = null
+          examineRequest(r, true)
+        }
         break
       }
     }
   })
 })
 
+onMounted(() => {
+  root.value.addEventListener('mousemove', (e: MouseEvent) => {
+    if (!resizing.value) {
+      return
+    }
+
+    // Get offset
+    const containerOffsetLeft = root.value.offsetLeft
+
+    // Get x-coordinate of pointer relative to container
+    const pointerRelativeXpos = e.clientX - containerOffsetLeft
+
+    // Arbitrary minimum width set on box A, otherwise its inner content will collapse to width of 0
+    const boxAminWidth = 475
+
+    rightPanel.value.style.width = `${Math.min(
+      Math.max(400, root.value.offsetWidth - (pointerRelativeXpos + 10)), // 8px padding + 2px border
+      root.value.offsetWidth - boxAminWidth,
+    )}px`
+    rightPanel.value.style.flexGrow = 0
+    rightPanel.value.style.flexShrink = 0
+
+    // Resize box A
+    // * 8px is the left/right spacing between .handler and its inner pseudo-element
+    // * Set flex-grow to 0 to prevent it from growing
+    // leftPanel.value.style.width = `${Math.max(boxAminWidth, pointerRelativeXpos - 8)}px`
+    // leftPanel.value.style.flexGrow = 0
+    // leftPanel.value.style.flexShrink = 0
+  })
+  root.value.addEventListener('mouseup', () => {
+    resizing.value = false
+  })
+})
+
 function examineRequest(request: HttpRequest, readonly: boolean) {
-  req.value = request
   reqReadOnly.value = readonly
+  req.value = request
 }
 
 function clearRequest() {
+  fullscreenIDE.value = false
   req.value = null
+  setDefaultSizing()
+}
+
+function setDefaultSizing() {
+  if (leftPanel.value !== null) {
+    leftPanel.value.style.flexGrow = 1
+    leftPanel.value.style.flexShrink = 1
+  }
+  if (rightPanel.value !== null) {
+    rightPanel.value.style.flexGrow = 1
+    rightPanel.value.style.flexShrink = 1
+  }
 }
 
 function switchTab(id: string) {
@@ -134,103 +244,81 @@ function renameGroup(groupId: string, name: string) {
 function renameRequest(requestId: string, name: string) {
   emit('request-rename', requestId, name)
 }
+
+function updateRequest(e: HttpRequest) {
+  if (req.value !== null && req.value.ID === e.ID) {
+    req.value = e
+  }
+  emit('update-request', e)
+}
 </script>
 
 <template>
-  <div class="min-h-16 flex h-16 max-h-16 p-2">
-    <div class="flex-grow text-left">
-      <Search @search="onSearch" :query="liveCriteria.Raw" />
-    </div>
-    <div class="ml-2 flex-shrink p-0">
-      <WorkspaceMenu @edit="emit('workspace-edit')" :ws="ws" @switch="switchWorkspace" />
-    </div>
-  </div>
-  <div class="min-h-16 h-16 max-h-16 px-2">
-    <div class="sm:hidden">
-      <label for="tabs" class="sr-only">Select a tab</label>
-      <select
-        @change="selectTab"
-        id="tabs"
-        name="tabs"
-        class="block w-full rounded-md bg-polar-night-2 text-snow-storm-1 focus:border-frost focus:ring-frost">
-        <option v-for="tab in tabs" :key="tab.id" :selected="tab.current" :value="tab.id">{{ tab.name }}</option>
-      </select>
-    </div>
-    <div class="hidden sm:block">
-      <div class="border-b dark:border-polar-night-4">
-        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-          <a
-            v-for="tab in tabs"
-            @click="switchTab(tab.id)"
-            :key="tab.name"
-            :class="[
-              tab.current
-                ? 'border-frost text-frost'
-                : 'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-200',
-              'group inline-flex cursor-pointer items-center border-b-2 py-4 px-1 text-sm font-medium',
-            ]"
-            :aria-current="tab.current ? 'page' : undefined">
-            <component
-              :is="tab.icon"
-              :class="[tab.current ? 'text-frost' : 'text-gray-400 group-hover:text-gray-300', '-ml-0.5 mr-2 h-5 w-5']"
-              aria-hidden="true" />
-            <span>{{ tab.name }}</span>
-          </a>
-        </nav>
+  <div ref="root" class="flex h-full overflow-x-hidden">
+    <!-- main content with search, tabs etc. -->
+    <div v-if="!fullscreenIDE" ref="leftPanel" class="box-border flex-auto">
+      <div class="flex h-full flex-col px-2">
+        <div class="min-h-16 flex h-16 max-h-16 flex-shrink py-2">
+          <div class="flex-grow text-left">
+            <Search @search="onSearch" :query="liveCriteria.Raw" />
+          </div>
+          <div class="ml-2 flex-shrink p-0">
+            <WorkspaceMenu @edit="emit('workspace-edit')" :ws="ws" @switch="switchWorkspace" />
+          </div>
+        </div>
+        <div class="min-h-16 h-16 max-h-16 flex-shrink">
+          <div class="sm:hidden">
+            <label for="tabs" class="sr-only">Select a tab</label>
+            <select @change="selectTab" id="tabs" name="tabs"
+              class="block w-full rounded-md bg-polar-night-2 text-snow-storm-1 focus:border-frost focus:ring-frost">
+              <option v-for="tab in tabs" :key="tab.id" :selected="tab.current" :value="tab.id">{{ tab.name }}</option>
+            </select>
+          </div>
+          <div class="hidden sm:block">
+            <div class="border-b dark:border-polar-night-4">
+              <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <a v-for="tab in tabs" @click="switchTab(tab.id)" :key="tab.name" :class="[
+                  tab.current
+                    ? 'border-frost text-frost'
+                    : 'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-200',
+                  'group inline-flex cursor-pointer items-center border-b-2 py-4 px-1 text-sm font-medium',
+                ]" :aria-current="tab.current ? 'page' : undefined">
+                  <component :is="tab.icon" :class="[
+                    tab.current ? 'text-frost' : 'text-gray-400 group-hover:text-gray-300',
+                    '-ml-0.5 mr-2 h-5 w-5',
+                  ]" aria-hidden="true" />
+                  <span>{{ tab.name }}</span>
+                </a>
+              </nav>
+            </div>
+          </div>
+        </div>
+        <div class="my-2 flex-auto overflow-y-hidden">
+          <RequestList @save-request="saveRequest" @unsave-request="unsaveRequest" :saved-request-ids="savedRequestIds"
+            :key="liveCriteria.Raw" v-if="selectedTab() === 'log'"
+            :empty-message="'Reaper is ready to receive requests at ' + proxyAddress" :requests="requests"
+            @select="examineRequest($event, true)" :selected="req ? req.ID : ''" :criteria="liveCriteria" />
+          <GroupedRequestList :key="liveCriteria.Raw" v-if="selectedTab() === 'saved'"
+            :groups="ws.collection.groups ? ws.collection.groups : []" @select="examineRequest($event, false)"
+            :selected="req ? req.ID : ''" :criteria="liveCriteria" :empty-title="'No saved requests'"
+            :empty-message="'Save some requests from the log stream to access them here'" :empty-icon="StarIcon"
+            @request-group-change="setRequestGroup" @request-group-create="createRequestGroup"
+            @group-order-change="reorderGroup" @unsave-request="unsaveRequest" @duplicate-request="duplicateRequest"
+            @request-group-delete="deleteGroup" @request-rename="renameRequest" @request-group-rename="renameGroup" />
+          <div v-if="selectedTab() === 'workflows'">TODO: Attack Workflows</div>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="flex h-full px-2">
-    <div class="flex-1">
-      <RequestList
-        @save-request="saveRequest"
-        @unsave-request="unsaveRequest"
-        :saved-request-ids="savedRequestIds"
-        :key="liveCriteria.Raw"
-        v-if="selectedTab() === 'log'"
-        :empty-message="'Reaper is ready to receive requests at ' + proxyAddress"
-        :requests="requests"
-        @select="examineRequest($event, true)"
-        :selected="req ? req.ID : ''"
-        :criteria="liveCriteria" />
-      <GroupedRequestList
-        :key="liveCriteria.Raw"
-        v-if="selectedTab() === 'saved'"
-        :groups="ws.collection.groups ? ws.collection.groups : []"
-        @select="examineRequest($event, false)"
-        :selected="req ? req.ID : ''"
-        :criteria="liveCriteria"
-        :empty-title="'No saved requests'"
-        :empty-message="'Save some requests from the log stream to access them here'"
-        :empty-icon="StarIcon"
-        @request-group-change="setRequestGroup"
-        @request-group-create="createRequestGroup"
-        @group-order-change="reorderGroup"
-        @unsave-request="unsaveRequest"
-        @duplicate-request="duplicateRequest"
-        @request-group-delete="deleteGroup"
-        @request-rename="renameRequest"
-        @request-group-rename="renameGroup" />
-      <div v-if="selectedTab() === 'workflows'">TODO: Attack Workflows</div>
-    </div>
 
-    <!-- TODO: intercept stuff here -->
-    <div
-      v-if="false"
-      class="flex-0 min-w- ml-2 h-full w-[50%] border-l border-snow-storm-1 pl-2 dark:border-polar-night-3">
-      intercept ui here
-    </div>
+    <!-- resize handle -->
+    <div v-if="req && !fullscreenIDE" @mousedown.prevent="resizing = true" ref="handle"
+      class="w-0.5 flex-none cursor-ew-resize bg-gray-500 dark:bg-polar-night-4"></div>
 
-    <div
-      v-else-if="req"
-      class="flex-0 min-w- ml-2 h-full w-[50%] border-l border-snow-storm-1 pl-2 dark:border-polar-night-3">
-      <IDE :request="req" :readonly="reqReadOnly" @close="clearRequest" />
+    <!-- request viewer/editor -->
+    <div v-if="req" ref="rightPanel" class="mx-2 box-border h-full flex-auto overflow-hidden px-2">
+      <IDE :request="req" :readonly="reqReadOnly" @action="ideAction" @close="clearRequest" :fullscreen="fullscreenIDE"
+        @fullscreen="toggleFullscreenIDE" @request-update="updateRequest($event)"
+        :actions="reqReadOnly ? readOnlyActions : writeActions" />
     </div>
   </div>
 </template>
-
-<style scoped>
-.body {
-  max-height: calc(100vh - 8rem);
-}
-</style>

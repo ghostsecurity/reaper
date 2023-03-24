@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import { watch, ref, onMounted } from 'vue'
 
-import { HighlightCode } from '../../../wailsjs/go/app/App'
+import { HighlightHTTP, HighlightBody } from '../../../wailsjs/go/app/App'
 
 const props = defineProps({
   code: { type: String, required: true },
   readonly: { type: Boolean, required: true },
+  http: { type: Boolean, default: false },
 })
 
 const buffer = ref(props.code)
@@ -53,26 +54,54 @@ function updateCode() {
     sent.value += ' '
   }
 
-  HighlightCode(sent.value).then((hl: string) => {
-    setHighlighted(hl)
-  })
+  if (props.http) {
+    HighlightHTTP(sent.value).then((hl: string) => {
+      setHighlighted(hl)
+    })
+  } else {
+    // TODO: content type
+    HighlightBody(sent.value, 'application/json').then((hl: string) => {
+      setHighlighted(hl)
+    })
+  }
+}
+function onKeydown(e: KeyboardEvent) {
+  switch (e.key) {
+    case 'Tab':
+      e.preventDefault()
+      indent()
+      break
+    default:
+      break
+  }
+}
+
+function indent() {
+  const element = textarea.value as HTMLTextAreaElement
+  const start = element.selectionStart
+  const end = element.selectionEnd
+  const { value } = element
+  const before = value.substring(0, start)
+  const after = value.substring(end)
+  const insert = '  '
+  buffer.value = before + insert + after
+  element.value = buffer.value
+  element.selectionStart = start + insert.length
+  element.selectionEnd = start + insert.length
+  updateCode()
 }
 </script>
 
 <template>
-  <div
-    :class="[
-      'overflow-x-auto',
-      busy ? 'wrapper plain h-full text-left' : 'wrapper highlighted h-full min-h-full text-left',
+  <div class="border border-polar-night-3 w-full h-full p-2">
+    <div :class="[
+      'wrapper overflow-x-auto h-full w-full',
+      busy ? 'wrapper plain text-left' : 'wrapper highlighted min-h-full text-left',
     ]">
-    <pre ref="pre" class="h-full min-h-full" aria-hidden="true"><code v-html="highlighted"></code></pre>
-    <textarea
-      :readonly="readonly"
-      spellcheck="false"
-      ref="textarea"
-      @input="updateCode"
-      @scroll="syncScroll"
-      v-model="buffer"></textarea>
+      <pre ref="pre" class="w-full h-full min-h-full" aria-hidden="true"><code v-html="highlighted"></code></pre>
+      <textarea class="w-full h-full" :readonly="readonly" spellcheck="false" ref="textarea" @input="updateCode"
+        @scroll="syncScroll" @keydown="onKeydown" v-model="buffer"></textarea>
+    </div>
   </div>
 </template>
 
@@ -98,21 +127,36 @@ pre {
   width: 100%;
   height: 100%;
   white-space: pre;
-  /*nowrap;*/
   overflow-wrap: normal;
   overflow: auto;
-  overflow-x: scroll !important;
+  overflow-x: auto !important;
   padding: 0;
   border: none;
 }
 
 textarea,
-pre,
 code {
   font-size: 1.05em !important;
   font-family: monospace !important;
   line-height: 1.2em !important;
   tab-size: 2;
+  word-spacing: 0;
+  letter-spacing: 0;
+  font-weight: 400;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: optimizeLegibility;
+  text-transform: none;
+  text-align: left;
+  text-indent: 0;
+  text-shadow: none;
+  text-decoration: none;
+  text-decoration-line: none;
+  text-decoration-style: solid;
+  writing-mode: horizontal-tb;
+  white-space: pre;
+  font-feature-settings: normal;
+  overflow-wrap: normal;
 }
 
 pre {

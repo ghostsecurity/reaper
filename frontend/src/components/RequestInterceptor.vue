@@ -2,7 +2,6 @@
 import { onMounted, ref } from 'vue'
 import { EventsEmit, EventsOn } from '../../wailsjs/runtime' // eslint-disable-line import/no-unresolved
 import { HttpRequest } from '../lib/Http'
-import HttpRequestView from './Http/HttpRequest.vue'
 
 const enabled = ref(false)
 const request = ref<HttpRequest | null>(null)
@@ -30,9 +29,10 @@ function dropRequest() {
   request.value = null
 }
 
-function onChange(raw: string) {
+function onChange() {
   if (request.value !== null) {
-    request.value.Raw = raw
+    // TODO
+    // request.value.Raw = raw
   }
 }
 </script>
@@ -40,8 +40,14 @@ function onChange(raw: string) {
 <template>
   <v-card class="text-start">
     <v-card-text>
-      <v-switch v-model="enabled" color="primary" label="Intercept Requests" @change="onEnabledChange" hide-details
-        inset inline></v-switch>
+      <v-switch
+        v-model="enabled"
+        color="primary"
+        label="Intercept Requests"
+        @change="onEnabledChange"
+        hide-details
+        inset
+        inline></v-switch>
       <div v-if="request !== null" class="d-flex justify-left align-baseline" style="gap: 1rem">
         <v-btn color="primary" @click="forwardRequest">Forward</v-btn>
         <v-btn color="error" @click="dropRequest">Drop</v-btn>
@@ -51,6 +57,4 @@ function onChange(raw: string) {
   <HttpRequestView v-if="request !== null" :request="request" :readonly="false" @change="onChange" />
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
