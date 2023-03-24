@@ -63,7 +63,7 @@ function actionRequest(action: string, r: HttpRequest) {
 </script>
 
 <template>
-  <div class="overflow-y-auto max-h-full max-w-full">
+  <div class="overflow-y-auto h-full max-h-full max-w-full">
     <div v-if="requests.length === 0">
       <div class="pt-8 pl-8 text-center text-frost-3">
         <component :is="emptyIcon" class="mx-auto h-12 w-12" />
