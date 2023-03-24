@@ -37,39 +37,39 @@ class Rule {
   Match(req: HttpRequest): boolean {
     let field = ''
     switch (this.Target) {
-    case Target.Scheme:
-      field = req.Scheme
-      break
-    case Target.Host:
-      field = req.Host
-      break
-    case Target.Path:
-      field = req.Path
-      break
-    case Target.Query:
-      field = req.QueryString
-      break
-    case Target.Body:
-      field = req.Body
-      break
-    default:
-      return false
+      case Target.Scheme:
+        field = req.Scheme
+        break
+      case Target.Host:
+        field = req.Host
+        break
+      case Target.Path:
+        field = req.Path
+        break
+      case Target.Query:
+        field = req.QueryString
+        break
+      case Target.Body:
+        field = req.Body
+        break
+      default:
+        return false
     }
     switch (this.Comparison) {
-    case Comparison.EQUAL:
-      return field === this.Value
-    case Comparison.NOT_EQUAL:
-      return field !== this.Value
-    case Comparison.CONTAINS:
-      return field.indexOf(this.Value) > -1
-    case Comparison.MATCHES:
-      try {
-        return field.match(this.Value) !== null
-      } catch (e) {
+      case Comparison.EQUAL:
+        return field === this.Value
+      case Comparison.NOT_EQUAL:
+        return field !== this.Value
+      case Comparison.CONTAINS:
+        return field.indexOf(this.Value) > -1
+      case Comparison.MATCHES:
+        try {
+          return field.match(this.Value) !== null
+        } catch (e) {
+          return false
+        }
+      default:
         return false
-      }
-    default:
-      return false
     }
   }
 }

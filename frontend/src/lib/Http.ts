@@ -29,26 +29,26 @@ interface HttpResponse {
 
 export function MethodClass(req: HttpRequest): string {
   switch (req.Method) {
-  case 'GET':
-    return 'bg-frost-3'
-  case 'OPTIONS':
-    return 'bg-frost-1'
-  case 'PUT':
-    return 'bg-frost-4'
-  case 'HEAD':
-    return 'bg-frost-2'
-  case 'DELETE':
-    return 'bg-aurora-4'
-  case 'CONNECT':
-    return 'bg-aurora-3'
-  case 'POST':
-    return 'bg-aurora-2'
-  case 'TRACE':
-    return 'bg-aurora-1'
-  case 'PATCH':
-    return 'bg-aurora-4'
-  default:
-    return ''
+    case 'GET':
+      return 'bg-frost-3'
+    case 'OPTIONS':
+      return 'bg-frost-1'
+    case 'PUT':
+      return 'bg-frost-4'
+    case 'HEAD':
+      return 'bg-frost-2'
+    case 'DELETE':
+      return 'bg-aurora-4'
+    case 'CONNECT':
+      return 'bg-aurora-3'
+    case 'POST':
+      return 'bg-aurora-2'
+    case 'TRACE':
+      return 'bg-aurora-1'
+    case 'PATCH':
+      return 'bg-aurora-4'
+    default:
+      return ''
   }
 }
 
@@ -118,8 +118,7 @@ export const Headers: { [key: string]: string } = {
     'If the entity is unchanged, send me the part(s) that I am missing; otherwise, send me the entire new entity.',
   'If-Unmodified-Since': 'Only send the response if the entity has not been modified since a specific time.',
   'Max-Forwards': 'Limit the number of times the message can be forwarded through proxies or gateways.',
-  'Origin':
-    'Initiates a request for cross-origin resource sharing (asks server for Access-Control-* response fields).',
+  Origin: 'Initiates a request for cross-origin resource sharing (asks server for Access-Control-* response fields).',
   Pragma: 'Implementation-specific fields that may have various effects anywhere along the request-response chain.',
   Prefer: 'Allows client to request that certain behaviors be employed by a server while processing a request.',
   'Proxy-Authorization': 'Authorization credentials for connecting to a proxy.',

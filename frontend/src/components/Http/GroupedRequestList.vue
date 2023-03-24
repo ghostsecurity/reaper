@@ -240,12 +240,12 @@ function createGroup(name: string) {
 
 function findCurrentName() {
   let name = ''
-  props.groups.filter(g => {
-    g.requests.filter(r => { 
-      if(r.id === renamingRequest.value){ 
+  props.groups.forEach(g => {
+    g.requests.forEach(r => {
+      if (r.id === renamingRequest.value) {
         name = r.name
       }
-    }) 
+    })
   })
   return name
 }
@@ -256,9 +256,9 @@ function findCurrentName() {
     @confirm="createGroup($event)" />
   <InputBox v-if="renamingGroup" title="Rename group" message="Enter the new group name." @cancel="renamingGroup = ''"
     @confirm="renameGroup(renamingGroup, $event)" />
-  <InputBox v-else-if="renamingRequest" title="Rename request" message="Enter the new request name." 
-    @cancel="renamingRequest = ''" @confirm="renameRequest(renamingRequest, $event)" :initial-value="findCurrentName()" />
-  <div class="flex flex-col h-full">
+  <InputBox v-else-if="renamingRequest" title="Rename request" message="Enter the new request name."
+    @cancel="renamingRequest = ''" @confirm="renameRequest(renamingRequest, $event)" :initial="findCurrentName()" />
+  <div class="flex h-full flex-col">
     <div class="flex-none">
       <div class="flex h-10 max-h-10 w-full text-left">
         <div class="flex-1">
@@ -314,12 +314,8 @@ function findCurrentName() {
                     <span class="ml-1">{{ group.name ? group.name : 'Untitled' }}</span>
                     <span class="ml-1 text-sm text-gray-500">
                       -
-                      {{
-                      `${filterRequests(group.requests).length} of ${group.requests.length}`
-                      }}
-                      {{
-                        group.requests.length === 1 ? 'request' : 'requests'
-                      }}
+                      {{ `${filterRequests(group.requests).length} of ${group.requests.length}` }}
+                      {{ group.requests.length === 1 ? 'request' : 'requests' }}
                     </span>
                   </div>
                   <div class="flex-0">
@@ -354,20 +350,20 @@ function findCurrentName() {
                       <div :class="['left ending truncate', MethodClass(outer.inner)]">{{ outer.inner.Method }}</div>
                       <div class="py-4 pl-4 sm:pl-6">
                         <div class="flex">
-                          <div @click.prevent.stop @mousedown.stop="enableRequestDrag"
-                            @mouseup.stop="disableRequestDrag" class="flex-0 drag-handle m-auto pl-0 pr-4">
+                          <div class="flex-0 drag-handle m-auto pl-0 pr-4" @click.prevent.stop
+                            @mousedown.stop="enableRequestDrag" @mouseup.stop="disableRequestDrag">
                             <Bars3Icon class="h-6 w-6" />
                           </div>
                           <div class="flex-1">
-                            <RequestItemSummary :request="outer.inner" :name="outer.name" :show-tags="false" @rename="renamingRequest = outer.id" />
+                            <RequestItemSummary :request="outer.inner" :name="outer.name" :show-tags="false"
+                              @rename="renamingRequest = outer.id" />
                           </div>
                           <div class="flex-0 pl-4 pr-2 pt-2 text-gray-400">
                             <a @click.stop="renamingRequest = outer.id" title="Rename"
                               class="cursor-pointer hover:text-frost-2">
                               <PencilSquareIcon class="inline h-6 w-6" />
                             </a>
-                            <a @click.stop="$emit('duplicate-request', outer)"
-                              class="cursor-pointer hover:text-aurora-3">
+                            <a @click.stop="$emit('duplicate-request', outer)" class="cursor-pointer hover:text-aurora-3">
                               <DocumentDuplicateIcon class="inline h-6 w-6" />
                             </a>
                             <a @click.stop="$emit('unsave-request', outer)" class="cursor-pointer hover:text-aurora-1">
@@ -386,7 +382,6 @@ function findCurrentName() {
       </div>
     </div>
   </div>
-
 </template>
 
 <style scoped>

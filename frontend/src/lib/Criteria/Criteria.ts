@@ -174,18 +174,18 @@ function parseRule(reader: Reader): Rule {
 
   let value = ''
   switch (reader.peek()) {
-  case '"':
-    reader.next()
-    value = reader.readUntil('"')
-    reader.next()
-    break
-  case '\'':
-    reader.next()
-    value = reader.readUntil('\'')
-    reader.next()
-    break
-  default:
-    value = reader.readWord()
+    case '"':
+      reader.next()
+      value = reader.readUntil('"')
+      reader.next()
+      break
+    case '\'':
+      reader.next()
+      value = reader.readUntil('\'')
+      reader.next()
+      break
+    default:
+      value = reader.readWord()
   }
 
   return new Rule(target, comparison, value)

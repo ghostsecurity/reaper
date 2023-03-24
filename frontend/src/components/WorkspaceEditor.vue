@@ -1,8 +1,5 @@
 <script lang="ts" setup>
-import {
-  PencilSquareIcon,
-  ViewfinderCircleIcon,
-} from '@heroicons/vue/20/solid'
+import { PencilSquareIcon, ViewfinderCircleIcon } from '@heroicons/vue/20/solid'
 import { reactive, ref, PropType } from 'vue'
 import ScopeEditor from './ScopeEditor.vue'
 import { workspace } from '../../wailsjs/go/models'
@@ -52,16 +49,21 @@ function toggleTab(tabId: string) {
   <div>
     <main class="relative text-left">
       <div class="mx-auto max-w-screen-[100%] px-4 pb-6 sm:px-6 lg:px-8 lg:pb-16">
-        <div class="overflow-hidden rounded-lg bg-snow-storm dark:bg-polar-night shadow text-polar-night
-         dark:text-snow-storm">
+        <div
+          class="overflow-hidden rounded-lg bg-snow-storm dark:bg-polar-night shadow text-polar-night dark:text-snow-storm">
           <div class="lg:grid lg:grid-cols-12 lg:divide-y-0 lg:divide-x divide-snow-storm-3 dark:divide-polar-night-3">
             <aside class="py-6 lg:col-span-3">
               <nav class="space-y-1">
-                <a @click="toggleTab(tab.id)" v-for="tab in tabs" :key="tab.name" :class="[
-                 tab.id === openTab ?
-                 'bg-polar-night-4 border-frost-3' :
-                 'border-transparent hover:bg-polar-night-3',
-                'group border-l-4 px-3 py-2 flex items-center text-sm font-medium cursor-pointer']"
+                <a
+                  @click="toggleTab(tab.id)"
+                  v-for="tab in tabs"
+                  :key="tab.name"
+                  :class="[
+                    tab.id === openTab
+                      ? 'bg-polar-night-4 border-frost-3'
+                      : 'border-transparent hover:bg-polar-night-3',
+                    'group border-l-4 px-3 py-2 flex items-center text-sm font-medium cursor-pointer',
+                  ]"
                   :aria-current="tab.id === openTab ? 'page' : undefined">
                   <component :is="tab.icon" :class="['flex-shrink-0 -ml-1 mr-3 h-6 w-6']" aria-hidden="true" />
                   <span class="truncate">{{ tab.name }}</span>
@@ -70,9 +72,8 @@ function toggleTab(tabId: string) {
             </aside>
 
             <div class="lg:col-span-9">
-
               <!-- Workspace overview -->
-              <div :class="{ 'hidden': 'overview' !== openTab }">
+              <div :class="{ hidden: 'overview' !== openTab }">
                 <div class="py-6 px-4 sm:p-6 lg:pb-8">
                   <div>
                     <h2 class="text-lg font-medium leading-6">Overview</h2>
@@ -81,43 +82,48 @@ function toggleTab(tabId: string) {
                   <div class="mt-8">
                     <label for="name" class="block text-sm font-medium text-snow-storm">Name</label>
                     <div class="relative mt-1 rounded-md shadow-sm">
-                      <input @change="setWorkspaceName" type="text" name="name" id="name"
+                      <input
+                        @change="setWorkspaceName"
+                        type="text"
+                        name="name"
+                        id="name"
                         class="block w-full rounded-md bg-polar-night-4 pr-10 focus:outline-none sm:text-sm"
-                        :value="modifiedWorkspace.name" aria-invalid="true" aria-describedby="name-error" />
+                        :value="modifiedWorkspace.name"
+                        aria-invalid="true"
+                        aria-describedby="name-error" />
                     </div>
                   </div>
                 </div>
               </div>
 
               <!-- Workspace scope -->
-              <div :class="{ 'hidden': 'scope' !== openTab }">
+              <div :class="{ hidden: 'scope' !== openTab }">
                 <div class="py-6 px-4 sm:p-6 lg:pb-8">
                   <div>
-                    <h2 class="text-lg font-medium leading-6 ">Scope</h2>
-                    <p class="mt-1 text-sm ">Change the workspace scope to laser focus on your target.</p>
+                    <h2 class="text-lg font-medium leading-6">Scope</h2>
+                    <p class="mt-1 text-sm">Change the workspace scope to laser focus on your target.</p>
                   </div>
 
                   <div class="mt-8">
                     <ScopeEditor :scope="modifiedWorkspace.scope" @save="setScope" />
                   </div>
-
                 </div>
               </div>
-
             </div>
-
           </div>
           <div class="divide-y divide-gray-200 pt-6 text-right">
             <div class="px-4 sm:px-6 pb-4">
               <div>
-                <button @click="saveWorkspace" type="button" class="inline-flex items-center rounded border
-                 border-transparent bg-aurora-4 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm
-                  hover:bg-aurora-5 focus:outline-none">
+                <button
+                  @click="saveWorkspace"
+                  type="button"
+                  class="inline-flex items-center rounded border border-transparent bg-aurora-4 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">
                   Save Changes
                 </button>
-                <button @click="cancel" type="button" class="ml-2 inline-flex items-center rounded border
-                 border-transparent bg-aurora-1 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm
-                  hover:bg-aurora-5 focus:outline-none">
+                <button
+                  @click="cancel"
+                  type="button"
+                  class="ml-2 inline-flex items-center rounded border border-transparent bg-aurora-1 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">
                   Cancel
                 </button>
               </div>

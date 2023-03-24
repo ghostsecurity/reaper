@@ -90,7 +90,7 @@ function closeWorkspaceConfig() {
   workspaceConfigVisible.value = false
 }
 
-let saveTimeout = setTimeout(() => {}, 0)
+let saveTimeout = 0
 
 function saveWorkspace(ws: workspace.Workspace) {
   Object.assign(currentWorkspace, ws)
@@ -99,7 +99,7 @@ function saveWorkspace(ws: workspace.Workspace) {
   clearTimeout(saveTimeout)
   saveTimeout = setTimeout(() => {
     SaveWorkspace(currentWorkspace)
-  }, 1000)
+  }, 1000) as unknown as number
 }
 
 function showSettings() {
@@ -258,9 +258,9 @@ function unsaveRequest(request: HttpRequest | workspace.Request) {
 }
 
 function updateRequest(request: HttpRequest) {
-  for(let i = 0; i < currentWorkspace.collection.groups.length; i++) {
-    let group = currentWorkspace.collection.groups[i]
-    for(let j = 0; j < group.requests.length; j++) {
+  for (let i = 0; i < currentWorkspace.collection.groups.length; i += 1) {
+    const group = currentWorkspace.collection.groups[i]
+    for (let j = 0; j < group.requests.length; j += 1) {
       if (group.requests[j].inner.ID === request.ID) {
         group.requests[j].inner = request
         currentWorkspace.collection.groups.splice(i, 1, group)
@@ -269,9 +269,7 @@ function updateRequest(request: HttpRequest) {
       }
     }
   }
-  console.log("Request not found")
 }
-
 
 function reorderGroup(fromID: string, toID: string) {
   const group = currentWorkspace.collection.groups.find(g => g.id === fromID)
@@ -358,48 +356,29 @@ function sendRequest(request: HttpRequest) {
 <template>
   <div v-if="!isLoaded()">Loading...</div>
   <div v-else-if="!hasWorkspace">
-    <WorkspaceSelection
-      :workspaces="workspaces"
-      @select="selectWorkspaceById"
-      @create="createWorkspace"
-      @edit="editWorkspace"
-      @delete="deleteWorkspace" />
-    <WorkspaceModal
-      :show="isLoaded() && workspaceConfigVisible"
-      @close="closeWorkspaceConfig"
-      @save="saveWorkspace"
+    <WorkspaceSelection :workspaces="workspaces" @select="selectWorkspaceById" @create="createWorkspace"
+      @edit="editWorkspace" @delete="deleteWorkspace" />
+    <WorkspaceModal :show="isLoaded() && workspaceConfigVisible" @close="closeWorkspaceConfig" @save="saveWorkspace"
       :ws="currentWorkspace" />
   </div>
   <div v-else class="h-full">
-    <SettingsModal
-      :show="isLoaded() && settingsVisible"
-      @close="closeSettings"
-      @save="saveSettings"
+    <SettingsModal :show="isLoaded() && settingsVisible" @close="closeSettings" @save="saveSettings"
       :settings="settings" />
-    <WorkspaceModal
-      :show="isLoaded() && workspaceConfigVisible"
-      @close="closeWorkspaceConfig"
-      @save="saveWorkspace"
+    <WorkspaceModal :show="isLoaded() && workspaceConfigVisible" @close="closeWorkspaceConfig" @save="saveWorkspace"
       :ws="currentWorkspace" />
     <div class="fixed h-full w-10 bg-polar-night-1a pt-1">
-      <button
-        :class="
-          'rounded p-1 text-snow-storm-1 hover:bg-polar-night-3 ' + (sidebar === 'structure' ? 'bg-polar-night-4' : '')
-        "
-        @click="setSidebar('structure')">
+      <button :class="
+        'rounded p-1 text-snow-storm-1 hover:bg-polar-night-3 ' + (sidebar === 'structure' ? 'bg-polar-night-4' : '')
+      " @click="setSidebar('structure')">
         <FolderIcon class="h-6 w-6" aria-hidden="true" title="Structure" />
       </button>
-      <button
-        :class="
-          'rounded p-1 text-snow-storm-1 hover:bg-polar-night-3 ' + (sidebar === 'scope' ? 'bg-polar-night-4' : '')
-        "
-        @click="setSidebar('scope')">
+      <button :class="
+        'rounded p-1 text-snow-storm-1 hover:bg-polar-night-3 ' + (sidebar === 'scope' ? 'bg-polar-night-4' : '')
+      " @click="setSidebar('scope')">
         <FunnelIcon class="h-6 w-6" aria-hidden="true" title="Scope" />
       </button>
       <div class="absolute bottom-0 left-1">
-        <button
-          class="rounded p-1 text-snow-storm-1 hover:bg-polar-night-3"
-          title="Workspace"
+        <button class="rounded p-1 text-snow-storm-1 hover:bg-polar-night-3" title="Workspace"
           @click="showWorkspaceConfig">
           <BriefcaseIcon class="h-6 w-6" aria-hidden="true" title="Workspace" />
         </button>
@@ -410,48 +389,34 @@ function sendRequest(request: HttpRequest) {
     </div>
 
     <div class="ml-10 flex h-full">
-      <div
-        :class="[
-          'sidebar',
-          'resize-x',
-          'overflow-auto',
-          'pr-12',
-          'border-l-2',
-          'border-polar-night-1',
-          'relative',
-          'py-1',
-          'h-screen',
-          'bg-polar-night-1a',
-          'flex-none',
-          'w-fit',
-          'min-w-[10%]',
-          'max-w-[25%]',
-          sidebar !== '' ? '' : 'hidden',
-        ]">
+      <div :class="[
+        'sidebar',
+        'resize-x',
+        'overflow-auto',
+        'pr-12',
+        'border-l-2',
+        'border-polar-night-1',
+        'relative',
+        'py-1',
+        'h-screen',
+        'bg-polar-night-1a',
+        'flex-none',
+        'w-fit',
+        'min-w-[10%]',
+        'max-w-[25%]',
+        sidebar !== '' ? '' : 'hidden',
+      ]">
         <Structure v-if="sidebar === 'structure'" :expanded="true" :nodes="nodes" @select="onStructureSelect" />
         <p v-else>not implemented yet</p>
       </div>
       <div class="h-full w-3/4 flex-1">
-        <AppDashboard
-          :criteria="criteria"
-          :proxy-address="'127.0.0.1:' + settings.ProxyPort"
-          :ws="currentWorkspace"
-          :saved-request-ids="savedRequestIds"
-          @save-request="saveRequest"
-          @unsave-request="unsaveRequest"
-          @request-group-change="setRequestGroup"
-          @request-group-create="createRequestGroup"
-          @switch-workspace="switchWorkspace"
-          @criteria-change="onCriteriaChange"
-          @workspace-edit="showWorkspaceConfig"
-          @group-order-change="reorderGroup"
-          @duplicate-request="duplicateRequest"
-          @request-group-delete="deleteRequestGroup"
-          @request-group-rename="renameRequestGroup"
-          @request-rename="renameRequest" 
-          @send-request="sendRequest" 
-          @update-request="updateRequest"
-        />
+        <AppDashboard :criteria="criteria" :proxy-address="'127.0.0.1:' + settings.ProxyPort" :ws="currentWorkspace"
+          :saved-request-ids="savedRequestIds" @save-request="saveRequest" @unsave-request="unsaveRequest"
+          @request-group-change="setRequestGroup" @request-group-create="createRequestGroup"
+          @switch-workspace="switchWorkspace" @criteria-change="onCriteriaChange" @workspace-edit="showWorkspaceConfig"
+          @group-order-change="reorderGroup" @duplicate-request="duplicateRequest"
+          @request-group-delete="deleteRequestGroup" @request-group-rename="renameRequestGroup"
+          @request-rename="renameRequest" @send-request="sendRequest" @update-request="updateRequest" />
       </div>
     </div>
   </div>

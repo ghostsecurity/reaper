@@ -47,32 +47,34 @@ function onKeydown(e: KeyboardEvent) {
     return
   }
   switch (e.key) {
-  case 'Tab':
-    e.preventDefault()
-    if (index.value < relevantSuggestions.value.length - 1) {
-      index.value += 1
-    }
-    break
-  case 'Escape':
-    e.preventDefault()
-    showAutocomplete.value = false
-    break
-  case 'ArrowUp':
-    e.preventDefault()
-    if (index.value > 0) {
-      index.value -= 1
-    }
-    break
-  case 'ArrowDown':
-    e.preventDefault()
-    if (index.value < relevantSuggestions.value.length - 1) {
-      index.value += 1
-    }
-    break
+    case 'Tab':
+      e.preventDefault()
+      if (index.value < relevantSuggestions.value.length - 1) {
+        index.value += 1
+      }
+      break
+    case 'Escape':
+      e.preventDefault()
+      showAutocomplete.value = false
+      break
+    case 'ArrowUp':
+      e.preventDefault()
+      if (index.value > 0) {
+        index.value -= 1
+      }
+      break
+    case 'ArrowDown':
+      e.preventDefault()
+      if (index.value < relevantSuggestions.value.length - 1) {
+        index.value += 1
+      }
+      break
     case 'Enter':
-    e.preventDefault()
-    changeValue(relevantSuggestions.value[index.value])
-    break
+      e.preventDefault()
+      changeValue(relevantSuggestions.value[index.value])
+      break
+    default:
+      break
   }
 }
 
@@ -86,43 +88,25 @@ function remainingPortion(sugg: string): string {
 
 <template>
   <div class="relative">
-    <input
-      ref="input"
-      type="text"
-      :value="liveValue"
-      :readonly="readonly"
-      @focus="showAutocomplete = !readonly"
-      @blur="showAutocomplete = false"
-      @input="onChange"
-      @keydown="onKeydown"
-      autocomplete="off"
-      autocapitalize="off"
+    <input ref="input" type="text" :value="liveValue" :readonly="readonly" @focus="showAutocomplete = !readonly"
+      @blur="showAutocomplete = false" @input="onChange" @keydown="onKeydown" autocomplete="off" autocapitalize="off"
       spellcheck="false"
       class="m-0 w-full truncate border-none bg-transparent p-0 text-xs text-polar-night-1 outline-none ring-0 hover:truncate focus:border-none focus:text-xs focus:outline-none focus:ring-0 dark:text-snow-storm-1" />
-    <div
-      :class="[
-        hasSuggestions() ? '' : 'hidden',
-        'absolute z-10 mt-2 w-56 origin-top-left rounded-md bg-white dark:bg-polar-night-4 shadow-lg ring-1',
-        'ring-black ring-opacity-5 focus:outline-none overflow-y-auto',
-      ]"
-      :style="{
-        left: left ? '0' : 'auto',
-        right: left ? 'auto' : '0',
-        'max-height': '240px',
-      }"
-      >
+    <div :class="[
+      hasSuggestions() ? '' : 'hidden',
+      'absolute z-10 mt-2 w-56 origin-top-left rounded-md bg-white shadow-lg ring-1 dark:bg-polar-night-4',
+      'overflow-y-auto ring-black ring-opacity-5 focus:outline-none',
+    ]" :style="{
+  left: left ? '0' : 'auto',
+  right: left ? 'auto' : '0',
+  'max-height': '240px',
+}">
       <div class="py-1" :key="liveValue">
         <div v-for="(suggestion, i) in relevantSuggestions" :key="suggestion">
-          <a
-            href="#"
-            @focus="input.focus()"
-            @mousedown.prevent.stop="changeValue(suggestion)"
-            @click.prevent.stop
-            @mouseup.prevent.stop
-            @mouseover="index = i"
-            :class="[
+          <a href="#" @focus="input.focus()" @mousedown.prevent.stop="changeValue(suggestion)" @click.prevent.stop
+            @mouseup.prevent.stop @mouseover="index = i" :class="[
               i === index ? 'bg-aurora-5' : '',
-              'flex cursor-pointer px-4 py-2 text-sm text-gray-700 dark:text-snow-storm-1 hover:bg-aurora-5',
+              'flex cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-aurora-5 dark:text-snow-storm-1',
             ]">
             <span class="bg-aurora-4/25">{{ highlightedPortion(suggestion) }}</span>
             {{ remainingPortion(suggestion) }}

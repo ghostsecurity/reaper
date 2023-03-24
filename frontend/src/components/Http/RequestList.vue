@@ -55,22 +55,28 @@ function unsaveRequest(req: HttpRequest) {
     </div>
     <div v-else>
       <ul role="list" class="space-y-1">
-        <li class="bg-snow-storm-2 dark:bg-polar-night-1a" v-for="request in filterRequests(requests)"
+        <li
+          class="bg-snow-storm-2 dark:bg-polar-night-1a"
+          v-for="request in filterRequests(requests)"
           :key="request.ID">
-          <a @click="selectRequest(request)" :class="[
-            'relative  block px-4 ',
-            request.ID == selected
-              ? 'bg-snow-storm-1 dark:bg-polar-night-3'
-              : 'hover:bg-snow-storm-1 dark:hover:bg-polar-night-2',
-          ]">
-            <div :class="
-              'left ending text-xs font-semibold text-snow-storm dark:text-polar-night ' + MethodClass(request)
-            ">
+          <a
+            @click="selectRequest(request)"
+            :class="[
+              'relative  block px-4 ',
+              request.ID == selected
+                ? 'bg-snow-storm-1 dark:bg-polar-night-3'
+                : 'hover:bg-snow-storm-1 dark:hover:bg-polar-night-2',
+            ]">
+            <div
+              :class="
+                'left ending text-xs font-semibold text-snow-storm dark:text-polar-night ' + MethodClass(request)
+              ">
               {{ request.Method }}
             </div>
-            <div :class="
-              'right ending text-xs font-semibold text-snow-storm dark:text-polar-night ' + StatusClass(request)
-            ">
+            <div
+              :class="
+                'right ending text-xs font-semibold text-snow-storm dark:text-polar-night ' + StatusClass(request)
+              ">
               {{ request.Response ? request.Response.StatusCode : '&nbsp;' }}
             </div>
             <div class="px-2 py-1 sm:px-4 sm:py-2">

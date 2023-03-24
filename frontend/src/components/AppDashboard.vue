@@ -10,7 +10,6 @@ import GroupedRequestList from './Http/GroupedRequestList.vue'
 import WorkspaceMenu from './WorkspaceMenu.vue'
 import Search from './SearchInput.vue'
 import IDE from './Http/IDE.vue'
-import { KeyValue } from '../lib/KeyValue'
 
 const props = defineProps({
   ws: { type: Object as PropType<workspace.Workspace>, required: true },
@@ -69,15 +68,15 @@ const writeActions = new Map<string, string>([
 
 function ideAction(action: string) {
   switch (action) {
-  case 'send':
-    sendingReq = req.value
-    switchTab('log')
-    emit('send-request', req.value)
-    break
-  case 'copy-curl':
-    break
-  default:
-    throw new Error(`unknown action ${action}`)
+    case 'send':
+      sendingReq = req.value
+      switchTab('log')
+      emit('send-request', req.value)
+      break
+    case 'copy-curl':
+      break
+    default:
+      throw new Error(`unknown action ${action}`)
   }
 }
 
@@ -94,13 +93,13 @@ watch(
 )
 
 function compareRequests(a: HttpRequest, b: HttpRequest) {
-  if (a.Method != b.Method) {
+  if (a.Method !== b.Method) {
     return false
   }
-  if (a.URL != b.URL) {
+  if (a.URL !== b.URL) {
     return false
   }
-  if (a.Body != b.Body) {
+  if (a.Body !== b.Body) {
     return false
   }
   return true
@@ -118,10 +117,10 @@ onBeforeMount(() => {
     for (let i = 0; i < requests.value.length; i += 1) {
       if (requests.value[i].ID === response.ID) {
         requests.value[i].Response = response
-        let req = requests.value[i]
-        if (sendingReq !== null && compareRequests(req, sendingReq)) {
+        const r = requests.value[i]
+        if (sendingReq !== null && compareRequests(r, sendingReq)) {
           sendingReq = null
-          examineRequest(req, true)
+          examineRequest(r, true)
         }
         break
       }
@@ -247,12 +246,11 @@ function renameRequest(requestId: string, name: string) {
 }
 
 function updateRequest(e: HttpRequest) {
-  if(req.value !== null && req.value.ID === e.ID){
-   req.value = e
+  if (req.value !== null && req.value.ID === e.ID) {
+    req.value = e
   }
   emit('update-request', e)
 }
-
 </script>
 
 <template>
@@ -271,10 +269,7 @@ function updateRequest(e: HttpRequest) {
         <div class="min-h-16 h-16 max-h-16 flex-shrink">
           <div class="sm:hidden">
             <label for="tabs" class="sr-only">Select a tab</label>
-            <select
-              @change="selectTab"
-              id="tabs"
-              name="tabs"
+            <select @change="selectTab" id="tabs" name="tabs"
               class="block w-full rounded-md bg-polar-night-2 text-snow-storm-1 focus:border-frost focus:ring-frost">
               <option v-for="tab in tabs" :key="tab.id" :selected="tab.current" :value="tab.id">{{ tab.name }}</option>
             </select>
@@ -282,24 +277,16 @@ function updateRequest(e: HttpRequest) {
           <div class="hidden sm:block">
             <div class="border-b dark:border-polar-night-4">
               <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                <a
-                  v-for="tab in tabs"
-                  @click="switchTab(tab.id)"
-                  :key="tab.name"
-                  :class="[
-                    tab.current
-                      ? 'border-frost text-frost'
-                      : 'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-200',
-                    'group inline-flex cursor-pointer items-center border-b-2 py-4 px-1 text-sm font-medium',
-                  ]"
-                  :aria-current="tab.current ? 'page' : undefined">
-                  <component
-                    :is="tab.icon"
-                    :class="[
-                      tab.current ? 'text-frost' : 'text-gray-400 group-hover:text-gray-300',
-                      '-ml-0.5 mr-2 h-5 w-5',
-                    ]"
-                    aria-hidden="true" />
+                <a v-for="tab in tabs" @click="switchTab(tab.id)" :key="tab.name" :class="[
+                  tab.current
+                    ? 'border-frost text-frost'
+                    : 'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-200',
+                  'group inline-flex cursor-pointer items-center border-b-2 py-4 px-1 text-sm font-medium',
+                ]" :aria-current="tab.current ? 'page' : undefined">
+                  <component :is="tab.icon" :class="[
+                    tab.current ? 'text-frost' : 'text-gray-400 group-hover:text-gray-300',
+                    '-ml-0.5 mr-2 h-5 w-5',
+                  ]" aria-hidden="true" />
                   <span>{{ tab.name }}</span>
                 </a>
               </nav>
@@ -307,57 +294,30 @@ function updateRequest(e: HttpRequest) {
           </div>
         </div>
         <div class="my-2 flex-auto overflow-y-hidden">
-          <RequestList
-            @save-request="saveRequest"
-            @unsave-request="unsaveRequest"
-            :saved-request-ids="savedRequestIds"
-            :key="liveCriteria.Raw"
-            v-if="selectedTab() === 'log'"
-            :empty-message="'Reaper is ready to receive requests at ' + proxyAddress"
-            :requests="requests"
-            @select="examineRequest($event, true)"
-            :selected="req ? req.ID : ''"
-            :criteria="liveCriteria" />
-          <GroupedRequestList
-            :key="liveCriteria.Raw"
-            v-if="selectedTab() === 'saved'"
-            :groups="ws.collection.groups ? ws.collection.groups : []"
-            @select="examineRequest($event, false)"
-            :selected="req ? req.ID : ''"
-            :criteria="liveCriteria"
-            :empty-title="'No saved requests'"
-            :empty-message="'Save some requests from the log stream to access them here'"
-            :empty-icon="StarIcon"
-            @request-group-change="setRequestGroup"
-            @request-group-create="createRequestGroup"
-            @group-order-change="reorderGroup"
-            @unsave-request="unsaveRequest"
-            @duplicate-request="duplicateRequest"
-            @request-group-delete="deleteGroup"
-            @request-rename="renameRequest"
-            @request-group-rename="renameGroup" />
+          <RequestList @save-request="saveRequest" @unsave-request="unsaveRequest" :saved-request-ids="savedRequestIds"
+            :key="liveCriteria.Raw" v-if="selectedTab() === 'log'"
+            :empty-message="'Reaper is ready to receive requests at ' + proxyAddress" :requests="requests"
+            @select="examineRequest($event, true)" :selected="req ? req.ID : ''" :criteria="liveCriteria" />
+          <GroupedRequestList :key="liveCriteria.Raw" v-if="selectedTab() === 'saved'"
+            :groups="ws.collection.groups ? ws.collection.groups : []" @select="examineRequest($event, false)"
+            :selected="req ? req.ID : ''" :criteria="liveCriteria" :empty-title="'No saved requests'"
+            :empty-message="'Save some requests from the log stream to access them here'" :empty-icon="StarIcon"
+            @request-group-change="setRequestGroup" @request-group-create="createRequestGroup"
+            @group-order-change="reorderGroup" @unsave-request="unsaveRequest" @duplicate-request="duplicateRequest"
+            @request-group-delete="deleteGroup" @request-rename="renameRequest" @request-group-rename="renameGroup" />
           <div v-if="selectedTab() === 'workflows'">TODO: Attack Workflows</div>
         </div>
       </div>
     </div>
 
     <!-- resize handle -->
-    <div
-      v-if="req && !fullscreenIDE"
-      @mousedown.prevent="resizing = true"
-      ref="handle"
+    <div v-if="req && !fullscreenIDE" @mousedown.prevent="resizing = true" ref="handle"
       class="w-0.5 flex-none cursor-ew-resize bg-gray-500 dark:bg-polar-night-4"></div>
 
     <!-- request viewer/editor -->
     <div v-if="req" ref="rightPanel" class="mx-2 box-border h-full flex-auto overflow-hidden px-2">
-      <IDE
-        :request="req"
-        :readonly="reqReadOnly"
-        @action="ideAction"
-        @close="clearRequest"
-        :fullscreen="fullscreenIDE"
-        @fullscreen="toggleFullscreenIDE"
-        @request-update="updateRequest($event)"
+      <IDE :request="req" :readonly="reqReadOnly" @action="ideAction" @close="clearRequest" :fullscreen="fullscreenIDE"
+        @fullscreen="toggleFullscreenIDE" @request-update="updateRequest($event)"
         :actions="reqReadOnly ? readOnlyActions : writeActions" />
     </div>
   </div>

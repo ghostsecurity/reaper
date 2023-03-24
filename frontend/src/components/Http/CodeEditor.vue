@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import {watch, ref, onMounted} from 'vue'
+import { watch, ref, onMounted } from 'vue'
 
-import {HighlightHTTP, HighlightBody} from '../../../wailsjs/go/app/App'
+import { HighlightHTTP, HighlightBody } from '../../../wailsjs/go/app/App'
 
 const props = defineProps({
-  code: {type: String, required: true},
-  readonly: {type: Boolean, required: true},
-  http: {type: Boolean, default: false},
+  code: { type: String, required: true },
+  readonly: { type: Boolean, required: true },
+  http: { type: Boolean, default: false },
 })
 
 const buffer = ref(props.code)
@@ -19,13 +19,13 @@ const pre = ref()
 const emit = defineEmits(['change'])
 
 watch(
-    () => props.code,
-    () => {
-      buffer.value = props.code
-      const element = textarea.value as HTMLTextAreaElement
-      element.value = buffer.value
-      updateCode()
-    },
+  () => props.code,
+  () => {
+    buffer.value = props.code
+    const element = textarea.value as HTMLTextAreaElement
+    element.value = buffer.value
+    updateCode()
+  },
 )
 
 onMounted(() => {
@@ -67,38 +67,42 @@ function updateCode() {
 }
 function onKeydown(e: KeyboardEvent) {
   switch (e.key) {
-      case 'Tab':
-        e.preventDefault();
-        const element = textarea.value as HTMLTextAreaElement
-        const start = element.selectionStart
-        const end = element.selectionEnd
-        const value = element.value
-        const before = value.substring(0, start)
-        const after = value.substring(end)
-        const insert = '  '
-        buffer.value = before + insert + after
-        element.value = buffer.value
-        element.selectionStart = start + insert.length
-        element.selectionEnd = start + insert.length
-        updateCode()
+    case 'Tab':
+      e.preventDefault()
+      indent()
       break
-    }
+    default:
+      break
+  }
+}
+
+function indent() {
+  const element = textarea.value as HTMLTextAreaElement
+  const start = element.selectionStart
+  const end = element.selectionEnd
+  const { value } = element
+  const before = value.substring(0, start)
+  const after = value.substring(end)
+  const insert = '  '
+  buffer.value = before + insert + after
+  element.value = buffer.value
+  element.selectionStart = start + insert.length
+  element.selectionEnd = start + insert.length
+  updateCode()
 }
 </script>
 
 <template>
-<div class="border border-polar-night-3 w-full h-full p-2">
-  <div :class="[
-    'wrapper overflow-x-auto h-full w-full',
-    busy ? 'wrapper plain text-left' : 'wrapper highlighted min-h-full text-left',
-  ]">
-    <pre ref="pre" class="w-full h-full min-h-full" aria-hidden="true"><code v-html="highlighted"></code></pre>
-    <textarea class="w-full h-full" :readonly="readonly" spellcheck="false" ref="textarea" @input="updateCode"
-              @scroll="syncScroll"
-              @keydown="onKeydown"
-              v-model="buffer"></textarea>
+  <div class="border border-polar-night-3 w-full h-full p-2">
+    <div :class="[
+      'wrapper overflow-x-auto h-full w-full',
+      busy ? 'wrapper plain text-left' : 'wrapper highlighted min-h-full text-left',
+    ]">
+      <pre ref="pre" class="w-full h-full min-h-full" aria-hidden="true"><code v-html="highlighted"></code></pre>
+      <textarea class="w-full h-full" :readonly="readonly" spellcheck="false" ref="textarea" @input="updateCode"
+        @scroll="syncScroll" @keydown="onKeydown" v-model="buffer"></textarea>
+    </div>
   </div>
-</div>
 </template>
 
 <style scoped>
@@ -128,7 +132,6 @@ pre {
   overflow-x: auto !important;
   padding: 0;
   border: none;
-
 }
 
 textarea,
