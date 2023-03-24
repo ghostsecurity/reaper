@@ -7,6 +7,7 @@ const props = defineProps({
   code: { type: String, required: true },
   readonly: { type: Boolean, required: true },
   http: { type: Boolean, default: false },
+  mime: { type: String, default: 'text/plain' },
 })
 
 const buffer = ref(props.code)
@@ -59,8 +60,7 @@ function updateCode() {
       setHighlighted(hl)
     })
   } else {
-    // TODO: content type
-    HighlightBody(sent.value, 'application/json').then((hl: string) => {
+    HighlightBody(sent.value, props.mime).then((hl: string) => {
       setHighlighted(hl)
     })
   }

@@ -70,7 +70,6 @@ function ideAction(action: string) {
   switch (action) {
     case 'send':
       sendingReq = req.value
-      switchTab('log')
       emit('send-request', req.value)
       break
     case 'copy-curl':
@@ -108,9 +107,9 @@ function compareRequests(a: HttpRequest, b: HttpRequest) {
 onBeforeMount(() => {
   EventsOn('HttpRequest', (data: HttpRequest) => {
     requests.value.push(data)
+    // TODO: better way to identify the request we're sending
     if (sendingReq !== null && compareRequests(data, sendingReq)) {
       sendingReq = data
-      examineRequest(data, true)
     }
   })
   EventsOn('HttpResponse', (response: HttpResponse) => {
@@ -118,9 +117,11 @@ onBeforeMount(() => {
       if (requests.value[i].ID === response.ID) {
         requests.value[i].Response = response
         const r = requests.value[i]
-        if (sendingReq !== null && compareRequests(r, sendingReq)) {
+        if (sendingReq !== null && sendingReq.ID === r.ID) {
           sendingReq = null
-          examineRequest(r, true)
+          if (req.value !== null) {
+            req.value.Response = response
+          }
         }
         break
       }
