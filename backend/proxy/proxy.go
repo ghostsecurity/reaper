@@ -88,6 +88,12 @@ func New(userSettings *settings.Provider, logger *log.Logger) (*Proxy, error) {
 	}
 
 	proxy.OnRequest().DoFunc(func(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+		if r.URL.Scheme == "https" && r.URL.Port() == "443" {
+			r.URL.Host = r.URL.Hostname()
+		}
+		if r.URL.Scheme == "http" && r.URL.Port() == "80" {
+			r.URL.Host = r.URL.Hostname()
+		}
 		for _, f := range p.reqFuncs {
 			modified, resp := f(r, ctx.Session)
 			if resp != nil {
