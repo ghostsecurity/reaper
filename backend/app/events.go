@@ -12,6 +12,7 @@ const (
 	EventInterceptionEnabledChange = "InterceptionEnabledChange"
 	EventInterceptedRequest        = "InterceptedRequest"
 	EventTreeUpdate                = "TreeUpdate"
+	EventSendRequest               = "SendRequest"
 )
 
 func (a *App) emitProxyStatus(status bool, addr, message string) {

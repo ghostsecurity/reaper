@@ -17,7 +17,17 @@ class Criteria {
     try {
       this.root = parse(input)
     } catch (e) {
-      this.root = new Ruleset([new Rule(Target.Body, Comparison.CONTAINS, input)], [], JoinType.AND)
+      this.root = new Ruleset(
+        [
+          new Rule(Target.Body, Comparison.CONTAINS, input),
+          new Rule(Target.Path, Comparison.CONTAINS, input),
+          new Rule(Target.Query, Comparison.CONTAINS, input),
+          new Rule(Target.Host, Comparison.CONTAINS, input),
+          new Rule(Target.Scheme, Comparison.CONTAINS, input),
+        ],
+        [],
+        JoinType.OR,
+      )
       this.ParseError = e as Error
     }
   }

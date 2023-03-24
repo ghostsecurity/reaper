@@ -237,6 +237,18 @@ function createGroup(name: string) {
   emit('request-group-create', name)
   creatingGroup.value = false
 }
+
+function findCurrentName() {
+  let name = ''
+  props.groups.filter(g => {
+    g.requests.filter(r => { 
+      if(r.id === renamingRequest.value){ 
+        name = r.name
+      }
+    }) 
+  })
+  return name
+}
 </script>
 
 <template>
@@ -244,8 +256,8 @@ function createGroup(name: string) {
     @confirm="createGroup($event)" />
   <InputBox v-if="renamingGroup" title="Rename group" message="Enter the new group name." @cancel="renamingGroup = ''"
     @confirm="renameGroup(renamingGroup, $event)" />
-  <InputBox v-else-if="renamingRequest" title="Rename request" message="Enter the new request name."
-    @cancel="renamingRequest = ''" @confirm="renameRequest(renamingRequest, $event)" />
+  <InputBox v-else-if="renamingRequest" title="Rename request" message="Enter the new request name." 
+    @cancel="renamingRequest = ''" @confirm="renameRequest(renamingRequest, $event)" :initial-value="findCurrentName()" />
   <div class="flex flex-col h-full">
     <div class="flex-none">
       <div class="flex h-10 max-h-10 w-full text-left">
@@ -347,7 +359,7 @@ function createGroup(name: string) {
                             <Bars3Icon class="h-6 w-6" />
                           </div>
                           <div class="flex-1">
-                            <RequestItemSummary :request="outer.inner" :name="outer.name" :show-tags="false" />
+                            <RequestItemSummary :request="outer.inner" :name="outer.name" :show-tags="false" @rename="renamingRequest = outer.id" />
                           </div>
                           <div class="flex-0 pl-4 pr-2 pt-2 text-gray-400">
                             <a @click.stop="renamingRequest = outer.id" title="Rename"

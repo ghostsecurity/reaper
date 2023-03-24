@@ -11,6 +11,7 @@ import (
 
 	"github.com/kirsle/configdir"
 
+	"github.com/ghostsecurity/reaper/backend/log"
 	"github.com/google/uuid"
 )
 
@@ -45,7 +46,7 @@ func New() *Workspace {
 	}
 }
 
-func List() ([]*Workspace, error) {
+func List(logger *log.Logger) ([]*Workspace, error) {
 	dir, err := getDir()
 	if err != nil {
 		return nil, fmt.Errorf("failed to access workspace directory: %w", err)
@@ -83,7 +84,8 @@ func List() ([]*Workspace, error) {
 
 		workspace, err := loadFile(workspaceSettings)
 		if err != nil {
-			return nil, fmt.Errorf("failed to load workspace %s: %w", entry.Name(), err)
+			logger.Errorf("Failed to read workspace '%s': %s", entry.Name(), err)
+			continue
 		}
 		workspaces = append(workspaces, workspace)
 	}

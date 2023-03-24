@@ -3,7 +3,7 @@ export namespace workspace {
 	export class Request {
 	    id: string;
 	    name: string;
-	    // Go type: packaging.HttpRequest
+	    // Go type: packaging
 	    inner: any;
 	    pre_script: string;
 	    post_script: string;
@@ -109,7 +109,7 @@ export namespace workspace {
 	    id: number;
 	    protocol: string;
 	    host: string;
-	    // Go type: regexp.Regexp
+	    // Go type: regexp
 	    path?: any;
 	    ports: number[];
 	

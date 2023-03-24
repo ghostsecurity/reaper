@@ -37,12 +37,16 @@ func TestRequestPackaging(t *testing.T) {
 				Path:        "/blah",
 				QueryString: "x=1",
 				Scheme:      "https",
-				Raw:         "GET /blah?x=1 HTTP/1.1\r\nHost: example.com\r\nUser-Agent: Go-http-client/1.1\r\n\r\n",
 				ID:          expectedID,
 				LocalID:     requestID,
-				Headers:     map[string][]string{},
-				Query:       map[string][]string{"x": {"1"}},
-				Tags:        []string{},
+				Headers:     []KeyValue{},
+				Query: []KeyValue{
+					{
+						Key:   "x",
+						Value: "1",
+					},
+				},
+				Tags: []string{},
 			},
 		},
 		{
@@ -59,12 +63,21 @@ func TestRequestPackaging(t *testing.T) {
 				Path:        "/blah",
 				QueryString: "x=1",
 				Scheme:      "https",
-				Raw:         "GET /blah?x=1 HTTP/1.1\r\nHost: example.com\r\nUser-Agent: Go-http-client/1.1\r\nX-Test: test\r\n\r\n",
 				ID:          expectedID,
 				LocalID:     requestID,
-				Headers:     map[string][]string{"X-Test": {"test"}},
-				Query:       map[string][]string{"x": {"1"}},
-				Tags:        []string{},
+				Headers: []KeyValue{
+					{
+						Key:   "X-Test",
+						Value: "test",
+					},
+				},
+				Query: []KeyValue{
+					{
+						Key:   "x",
+						Value: "1",
+					},
+				},
+				Tags: []string{},
 			},
 		},
 		{
@@ -80,12 +93,17 @@ func TestRequestPackaging(t *testing.T) {
 				Path:        "/blah",
 				QueryString: "x=1",
 				Scheme:      "https",
-				Raw:         "POST /blah?x=1 HTTP/1.1\r\nHost: example.com\r\nUser-Agent: Go-http-client/1.1\r\nContent-Length: 9\r\n\r\nmsg=hello",
 				ID:          expectedID,
 				LocalID:     requestID,
-				Headers:     map[string][]string{},
-				Query:       map[string][]string{"x": {"1"}},
-				Tags:        []string{},
+				Headers:     []KeyValue{},
+				Query: []KeyValue{
+					{
+						Key:   "x",
+						Value: "1",
+					},
+				},
+				Body: "msg=hello",
+				Tags: []string{},
 			},
 		},
 	}
@@ -99,7 +117,6 @@ func TestRequestPackaging(t *testing.T) {
 			assert.Equal(t, tt.want, *got)
 			var buf bytes.Buffer
 			require.NoError(t, input.Write(&buf))
-			assert.Equal(t, tt.want.Raw, buf.String())
 		})
 	}
 }
@@ -125,10 +142,9 @@ func TestResponsePackaging(t *testing.T) {
 				ProtoMinor: 1,
 			},
 			want: HttpResponse{
-				Raw:        "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n",
 				ID:         expectedID,
 				LocalID:    requestID,
-				Headers:    map[string][]string{},
+				Headers:    []KeyValue{},
 				StatusCode: 200,
 				Tags:       []string{},
 			},
@@ -145,11 +161,13 @@ func TestResponsePackaging(t *testing.T) {
 				ProtoMinor: 1,
 			},
 			want: HttpResponse{
-				Raw:     "HTTP/1.1 200 OK\r\nX-Test: test\r\nContent-Length: 0\r\n\r\n",
 				ID:      expectedID,
 				LocalID: requestID,
-				Headers: map[string][]string{
-					"X-Test": {"test"},
+				Headers: []KeyValue{
+					{
+						Key:   "X-Test",
+						Value: "test",
+					},
 				},
 				StatusCode: 200,
 				Tags:       []string{},
@@ -165,13 +183,13 @@ func TestResponsePackaging(t *testing.T) {
 				ProtoMinor: 1,
 			},
 			want: HttpResponse{
-				Raw:        "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\nmsg=hello",
 				ID:         expectedID,
 				LocalID:    requestID,
-				Headers:    map[string][]string{},
+				Headers:    []KeyValue{},
 				StatusCode: 200,
 				Tags:       []string{},
 				BodySize:   9,
+				Body:       "msg=hello",
 			},
 		},
 	}
@@ -184,7 +202,6 @@ func TestResponsePackaging(t *testing.T) {
 			assert.Equal(t, tt.want, *got)
 			var buf bytes.Buffer
 			require.NoError(t, tt.input.Write(&buf))
-			assert.Equal(t, tt.want.Raw, buf.String())
 		})
 	}
 }

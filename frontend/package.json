@@ -15,10 +15,10 @@
     "@headlessui/vue": "^1.7.5",
     "@heroicons/vue": "^2.0.13",
     "popper.js": "^1.16.1",
+    "vitest": "^0.26.3",
     "vue": "^3.2.37",
     "vue-prism-editor": "^2.0.0-alpha.2",
-    "vuetify": "^3.0.1",
-    "vitest": "^0.26.3"
+    "vuetify": "^3.0.1"
   },
   "devDependencies": {
     "@babel/types": "^7.18.10",
@@ -29,6 +29,7 @@
     "@typescript-eslint/parser": "^5.48.1",
     "@vitejs/plugin-vue": "^3.0.3",
     "@vue/babel-plugin-jsx": "^1.1.1",
+    "@vue/test-utils": "^2.2.7",
     "autoprefixer": "^10.4.13",
     "eslint": "^8.31.0",
     "eslint-config-airbnb-base": "^15.0.0",

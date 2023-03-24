@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, onBeforeMount, reactive, ref } from 'vue'
 import { FunnelIcon, FolderIcon, CogIcon, BriefcaseIcon } from '@heroicons/vue/24/outline'
-import { EventsOn } from '../wailsjs/runtime'
+import { EventsEmit, EventsOn } from '../wailsjs/runtime'
 import Settings from './lib/Settings'
 import setDarkMode from './lib/theme'
 import { Criteria } from './lib/Criteria/Criteria'
@@ -90,11 +90,16 @@ function closeWorkspaceConfig() {
   workspaceConfigVisible.value = false
 }
 
+let saveTimeout = setTimeout(() => {}, 0)
+
 function saveWorkspace(ws: workspace.Workspace) {
   Object.assign(currentWorkspace, ws)
   currentWorkspace.tree.root.children = nodes.value
-  SaveWorkspace(ws)
-  closeWorkspaceConfig()
+  // buffer saves to 3 seconds after last activity
+  clearTimeout(saveTimeout)
+  saveTimeout = setTimeout(() => {
+    SaveWorkspace(currentWorkspace)
+  }, 1000)
 }
 
 function showSettings() {
@@ -252,6 +257,22 @@ function unsaveRequest(request: HttpRequest | workspace.Request) {
   saveWorkspace(currentWorkspace)
 }
 
+function updateRequest(request: HttpRequest) {
+  for(let i = 0; i < currentWorkspace.collection.groups.length; i++) {
+    let group = currentWorkspace.collection.groups[i]
+    for(let j = 0; j < group.requests.length; j++) {
+      if (group.requests[j].inner.ID === request.ID) {
+        group.requests[j].inner = request
+        currentWorkspace.collection.groups.splice(i, 1, group)
+        saveWorkspace(currentWorkspace)
+        return
+      }
+    }
+  }
+  console.log("Request not found")
+}
+
+
 function reorderGroup(fromID: string, toID: string) {
   const group = currentWorkspace.collection.groups.find(g => g.id === fromID)
 
@@ -327,6 +348,10 @@ function renameRequest(requestId: string, name: string) {
     return
   }
   request.name = name
+}
+
+function sendRequest(request: HttpRequest) {
+  EventsEmit('SendRequest', request)
 }
 </script>
 
@@ -423,7 +448,10 @@ function renameRequest(requestId: string, name: string) {
           @duplicate-request="duplicateRequest"
           @request-group-delete="deleteRequestGroup"
           @request-group-rename="renameRequestGroup"
-          @request-rename="renameRequest" />
+          @request-rename="renameRequest" 
+          @send-request="sendRequest" 
+          @update-request="updateRequest"
+        />
       </div>
     </div>
   </div>

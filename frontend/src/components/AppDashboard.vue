@@ -10,6 +10,7 @@ import GroupedRequestList from './Http/GroupedRequestList.vue'
 import WorkspaceMenu from './WorkspaceMenu.vue'
 import Search from './SearchInput.vue'
 import IDE from './Http/IDE.vue'
+import { KeyValue } from '../lib/KeyValue'
 
 const props = defineProps({
   ws: { type: Object as PropType<workspace.Workspace>, required: true },
@@ -32,6 +33,9 @@ const emit = defineEmits([
   'request-rename',
   'criteria-change',
   'workspace-edit',
+  'copy-request-as-curl',
+  'send-request',
+  'update-request',
 ])
 
 const requests = ref<HttpRequest[]>([])
@@ -51,25 +55,26 @@ const rightPanel = ref()
 const handle = ref()
 const resizing = ref(false)
 
+let sendingReq: HttpRequest | null = null
+
 const readOnlyActions = new Map<string, string>([
-  ['save', 'Save'],
-  ['export-har', 'Export HAR'],
-  ['export-curl', 'Export Curl'],
+  ['send', 'Resend'],
+  ['copy-curl', 'Copy as curl'],
 ])
 
 const writeActions = new Map<string, string>([
   ['send', 'Send'],
-  ['export-har', 'Export HAR'],
-  ['export-curl', 'Export Curl'],
+  ['copy-curl', 'Copy as curl'],
 ])
 
 function ideAction(action: string) {
   switch (action) {
   case 'send':
-    console.log('not implemented')
+    sendingReq = req.value
+    switchTab('log')
+    emit('send-request', req.value)
     break
-  case 'save':
-    console.log('not implemented')
+  case 'copy-curl':
     break
   default:
     throw new Error(`unknown action ${action}`)
@@ -88,14 +93,36 @@ watch(
   },
 )
 
+function compareRequests(a: HttpRequest, b: HttpRequest) {
+  if (a.Method != b.Method) {
+    return false
+  }
+  if (a.URL != b.URL) {
+    return false
+  }
+  if (a.Body != b.Body) {
+    return false
+  }
+  return true
+}
+
 onBeforeMount(() => {
   EventsOn('HttpRequest', (data: HttpRequest) => {
     requests.value.push(data)
+    if (sendingReq !== null && compareRequests(data, sendingReq)) {
+      sendingReq = data
+      examineRequest(data, true)
+    }
   })
   EventsOn('HttpResponse', (response: HttpResponse) => {
     for (let i = 0; i < requests.value.length; i += 1) {
       if (requests.value[i].ID === response.ID) {
         requests.value[i].Response = response
+        let req = requests.value[i]
+        if (sendingReq !== null && compareRequests(req, sendingReq)) {
+          sendingReq = null
+          examineRequest(req, true)
+        }
         break
       }
     }
@@ -218,6 +245,14 @@ function renameGroup(groupId: string, name: string) {
 function renameRequest(requestId: string, name: string) {
   emit('request-rename', requestId, name)
 }
+
+function updateRequest(e: HttpRequest) {
+  if(req.value !== null && req.value.ID === e.ID){
+   req.value = e
+  }
+  emit('update-request', e)
+}
+
 </script>
 
 <template>
@@ -322,7 +357,7 @@ function renameRequest(requestId: string, name: string) {
         @close="clearRequest"
         :fullscreen="fullscreenIDE"
         @fullscreen="toggleFullscreenIDE"
-        @headers-update="req.Headers = $event"
+        @request-update="updateRequest($event)"
         :actions="reqReadOnly ? readOnlyActions : writeActions" />
     </div>
   </div>

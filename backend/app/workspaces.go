@@ -18,7 +18,7 @@ func (a *App) CreateWorkspace(template *workspace.Workspace) *workspace.Workspac
 }
 
 func (a *App) GetWorkspaces() []*workspace.Workspace {
-	list, err := workspace.List()
+	list, err := workspace.List(a.logger)
 	if err != nil {
 		a.logger.Errorf("Failed to list workspaces: %s", err)
 		return []*workspace.Workspace{}

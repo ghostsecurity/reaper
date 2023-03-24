@@ -6,8 +6,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"strings"
 )
+
+type KeyValue struct {
+	Key   string
+	Value string
+}
 
 type HttpRequest struct {
 	Method      string
@@ -19,8 +25,8 @@ type HttpRequest struct {
 	Body        string
 	ID          string
 	LocalID     int64
-	Headers     map[string][]string
-	Query       map[string][]string
+	Headers     []KeyValue
+	Query       []KeyValue
 	Tags        []string
 }
 
@@ -29,7 +35,7 @@ type HttpResponse struct {
 	StatusCode int
 	ID         string
 	LocalID    int64
-	Headers    map[string][]string
+	Headers    []KeyValue
 	Tags       []string
 	BodySize   int
 }
@@ -62,8 +68,8 @@ func PackageHttpRequest(request *http.Request, proxyID string, reqID int64) (*Ht
 		Host:        request.Host,
 		Path:        request.URL.Path,
 		QueryString: request.URL.RawQuery,
-		Headers:     packageHeaders(request.Header),
-		Query:       request.URL.Query(),
+		Headers:     packageMap(request.Header),
+		Query:       packageMap(request.URL.Query()),
 		Scheme:      request.URL.Scheme,
 		Tags:        tagRequest(request),
 	}, nil
@@ -122,11 +128,19 @@ func tagContentType(ct string) string {
 	}
 }
 
-func packageHeaders(header http.Header) map[string][]string {
-	headers := make(map[string][]string)
-	for k, v := range header {
-		headers[k] = v
+func packageMap(header map[string][]string) []KeyValue {
+	headers := []KeyValue{} // nolint
+	for key, values := range header {
+		for _, value := range values {
+			headers = append(headers, KeyValue{
+				Key:   key,
+				Value: value,
+			})
+		}
 	}
+	sort.Slice(headers, func(i, j int) bool {
+		return headers[i].Key < headers[j].Key
+	})
 	return headers
 }
 
@@ -155,13 +169,20 @@ func PackageHttpResponse(response *http.Response, proxyID string, reqID int64) (
 		BodySize:   localCopy.Len(),
 		Body:       localCopy.String(),
 		StatusCode: response.StatusCode,
-		Headers:    packageHeaders(response.Header),
+		Headers:    packageMap(response.Header),
 		Tags:       tagResponse(response),
 	}, nil
 }
 
 func UnpackageHttpRequest(h *HttpRequest) (*http.Request, error) {
-	return nil, fmt.Errorf("not implemented")
+	req, err := http.NewRequest(h.Method, h.URL, strings.NewReader(h.Body))
+	if err != nil {
+		return nil, err
+	}
+	for _, header := range h.Headers {
+		req.Header.Add(header.Key, header.Value)
+	}
+	return req, nil
 }
 
 func UnpackageHttpResponse(h *HttpResponse, req *http.Request) (*http.Response, error) {

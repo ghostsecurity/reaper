@@ -8,6 +8,8 @@ defineProps({
   showTags: { type: Boolean, required: false, default: true },
 })
 
+const emit = defineEmits(['rename'])
+
 function classForTag(tag: string): string {
   const tags = ['bg-aurora-3', 'bg-aurora-4', 'bg-aurora-5', 'bg-frost-1', 'bg-frost-2', 'bg-frost-3', 'bg-frost-4']
   let total = 0
@@ -34,7 +36,7 @@ function humanSize(size: number): string {
 <template>
   <div class="relative">
     <div v-if="name !== ''" class="absolute left-0 top-3 w-full text-center text-sm">
-      <span class="rounded-md bg-polar-night-3 px-3 py-1">{{ name }}</span>
+      <a class="rounded-md bg-polar-night-3 px-3 py-1" style="pointer-events: all" @click.prevent.stop="emit('rename')">{{ name }}</a>
     </div>
     <div class="flex items-center justify-between">
       <p class="flex-1 max-w-4xl truncate text-left text-sm font-medium text-frost-4 dark:text-frost">
