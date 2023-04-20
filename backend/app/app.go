@@ -86,13 +86,20 @@ func (a *App) Startup(ctx context.Context) {
 		}
 	})
 
-	a.interceptor = interceptor.New(a.logger.WithPrefix("interceptor"), func(req *http.Request, id int64) {
-		if packaged, err := packaging.PackageHttpRequest(req, a.proxy.ID(), id); err != nil {
-			a.logger.Errorf("Error packaging request: %s", err)
-		} else {
-			runtime.EventsEmit(a.ctx, EventInterceptedRequest, packaged)
-		}
-	})
+	a.interceptor = interceptor.New(
+		a.logger.WithPrefix("interceptor"),
+		workspace.Scope{},
+		func(req *http.Request, id int64) {
+			if packaged, err := packaging.PackageHttpRequest(req, a.proxy.ID(), id); err != nil {
+				a.logger.Errorf("Error packaging request: %s", err)
+			} else {
+				runtime.EventsEmit(a.ctx, EventInterceptedRequest, packaged)
+			}
+		},
+		func(length int) {
+			runtime.EventsEmit(a.ctx, EventInterceptedRequestQueueChange, length)
+		},
+	)
 
 	runtime.EventsOn(a.ctx, EventInterceptRequestModified, func(args ...interface{}) {
 
@@ -150,19 +157,6 @@ func (a *App) Startup(ctx context.Context) {
 		}
 
 		a.interceptor.HandleCallback(final, modified.LocalID, a.createReaperMessageResponse(final, "Request dropped."))
-	})
-
-	runtime.EventsOn(ctx, EventInterceptionEnabledChange, func(args ...interface{}) {
-		if len(args) != 1 {
-			a.logger.Errorf("Expected 1 argument, got %d", len(args))
-			return
-		}
-		enabled, ok := args[0].(bool)
-		if !ok {
-			a.logger.Errorf("Expected bool, got %T", args[0])
-			return
-		}
-		a.interceptor.SetEnabled(enabled)
 	})
 
 	runtime.EventsOn(ctx, EventSendRequest, func(args ...interface{}) {

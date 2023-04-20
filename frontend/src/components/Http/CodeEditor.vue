@@ -65,6 +65,7 @@ function updateCode() {
     })
   }
 }
+
 function onKeydown(e: KeyboardEvent) {
   switch (e.key) {
     case 'Tab':
@@ -100,7 +101,7 @@ function indent() {
     ]">
       <pre ref="pre" class="w-full h-full min-h-full" aria-hidden="true"><code v-html="highlighted"></code></pre>
       <textarea class="w-full h-full" :readonly="readonly" spellcheck="false" ref="textarea" @input="updateCode"
-        @scroll="syncScroll" @keydown="onKeydown" v-model="buffer"></textarea>
+                @scroll="syncScroll" @keydown="onKeydown" v-model="buffer"></textarea>
     </div>
   </div>
 </template>

@@ -2,9 +2,10 @@ package log
 
 import (
 	"fmt"
-	"github.com/liamg/tml"
 	"io"
 	"strings"
+
+	"github.com/liamg/tml"
 )
 
 /*
@@ -88,12 +89,12 @@ func (l *Logger) Printf(level Level, format string, v ...interface{}) {
 	if level < l.level {
 		return
 	}
-	line := strings.TrimSpace(fmt.Sprintf(format, v...))
+	line := strings.TrimSpace(tml.Sprintf(format, v...))
 	if l.parent != nil {
 		l.parent.Printf(level, "<dim>[</dim>%s<dim>]</dim> %s", l.prefix, line)
 		return
 	}
-	_ = tml.Fprintf(l.w, fmt.Sprintf("%s %s\n", level, line))
+	_, _ = fmt.Fprintf(l.w, "%s %s\n", tml.Sprintf(level.String()), line)
 }
 
 func (l *Logger) Tracef(format string, v ...interface{}) {

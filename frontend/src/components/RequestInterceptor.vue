@@ -1,60 +1,101 @@
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue'
-import { EventsEmit, EventsOn } from '../../wailsjs/runtime' // eslint-disable-line import/no-unresolved
+import { PropType, ref, watch } from 'vue'
+import { HandRaisedIcon } from '@heroicons/vue/20/solid'
 import { HttpRequest } from '../lib/Http'
+import IDE from './Http/IDE.vue'
 
-const enabled = ref(false)
-const request = ref<HttpRequest | null>(null)
+const props = defineProps(
+  {
+    emptyTitle: { type: String, required: false, default: 'Nothing intercepted yet.' },
+    emptyMessage: {
+      type: String,
+      required: false,
+      default: 'Configure your interception rules and start intercepting requests.',
+    },
+    emptyIcon: { type: Object, required: false, default: HandRaisedIcon },
+    request: { type: Object as PropType<HttpRequest | null>, required: false, default: null },
+    previous: { type: Object as PropType<HttpRequest | null>, required: false, default: null },
+    count: { type: Number, required: false, default: 0 },
+  },
+)
 
-onMounted(() => {
-  EventsOn('InterceptedRequest', (req: HttpRequest) => {
-    request.value = req
-  })
-})
+const req = ref<HttpRequest | null>(props.request)
+const previous = ref<HttpRequest | null>(props.previous)
 
-function onEnabledChange() {
-  if (!enabled.value) {
-    request.value = null
-  }
-  EventsEmit('InterceptionEnabledChange', enabled.value)
-}
+watch(
+  () => props.request,
+  () => {
+    req.value = props.request
+  },
+)
+
+watch(
+  () => props.previous,
+  () => {
+    previous.value = props.previous
+  },
+)
+
+const writeActions = new Map<string, string>([
+  ['send', 'Send'],
+  ['drop', 'Drop'],
+])
+
+const readActions = new Map<string, string>([
+  ['close', 'Next'],
+])
+
+const emit = defineEmits(['send', 'drop', 'close'])
 
 function forwardRequest() {
-  EventsEmit('InterceptedRequestChange', request.value)
-  request.value = null
+  emit('send', req.value)
+  previous.value = req.value
 }
 
 function dropRequest() {
-  EventsEmit('InterceptedRequestDrop', request.value)
-  request.value = null
+  emit('drop', req.value)
+  req.value = null
 }
 
-function onChange() {
-  if (request.value !== null) {
-    // TODO
-    // request.value.Raw = raw
+function update(r: HttpRequest | null) {
+  req.value = r
+}
+
+function action(a: string) {
+  switch (a) {
+    case 'send':
+      forwardRequest()
+      break
+    case 'drop':
+      dropRequest()
+      break
+    case 'close':
+      emit('close')
+      break
+    default:
   }
+}
+
+function closePrevious() {
+  emit('close')
 }
 </script>
 
 <template>
-  <v-card class="text-start">
-    <v-card-text>
-      <v-switch
-        v-model="enabled"
-        color="primary"
-        label="Intercept Requests"
-        @change="onEnabledChange"
-        hide-details
-        inset
-        inline></v-switch>
-      <div v-if="request !== null" class="d-flex justify-left align-baseline" style="gap: 1rem">
-        <v-btn color="primary" @click="forwardRequest">Forward</v-btn>
-        <v-btn color="error" @click="dropRequest">Drop</v-btn>
-      </div>
-    </v-card-text>
-  </v-card>
-  <HttpRequestView v-if="request !== null" :request="request" :readonly="false" @change="onChange" />
+  <div class="h-full w-full">
+    <IDE v-if="!!previous" :request="previous" :readonly="true"
+         :actions="readActions"
+         @action="action"
+         @close="closePrevious"/>
+    <IDE v-else-if="!!req" :request="req" :readonly="false"
+         :actions="writeActions"
+         @action="action"
+         @request-update="update($event)"
+         @close="dropRequest"/>
+    <div v-else class="pt-8 pl-8 text-center text-frost-3">
+      <component :is="emptyIcon" class="mx-auto h-12 w-12"/>
+      <h3 class="mt-2 text-sm font-medium">{{ emptyTitle }}</h3>
+      <p class="mt-1 text-sm">{{ emptyMessage }}</p>
+    </div>
+  </div>
 </template>
-
-<style scoped></style>

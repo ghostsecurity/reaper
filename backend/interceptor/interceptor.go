@@ -5,15 +5,17 @@ import (
 	"sync"
 
 	"github.com/ghostsecurity/reaper/backend/log"
+	"github.com/ghostsecurity/reaper/backend/workspace"
 )
 
 type Interceptor struct {
 	sync.Mutex         // protects the 'enabled' field
-	enabled            bool
 	interceptStartFunc func(req *http.Request, id int64)
+	queueChangeFunc    func(len int)
 	queue              queue
 	logger             *log.Logger
 	flightMu           sync.Mutex // ensures only one message can be in flight at a time
+	scope              workspace.Scope
 }
 
 type InterceptionResponse struct {
@@ -27,33 +29,39 @@ type queuedRequest struct {
 	c   chan *InterceptionResponse
 }
 
-func New(logger *log.Logger, start func(req *http.Request, id int64)) *Interceptor {
+func New(logger *log.Logger, scope workspace.Scope, start func(*http.Request, int64), queueChange func(int)) *Interceptor {
 	return &Interceptor{
-		enabled:            false,
 		interceptStartFunc: start,
+		queueChangeFunc:    queueChange,
 		logger:             logger,
+		scope:              scope,
 	}
 }
 
-// access .enabled via mutex for safety
-func (i *Interceptor) isEnabled() bool {
+func (i *Interceptor) SetScope(scope workspace.Scope) {
 	i.Lock()
 	defer i.Unlock()
-	return i.enabled
+	i.scope = scope
+}
+
+func (i *Interceptor) isInScope(req *http.Request) bool {
+	i.Lock()
+	defer i.Unlock()
+	return i.scope.Includes(req)
 }
 
 func (i *Interceptor) Intercept(req *http.Request, id int64) (*http.Request, *http.Response) {
-	if !i.isEnabled() {
+	if !i.isInScope(req) {
 		return req, nil
 	}
 	resultChan := i.queue.Add(req, id)
+	if i.queueChangeFunc != nil {
+		i.queueChangeFunc(i.queue.Len())
+	}
 
 	i.flightMu.Lock()
 	defer i.flightMu.Unlock()
 	if i.interceptStartFunc != nil {
-		if !i.isEnabled() {
-			return req, nil
-		}
 		i.interceptStartFunc(req, id)
 	}
 
@@ -67,13 +75,16 @@ func (i *Interceptor) Intercept(req *http.Request, id int64) (*http.Request, *ht
 
 func (i *Interceptor) HandleCallback(req *http.Request, id int64, resp *http.Response) {
 	i.queue.Consume(req, id, resp)
+	if i.queueChangeFunc != nil {
+		i.queueChangeFunc(i.queue.Len())
+	}
 }
 
-func (i *Interceptor) SetEnabled(enabled bool) {
+func (i *Interceptor) Flush() {
 	i.Lock()
 	defer i.Unlock()
-	i.enabled = enabled
-	if !enabled {
-		i.queue.Flush()
+	i.queue.Flush()
+	if i.queueChangeFunc != nil {
+		i.queueChangeFunc(i.queue.Len())
 	}
 }

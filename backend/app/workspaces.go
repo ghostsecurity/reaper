@@ -52,4 +52,5 @@ func (a *App) SetWorkspace(workspace *workspace.Workspace) {
 	a.workspaceMu.Lock()
 	defer a.workspaceMu.Unlock()
 	a.workspace = workspace
+	a.interceptor.SetScope(workspace.InterceptionScope)
 }

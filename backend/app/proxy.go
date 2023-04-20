@@ -80,22 +80,15 @@ func (a *App) startProxy() {
 		}
 		// update workspace tree
 		tree, changed := a.workspace.UpdateTree(request)
+
 		if changed { // TODO: do we really want to save changes after every tree change?
 			runtime.EventsEmit(a.ctx, EventTreeUpdate, tree.Structure())
 			if err := a.workspace.Save(); err != nil {
 				a.logger.Errorf("Failed to save workspace after tree change: %s", err)
 			}
 		}
-		return request, nil
-	})
-	a.proxy.OnRequest(func(request *http.Request, id int64) (*http.Request, *http.Response) {
-		a.workspaceMu.RLock()
-		defer a.workspaceMu.RUnlock()
-		if !a.workspace.Scope.Includes(request) {
-			return request, nil
-		}
+
 		a.logger.Debugf("Request %d in scope: %s %s", id, request.Method, request.URL)
-		// TODO: check interception scope here as well
 		return a.interceptor.Intercept(request, id)
 	})
 	a.proxy.OnResponse(func(response *http.Response, id int64) *http.Response {
