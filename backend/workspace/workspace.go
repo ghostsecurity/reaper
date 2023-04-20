@@ -30,12 +30,13 @@ func getDir() (string, error) {
 }
 
 type Workspace struct {
-	ID         string     `json:"id"`
-	Name       string     `json:"name"`
-	Scope      Scope      `json:"scope"`
-	Collection Collection `json:"collection"`
-	Tree       Tree       `json:"tree"`
-	mu         sync.Mutex
+	ID                string     `json:"id"`
+	Name              string     `json:"name"`
+	Scope             Scope      `json:"scope"`
+	InterceptionScope Scope      `json:"interception_scope"`
+	Collection        Collection `json:"collection"`
+	Tree              Tree       `json:"tree"`
+	mu                sync.Mutex
 	// TODO: flows
 }
 

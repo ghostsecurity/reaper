@@ -1,21 +1,22 @@
 <script lang="ts" setup>
-import { onBeforeMount, onMounted, PropType, reactive, ref, watch } from 'vue'
-import { BarsArrowDownIcon, BeakerIcon, StarIcon } from '@heroicons/vue/20/solid'
-import { EventsOn } from '../../wailsjs/runtime'
-import { HttpRequest, HttpResponse } from '../lib/Http'
-import { Criteria } from '../lib/Criteria/Criteria'
-import { workspace } from '../../wailsjs/go/models'
+import {onBeforeMount, onMounted, PropType, reactive, ref, watch} from 'vue'
+import {BarsArrowDownIcon, BeakerIcon, StarIcon, HandRaisedIcon} from '@heroicons/vue/20/solid'
+import {EventsEmit, EventsOn} from '../../wailsjs/runtime'
+import {HttpRequest, HttpResponse} from '../lib/Http'
+import {Criteria} from '../lib/Criteria/Criteria'
+import {workspace} from '../../wailsjs/go/models'
 import RequestList from './Http/RequestList.vue'
 import GroupedRequestList from './Http/GroupedRequestList.vue'
 import WorkspaceMenu from './WorkspaceMenu.vue'
 import Search from './SearchInput.vue'
 import IDE from './Http/IDE.vue'
+import RequestInterceptor from "./RequestInterceptor.vue";
 
 const props = defineProps({
-  ws: { type: Object as PropType<workspace.Workspace>, required: true },
-  criteria: { type: Object as PropType<Criteria>, required: true },
-  proxyAddress: { type: String, required: true },
-  savedRequestIds: { type: Array as PropType<string[]>, required: false, default: () => [] },
+  ws: {type: Object as PropType<workspace.Workspace>, required: true},
+  criteria: {type: Object as PropType<Criteria>, required: true},
+  proxyAddress: {type: String, required: true},
+  savedRequestIds: {type: Array as PropType<string[]>, required: false, default: () => []},
 })
 
 const emit = defineEmits([
@@ -40,9 +41,10 @@ const emit = defineEmits([
 const requests = ref<HttpRequest[]>([])
 const req = ref<HttpRequest | null>(null)
 const tabs = ref([
-  { name: 'Log Stream', id: 'log', icon: BarsArrowDownIcon, current: true },
-  { name: 'Saved Requests', id: 'saved', icon: StarIcon, current: false },
-  { name: 'Attack Workflows', id: 'workflows', icon: BeakerIcon, current: false },
+  {name: 'Log Stream', id: 'log', icon: BarsArrowDownIcon, current: true, count: 0},
+  {name: 'Intercepted Requests', id: 'intercepted', icon: HandRaisedIcon, current: false, count: 0},
+  {name: 'Saved Requests', id: 'saved', icon: StarIcon, current: false, count: 0},
+  {name: 'Attack Workflows', id: 'workflows', icon: BeakerIcon, current: false, count: 0},
 ])
 const liveCriteria = reactive(props.criteria)
 const reqReadOnly = ref(true)
@@ -66,6 +68,10 @@ const writeActions = new Map<string, string>([
   ['copy-curl', 'Copy as curl'],
 ])
 
+const interceptionCount = ref(0)
+const interceptedRequest = ref<HttpRequest | null>(null)
+const sentInterceptedRequest = ref<HttpRequest | null>(null)
+
 function ideAction(action: string) {
   switch (action) {
     case 'send':
@@ -85,10 +91,10 @@ function toggleFullscreenIDE() {
 }
 
 watch(
-  () => props.criteria,
-  criteria => {
-    Object.assign(liveCriteria, criteria)
-  },
+    () => props.criteria,
+    criteria => {
+      Object.assign(liveCriteria, criteria)
+    },
 )
 
 function compareRequests(a: HttpRequest, b: HttpRequest) {
@@ -113,6 +119,9 @@ onBeforeMount(() => {
     }
   })
   EventsOn('HttpResponse', (response: HttpResponse) => {
+    if (sentInterceptedRequest.value !== null && sentInterceptedRequest.value.ID === response.ID) {
+      sentInterceptedRequest.value.Response = response
+    }
     for (let i = 0; i < requests.value.length; i += 1) {
       if (requests.value[i].ID === response.ID) {
         requests.value[i].Response = response
@@ -126,6 +135,18 @@ onBeforeMount(() => {
         break
       }
     }
+  })
+  EventsOn('InterceptedRequestQueueChange', (count: number) => {
+    for (let i = 0; i < tabs.value.length; i += 1) {
+      if (tabs.value[i].id === 'intercepted') {
+        tabs.value[i].count = count
+        interceptionCount.value = count
+        break
+      }
+    }
+  })
+  EventsOn('InterceptedRequest', (request: HttpRequest) => {
+    interceptedRequest.value = request
   })
 })
 
@@ -145,8 +166,8 @@ onMounted(() => {
     const boxAminWidth = 475
 
     rightPanel.value.style.width = `${Math.min(
-      Math.max(400, root.value.offsetWidth - (pointerRelativeXpos + 10)), // 8px padding + 2px border
-      root.value.offsetWidth - boxAminWidth,
+        Math.max(400, root.value.offsetWidth - (pointerRelativeXpos + 10)), // 8px padding + 2px border
+        root.value.offsetWidth - boxAminWidth,
     )}px`
     rightPanel.value.style.flexGrow = 0
     rightPanel.value.style.flexShrink = 0
@@ -252,6 +273,27 @@ function updateRequest(e: HttpRequest) {
   }
   emit('update-request', e)
 }
+
+function dropInterceptedRequest(request: HttpRequest) {
+  if (interceptedRequest.value === null) {
+    return
+  }
+  interceptedRequest.value = null
+  EventsEmit('InterceptedRequestDrop', request)
+}
+
+function sendInterceptedRequest(request: HttpRequest) {
+  if (interceptedRequest.value === null) {
+    return
+  }
+  sentInterceptedRequest.value = request
+  interceptedRequest.value = null
+  EventsEmit('InterceptedRequestChange', request)
+}
+
+function closeInterceptedRequest() {
+  sentInterceptedRequest.value = null
+}
 </script>
 
 <template>
@@ -261,17 +303,17 @@ function updateRequest(e: HttpRequest) {
       <div class="flex h-full flex-col px-2">
         <div class="min-h-16 flex h-16 max-h-16 flex-shrink py-2">
           <div class="flex-grow text-left">
-            <Search @search="onSearch" :query="liveCriteria.Raw" />
+            <Search @search="onSearch" :query="liveCriteria.Raw"/>
           </div>
           <div class="ml-2 flex-shrink p-0">
-            <WorkspaceMenu @edit="emit('workspace-edit')" :ws="ws" @switch="switchWorkspace" />
+            <WorkspaceMenu @edit="emit('workspace-edit')" :ws="ws" @switch="switchWorkspace"/>
           </div>
         </div>
         <div class="min-h-16 h-16 max-h-16 flex-shrink">
           <div class="sm:hidden">
             <label for="tabs" class="sr-only">Select a tab</label>
             <select @change="selectTab" id="tabs" name="tabs"
-              class="block w-full rounded-md bg-polar-night-2 text-snow-storm-1 focus:border-frost focus:ring-frost">
+                    class="block w-full rounded-md bg-polar-night-2 text-snow-storm-1 focus:border-frost focus:ring-frost">
               <option v-for="tab in tabs" :key="tab.id" :selected="tab.current" :value="tab.id">{{ tab.name }}</option>
             </select>
           </div>
@@ -287,8 +329,12 @@ function updateRequest(e: HttpRequest) {
                   <component :is="tab.icon" :class="[
                     tab.current ? 'text-frost' : 'text-gray-400 group-hover:text-gray-300',
                     '-ml-0.5 mr-2 h-5 w-5',
-                  ]" aria-hidden="true" />
+                  ]" aria-hidden="true"/>
                   <span>{{ tab.name }}</span>
+                  <span v-if="tab.count > 0"
+                        class="bg-indigo-100 text-indigo-600 ml-3 hidden rounded-full py-0.5 px-2.5 text-xs font-medium md:inline-block">{{
+                      tab.count
+                    }}</span>
                 </a>
               </nav>
             </div>
@@ -296,30 +342,39 @@ function updateRequest(e: HttpRequest) {
         </div>
         <div class="my-2 flex-auto overflow-y-hidden">
           <RequestList @save-request="saveRequest" @unsave-request="unsaveRequest" :saved-request-ids="savedRequestIds"
-            :key="liveCriteria.Raw" v-if="selectedTab() === 'log'"
-            :empty-message="'Reaper is ready to receive requests at ' + proxyAddress" :requests="requests"
-            @select="examineRequest($event, true)" :selected="req ? req.ID : ''" :criteria="liveCriteria" />
+                       :key="liveCriteria.Raw" v-if="selectedTab() === 'log'"
+                       :empty-message="'Reaper is ready to receive requests at ' + proxyAddress" :requests="requests"
+                       @select="examineRequest($event, true)" :selected="req ? req.ID : ''" :criteria="liveCriteria"/>
           <GroupedRequestList :key="liveCriteria.Raw" v-if="selectedTab() === 'saved'"
-            :groups="ws.collection.groups ? ws.collection.groups : []" @select="examineRequest($event, false)"
-            :selected="req ? req.ID : ''" :criteria="liveCriteria" :empty-title="'No saved requests'"
-            :empty-message="'Save some requests from the log stream to access them here'" :empty-icon="StarIcon"
-            @request-group-change="setRequestGroup" @request-group-create="createRequestGroup"
-            @group-order-change="reorderGroup" @unsave-request="unsaveRequest" @duplicate-request="duplicateRequest"
-            @request-group-delete="deleteGroup" @request-rename="renameRequest" @request-group-rename="renameGroup" />
+                              :groups="ws.collection.groups ? ws.collection.groups : []"
+                              @select="examineRequest($event, false)"
+                              :selected="req ? req.ID : ''" :criteria="liveCriteria" :empty-title="'No saved requests'"
+                              :empty-message="'Save some requests from the log stream to access them here'"
+                              :empty-icon="StarIcon"
+                              @request-group-change="setRequestGroup" @request-group-create="createRequestGroup"
+                              @group-order-change="reorderGroup" @unsave-request="unsaveRequest"
+                              @duplicate-request="duplicateRequest"
+                              @request-group-delete="deleteGroup" @request-rename="renameRequest"
+                              @request-group-rename="renameGroup"/>
           <div v-if="selectedTab() === 'workflows'">TODO: Attack Workflows</div>
+          <RequestInterceptor v-if="selectedTab() === 'intercepted'" :request="interceptedRequest"
+                              :previous="sentInterceptedRequest"
+                              :count="interceptionCount"
+                              @drop="dropInterceptedRequest" @send="sendInterceptedRequest"
+                              @close="closeInterceptedRequest"/>
         </div>
       </div>
     </div>
 
     <!-- resize handle -->
     <div v-if="req && !fullscreenIDE" @mousedown.prevent="resizing = true" ref="handle"
-      class="w-0.5 flex-none cursor-ew-resize bg-gray-500 dark:bg-polar-night-4"></div>
+         class="w-0.5 flex-none cursor-ew-resize bg-gray-500 dark:bg-polar-night-4"></div>
 
     <!-- request viewer/editor -->
     <div v-if="req" ref="rightPanel" class="mx-2 box-border h-full flex-auto overflow-hidden px-2">
       <IDE :request="req" :readonly="reqReadOnly" @action="ideAction" @close="clearRequest" :fullscreen="fullscreenIDE"
-        @fullscreen="toggleFullscreenIDE" @request-update="updateRequest($event)"
-        :actions="reqReadOnly ? readOnlyActions : writeActions" />
+           @fullscreen="toggleFullscreenIDE" @request-update="updateRequest($event)"
+           :actions="reqReadOnly ? readOnlyActions : writeActions"/>
     </div>
   </div>
 </template>

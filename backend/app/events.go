@@ -3,16 +3,16 @@ package app
 import "github.com/wailsapp/wails/v2/pkg/runtime"
 
 const (
-	EventHttpRequest               = "HttpRequest"
-	EventHttpResponse              = "HttpResponse"
-	EventProxyStatus               = "ProxyStatusChange"
-	EventCAExport                  = "CAExport"
-	EventInterceptRequestModified  = "InterceptedRequestChange"
-	EventInterceptRequestDropped   = "InterceptedRequestDrop"
-	EventInterceptionEnabledChange = "InterceptionEnabledChange"
-	EventInterceptedRequest        = "InterceptedRequest"
-	EventTreeUpdate                = "TreeUpdate"
-	EventSendRequest               = "SendRequest"
+	EventHttpRequest                   = "HttpRequest"
+	EventHttpResponse                  = "HttpResponse"
+	EventProxyStatus                   = "ProxyStatusChange"
+	EventCAExport                      = "CAExport"
+	EventInterceptRequestModified      = "InterceptedRequestChange"
+	EventInterceptRequestDropped       = "InterceptedRequestDrop"
+	EventInterceptedRequest            = "InterceptedRequest"
+	EventTreeUpdate                    = "TreeUpdate"
+	EventSendRequest                   = "SendRequest"
+	EventInterceptedRequestQueueChange = "InterceptedRequestQueueChange"
 )
 
 func (a *App) emitProxyStatus(status bool, addr, message string) {

@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { PencilSquareIcon, ViewfinderCircleIcon } from '@heroicons/vue/20/solid'
-import { reactive, ref, PropType } from 'vue'
+import {HandRaisedIcon, PencilSquareIcon, ViewfinderCircleIcon} from '@heroicons/vue/20/solid'
+import {reactive, ref, PropType} from 'vue'
 import ScopeEditor from './ScopeEditor.vue'
-import { workspace } from '../../wailsjs/go/models'
+import {workspace} from '../../wailsjs/go/models'
 
 const props = defineProps({
   ws: {
@@ -13,8 +13,9 @@ const props = defineProps({
 
 const openTab = ref('overview')
 const tabs = [
-  { name: 'Overview', icon: PencilSquareIcon, id: 'overview' },
-  { name: 'Scope', icon: ViewfinderCircleIcon, id: 'scope' },
+  {name: 'Overview', icon: PencilSquareIcon, id: 'overview'},
+  {name: 'Scope', icon: ViewfinderCircleIcon, id: 'scope'},
+  {name: 'Interception', icon: HandRaisedIcon, id: 'interception'},
 ]
 const modifiedWorkspace = reactive(props.ws)
 
@@ -36,6 +37,10 @@ function setScope(scope: workspace.Scope) {
   modifiedWorkspace.scope = scope
 }
 
+function setInterceptionScope(scope: workspace.Scope) {
+  modifiedWorkspace.interception_scope = scope
+}
+
 function cancel() {
   emit('cancel')
 }
@@ -50,22 +55,22 @@ function toggleTab(tabId: string) {
     <main class="relative text-left">
       <div class="mx-auto max-w-screen-[100%] px-4 pb-6 sm:px-6 lg:px-8 lg:pb-16">
         <div
-          class="overflow-hidden rounded-lg bg-snow-storm dark:bg-polar-night shadow text-polar-night dark:text-snow-storm">
+            class="overflow-hidden rounded-lg bg-snow-storm dark:bg-polar-night shadow text-polar-night dark:text-snow-storm">
           <div class="lg:grid lg:grid-cols-12 lg:divide-y-0 lg:divide-x divide-snow-storm-3 dark:divide-polar-night-3">
             <aside class="py-6 lg:col-span-3">
               <nav class="space-y-1">
                 <a
-                  @click="toggleTab(tab.id)"
-                  v-for="tab in tabs"
-                  :key="tab.name"
-                  :class="[
+                    @click="toggleTab(tab.id)"
+                    v-for="tab in tabs"
+                    :key="tab.name"
+                    :class="[
                     tab.id === openTab
                       ? 'bg-polar-night-4 border-frost-3'
                       : 'border-transparent hover:bg-polar-night-3',
                     'group border-l-4 px-3 py-2 flex items-center text-sm font-medium cursor-pointer',
                   ]"
-                  :aria-current="tab.id === openTab ? 'page' : undefined">
-                  <component :is="tab.icon" :class="['flex-shrink-0 -ml-1 mr-3 h-6 w-6']" aria-hidden="true" />
+                    :aria-current="tab.id === openTab ? 'page' : undefined">
+                  <component :is="tab.icon" :class="['flex-shrink-0 -ml-1 mr-3 h-6 w-6']" aria-hidden="true"/>
                   <span class="truncate">{{ tab.name }}</span>
                 </a>
               </nav>
@@ -83,14 +88,14 @@ function toggleTab(tabId: string) {
                     <label for="name" class="block text-sm font-medium text-snow-storm">Name</label>
                     <div class="relative mt-1 rounded-md shadow-sm">
                       <input
-                        @change="setWorkspaceName"
-                        type="text"
-                        name="name"
-                        id="name"
-                        class="block w-full rounded-md bg-polar-night-4 pr-10 focus:outline-none sm:text-sm"
-                        :value="modifiedWorkspace.name"
-                        aria-invalid="true"
-                        aria-describedby="name-error" />
+                          @change="setWorkspaceName"
+                          type="text"
+                          name="name"
+                          id="name"
+                          class="block w-full rounded-md bg-polar-night-4 pr-10 focus:outline-none sm:text-sm"
+                          :value="modifiedWorkspace.name"
+                          aria-invalid="true"
+                          aria-describedby="name-error"/>
                     </div>
                   </div>
                 </div>
@@ -105,7 +110,22 @@ function toggleTab(tabId: string) {
                   </div>
 
                   <div class="mt-8">
-                    <ScopeEditor :scope="modifiedWorkspace.scope" @save="setScope" />
+                    <ScopeEditor :scope="modifiedWorkspace.scope" @save="setScope"/>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Workspace interception scope -->
+              <div :class="{ hidden: 'interception' !== openTab }">
+                <div class="py-6 px-4 sm:p-6 lg:pb-8">
+                  <div>
+                    <h2 class="text-lg font-medium leading-6">Interception</h2>
+                    <p class="mt-1 text-sm">Specify which requests you'd like to intercept and modify before
+                      sending. By default, no requests will be intercepted.</p>
+                  </div>
+
+                  <div class="mt-8">
+                    <ScopeEditor :scope="modifiedWorkspace.interception_scope" @save="setInterceptionScope"/>
                   </div>
                 </div>
               </div>
@@ -115,15 +135,15 @@ function toggleTab(tabId: string) {
             <div class="px-4 sm:px-6 pb-4">
               <div>
                 <button
-                  @click="saveWorkspace"
-                  type="button"
-                  class="inline-flex items-center rounded border border-transparent bg-aurora-4 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">
+                    @click="saveWorkspace"
+                    type="button"
+                    class="inline-flex items-center rounded border border-transparent bg-aurora-4 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">
                   Save Changes
                 </button>
                 <button
-                  @click="cancel"
-                  type="button"
-                  class="ml-2 inline-flex items-center rounded border border-transparent bg-aurora-1 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">
+                    @click="cancel"
+                    type="button"
+                    class="ml-2 inline-flex items-center rounded border border-transparent bg-aurora-1 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">
                   Cancel
                 </button>
               </div>

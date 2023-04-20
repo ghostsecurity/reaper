@@ -203,7 +203,7 @@ function buildURL(c: HttpRequest): string {
   if (!url) {
     url = 'https'
   }
-  if (url.endsWith(':') === false) {
+  if (!url.endsWith(':')) {
     url += ':'
   }
   url += `//${c.Host}${c.Path}`

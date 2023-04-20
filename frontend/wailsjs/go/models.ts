@@ -244,6 +244,7 @@ export namespace workspace {
 	    id: string;
 	    name: string;
 	    scope: Scope;
+	    interception_scope: Scope;
 	    collection: Collection;
 	    tree: Tree;
 	
@@ -256,6 +257,7 @@ export namespace workspace {
 	        this.id = source["id"];
 	        this.name = source["name"];
 	        this.scope = this.convertValues(source["scope"], Scope);
+	        this.interception_scope = this.convertValues(source["interception_scope"], Scope);
 	        this.collection = this.convertValues(source["collection"], Collection);
 	        this.tree = this.convertValues(source["tree"], Tree);
 	    }
