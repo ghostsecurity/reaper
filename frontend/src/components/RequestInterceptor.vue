@@ -1,40 +1,39 @@
 <script lang="ts" setup>
-import {PropType, ref, watch} from 'vue'
-import {HttpRequest} from '../lib/Http'
-import {HandRaisedIcon} from "@heroicons/vue/20/solid";
-import IDE from "./Http/IDE.vue";
+import { PropType, ref, watch } from 'vue'
+import { HandRaisedIcon } from '@heroicons/vue/20/solid'
+import { HttpRequest } from '../lib/Http'
+import IDE from './Http/IDE.vue'
 
 const props = defineProps(
-    {
-      emptyTitle: {type: String, required: false, default: 'Nothing intercepted yet.'},
-      emptyMessage: {
-        type: String,
-        required: false,
-        default: 'Configure your interception rules and start intercepting requests.'
-      },
-      emptyIcon: {type: Object, required: false, default: HandRaisedIcon},
-      request: {type: Object as PropType<HttpRequest | null>, required: false, default: null},
-      previous: {type: Object as PropType<HttpRequest | null>, required: false, default: null},
-      count: {type: Number, required: false, default: 0},
+  {
+    emptyTitle: { type: String, required: false, default: 'Nothing intercepted yet.' },
+    emptyMessage: {
+      type: String,
+      required: false,
+      default: 'Configure your interception rules and start intercepting requests.',
     },
+    emptyIcon: { type: Object, required: false, default: HandRaisedIcon },
+    request: { type: Object as PropType<HttpRequest | null>, required: false, default: null },
+    previous: { type: Object as PropType<HttpRequest | null>, required: false, default: null },
+    count: { type: Number, required: false, default: 0 },
+  },
 )
 
 const req = ref<HttpRequest | null>(props.request)
 const previous = ref<HttpRequest | null>(props.previous)
 
 watch(
-    () => props.request,
-    () => {
-      console.log(props.request?.Body)
-      req.value = props.request
-    },
+  () => props.request,
+  () => {
+    req.value = props.request
+  },
 )
 
 watch(
-    () => props.previous,
-    () => {
-      previous.value = props.previous
-    },
+  () => props.previous,
+  () => {
+    previous.value = props.previous
+  },
 )
 
 const writeActions = new Map<string, string>([
@@ -62,8 +61,8 @@ function update(r: HttpRequest | null) {
   req.value = r
 }
 
-function action(action: string) {
-  switch (action) {
+function action(a: string) {
+  switch (a) {
     case 'send':
       forwardRequest()
       break
@@ -73,6 +72,7 @@ function action(action: string) {
     case 'close':
       emit('close')
       break
+    default:
   }
 }
 
@@ -99,4 +99,3 @@ function closePrevious() {
     </div>
   </div>
 </template>
-

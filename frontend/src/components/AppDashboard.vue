@@ -1,22 +1,22 @@
 <script lang="ts" setup>
-import {onBeforeMount, onMounted, PropType, reactive, ref, watch} from 'vue'
-import {BarsArrowDownIcon, BeakerIcon, StarIcon, HandRaisedIcon} from '@heroicons/vue/20/solid'
-import {EventsEmit, EventsOn} from '../../wailsjs/runtime'
-import {HttpRequest, HttpResponse} from '../lib/Http'
-import {Criteria} from '../lib/Criteria/Criteria'
-import {workspace} from '../../wailsjs/go/models'
+import { onBeforeMount, onMounted, PropType, reactive, ref, watch } from 'vue'
+import { BarsArrowDownIcon, BeakerIcon, StarIcon, HandRaisedIcon } from '@heroicons/vue/20/solid'
+import { EventsEmit, EventsOn } from '../../wailsjs/runtime'
+import { HttpRequest, HttpResponse } from '../lib/Http'
+import { Criteria } from '../lib/Criteria/Criteria'
+import { workspace } from '../../wailsjs/go/models'
 import RequestList from './Http/RequestList.vue'
 import GroupedRequestList from './Http/GroupedRequestList.vue'
 import WorkspaceMenu from './WorkspaceMenu.vue'
 import Search from './SearchInput.vue'
 import IDE from './Http/IDE.vue'
-import RequestInterceptor from "./RequestInterceptor.vue";
+import RequestInterceptor from './RequestInterceptor.vue'
 
 const props = defineProps({
-  ws: {type: Object as PropType<workspace.Workspace>, required: true},
-  criteria: {type: Object as PropType<Criteria>, required: true},
-  proxyAddress: {type: String, required: true},
-  savedRequestIds: {type: Array as PropType<string[]>, required: false, default: () => []},
+  ws: { type: Object as PropType<workspace.Workspace>, required: true },
+  criteria: { type: Object as PropType<Criteria>, required: true },
+  proxyAddress: { type: String, required: true },
+  savedRequestIds: { type: Array as PropType<string[]>, required: false, default: () => [] },
 })
 
 const emit = defineEmits([
@@ -41,10 +41,10 @@ const emit = defineEmits([
 const requests = ref<HttpRequest[]>([])
 const req = ref<HttpRequest | null>(null)
 const tabs = ref([
-  {name: 'Log Stream', id: 'log', icon: BarsArrowDownIcon, current: true, count: 0},
-  {name: 'Intercepted Requests', id: 'intercepted', icon: HandRaisedIcon, current: false, count: 0},
-  {name: 'Saved Requests', id: 'saved', icon: StarIcon, current: false, count: 0},
-  {name: 'Attack Workflows', id: 'workflows', icon: BeakerIcon, current: false, count: 0},
+  { name: 'Log Stream', id: 'log', icon: BarsArrowDownIcon, current: true, count: 0 },
+  { name: 'Intercepted Requests', id: 'intercepted', icon: HandRaisedIcon, current: false, count: 0 },
+  { name: 'Saved Requests', id: 'saved', icon: StarIcon, current: false, count: 0 },
+  { name: 'Attack Workflows', id: 'workflows', icon: BeakerIcon, current: false, count: 0 },
 ])
 const liveCriteria = reactive(props.criteria)
 const reqReadOnly = ref(true)
@@ -91,10 +91,10 @@ function toggleFullscreenIDE() {
 }
 
 watch(
-    () => props.criteria,
-    criteria => {
-      Object.assign(liveCriteria, criteria)
-    },
+  () => props.criteria,
+  criteria => {
+    Object.assign(liveCriteria, criteria)
+  },
 )
 
 function compareRequests(a: HttpRequest, b: HttpRequest) {
@@ -166,8 +166,8 @@ onMounted(() => {
     const boxAminWidth = 475
 
     rightPanel.value.style.width = `${Math.min(
-        Math.max(400, root.value.offsetWidth - (pointerRelativeXpos + 10)), // 8px padding + 2px border
-        root.value.offsetWidth - boxAminWidth,
+      Math.max(400, root.value.offsetWidth - (pointerRelativeXpos + 10)), // 8px padding + 2px border
+      root.value.offsetWidth - boxAminWidth,
     )}px`
     rightPanel.value.style.flexGrow = 0
     rightPanel.value.style.flexShrink = 0
