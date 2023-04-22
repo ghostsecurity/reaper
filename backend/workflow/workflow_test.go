@@ -100,6 +100,8 @@ func Test_FuzzingWorkflow(t *testing.T) {
 		},
 	}
 
+	require.NoError(t, workflow.Validate())
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
