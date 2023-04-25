@@ -3,6 +3,8 @@ package workflow
 import (
 	"fmt"
 
+	"github.com/ghostsecurity/reaper/backend/workflow/node"
+	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
 	"github.com/google/uuid"
 	"golang.org/x/net/context"
 )
@@ -57,25 +59,25 @@ func (r *runner) Run(updateChan chan<- Update) error {
 		}
 	}
 
-	return r.RunNode(start, map[uuid.UUID]Transmission{
-		r.workflow.Input.To.Connector: NewRequestTransmission(r.workflow.Request),
+	return r.RunNode(start, map[string]transmission.Transmission{
+		r.workflow.Input.To.Connector: transmission.NewRequest(r.workflow.Request),
 	}, updateChan, true)
 }
 
-func (r *runner) RunNode(node Node, params map[uuid.UUID]Transmission, updateChan chan<- Update, lastInput bool) error {
+func (r *runner) RunNode(n node.Node, params map[string]transmission.Transmission, updateChan chan<- Update, lastInput bool) error {
 
 	updateChan <- Update{
-		Node:    node.ID(),
+		Node:    n.ID(),
 		Status:  NodeStatusRunning,
 		Message: "In Progress...",
 	}
 
-	outputChan, errChan := node.Run(r.ctx, params)
+	outputChan, errChan := n.Run(r.ctx, params)
 	for {
 		select {
 		case <-r.ctx.Done():
 			updateChan <- Update{
-				Node:    node.ID(),
+				Node:    n.ID(),
 				Status:  NodeStatusError,
 				Message: fmt.Sprintf("Workflow cancelled: %s", r.ctx.Err()),
 			}
@@ -84,7 +86,7 @@ func (r *runner) RunNode(node Node, params map[uuid.UUID]Transmission, updateCha
 			if !ok {
 				if lastInput {
 					updateChan <- Update{
-						Node:    node.ID(),
+						Node:    n.ID(),
 						Status:  NodeStatusSuccess,
 						Message: "Operation complete.",
 					}
@@ -93,18 +95,18 @@ func (r *runner) RunNode(node Node, params map[uuid.UUID]Transmission, updateCha
 			}
 			if lastInput && output.Complete {
 				updateChan <- Update{
-					Node:    node.ID(),
+					Node:    n.ID(),
 					Status:  NodeStatusSuccess,
 					Message: "Operation complete.",
 				}
 			}
 			for _, link := range r.workflow.Links {
-				if link.From.Node == node.ID() && link.From.Connector == output.OutputID {
+				if link.From.Node == n.ID() && link.From.Connector == output.OutputName {
 					nextNode, err := r.workflow.FindNode(link.To.Node)
 					if err != nil {
 						return err
 					}
-					if err := r.RunNode(nextNode, map[uuid.UUID]Transmission{
+					if err := r.RunNode(nextNode, map[string]transmission.Transmission{
 						link.To.Connector: output.Data,
 					}, updateChan, output.Complete); err != nil {
 						return fmt.Errorf("error with node '%s': %s", nextNode.Name(), err)
@@ -114,7 +116,7 @@ func (r *runner) RunNode(node Node, params map[uuid.UUID]Transmission, updateCha
 		case err, ok := <-errChan:
 			if ok {
 				updateChan <- Update{
-					Node:    node.ID(),
+					Node:    n.ID(),
 					Status:  NodeStatusError,
 					Message: fmt.Sprintf("Error: %s", err),
 				}

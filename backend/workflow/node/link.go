@@ -1,4 +1,4 @@
-package workflow
+package node
 
 import "github.com/google/uuid"
 
@@ -10,5 +10,5 @@ type Link struct {
 
 type LinkDirection struct {
 	Node      uuid.UUID
-	Connector uuid.UUID
+	Connector string
 }

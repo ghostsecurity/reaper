@@ -1,18 +1,19 @@
 package workflow
 
 import (
-	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net"
 	"net/http"
-	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/ghostsecurity/reaper/backend/packaging"
+	"github.com/ghostsecurity/reaper/backend/workflow/node"
+	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -39,16 +40,19 @@ func Test_FuzzingWorkflow(t *testing.T) {
 
 	go func() { _ = srv.Serve(ln) }()
 
-	fuzzer := NewFuzzerNode("$X$", NewNumericRangeIterator(0, 100))
-	verifier := NewVerifierNode(200, 200)
+	fuzzer := node.NewFuzzer()
+	fuzzer.SetStaticInputValues(map[string]transmission.Transmission{
+		"placeholder": transmission.NewString("$ID$"),
+		"list":        transmission.NewNumericRangeIterator(0, 100),
+	})
+	verifier := node.NewVerifier()
+	verifier.SetStaticInputValues(map[string]transmission.Transmission{
+		"min": transmission.NewInt(200),
+		"max": transmission.NewInt(200),
+	})
 
-	output := bytes.NewBuffer(nil)
-
-	nOutput := NewOutputNode(output, "output")
-	nError := NewOutputNode(os.Stderr, "error")
-
-	verifierGood, ok := verifier.GetOutputs().FindByName("good")
-	require.True(t, ok)
+	nOutput := node.NewOutput()
+	nError := node.NewOutput()
 
 	// start workflow with input node and output node
 	workflow := &Workflow{
@@ -56,7 +60,7 @@ func Test_FuzzingWorkflow(t *testing.T) {
 		Name: "test",
 		Request: packaging.HttpRequest{
 			Method: "GET",
-			URL:    "http://localhost:8888/account?id=$X$",
+			URL:    "http://localhost:8888/account?id=$ID$",
 			Headers: []packaging.KeyValue{
 				{
 					Key:   "Host",
@@ -64,37 +68,37 @@ func Test_FuzzingWorkflow(t *testing.T) {
 				},
 			},
 		},
-		Input: Link{
-			To: LinkDirection{
+		Input: node.Link{
+			To: node.LinkDirection{
 				Node:      fuzzer.ID(),
-				Connector: fuzzer.GetInput().ID,
+				Connector: "request",
 			},
 		},
 		Output: nOutput,
 		Error:  nError,
-		Nodes: []Node{
+		Nodes: []node.Node{
 			fuzzer,
 			verifier,
 		},
-		Links: []Link{
+		Links: []node.Link{
 			{
-				From: LinkDirection{
+				From: node.LinkDirection{
 					Node:      fuzzer.ID(),
-					Connector: fuzzer.GetOutputs()[0].ID,
+					Connector: "output",
 				},
-				To: LinkDirection{
+				To: node.LinkDirection{
 					Node:      verifier.ID(),
-					Connector: verifier.GetInput().ID,
+					Connector: "response",
 				},
 			},
 			{
-				From: LinkDirection{
+				From: node.LinkDirection{
 					Node:      verifier.ID(),
-					Connector: verifierGood.ID,
+					Connector: "good",
 				},
-				To: LinkDirection{
+				To: node.LinkDirection{
 					Node:      nOutput.ID(),
-					Connector: nOutput.GetInput().ID,
+					Connector: "input",
 				},
 			},
 		},
@@ -102,20 +106,51 @@ func Test_FuzzingWorkflow(t *testing.T) {
 
 	require.NoError(t, workflow.Validate())
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
+	t.Run("run", func(t *testing.T) {
 
-	updates := make(chan Update)
-	defer close(updates)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		defer cancel()
 
-	go func() {
-		for update := range updates {
-			fmt.Printf("update: %s: %s\n", update.Node, update.Message)
-		}
-	}()
+		updates := make(chan Update)
+		defer close(updates)
 
-	require.NoError(t, workflow.Run(ctx, updates))
+		go func() {
+			for update := range updates {
+				_ = update
+				//fmt.Printf("update: %s: %s\n", update.Node, update.Message)
+			}
+		}()
 
-	assert.True(t, strings.HasSuffix(strings.Split(output.String(), "\n")[0], fmt.Sprintf("($X$=%d)", secret)))
+		require.NoError(t, workflow.Run(ctx, updates))
 
+		assert.True(t, strings.HasSuffix(strings.Split(nOutput.String(), "\n")[0], fmt.Sprintf("($ID$=%d)", secret)))
+
+	})
+
+	t.Run("save to disk, reload and run", func(t *testing.T) {
+		data, err := json.Marshal(workflow)
+		require.NoError(t, err)
+
+		fmt.Println(string(data))
+
+		var w Workflow
+		require.NoError(t, json.Unmarshal(data, &w))
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		defer cancel()
+
+		updates := make(chan Update)
+		defer close(updates)
+
+		go func() {
+			for update := range updates {
+				_ = update
+				//fmt.Printf("update: %s: %s\n", update.Node, update.Message)
+			}
+		}()
+
+		require.NoError(t, w.Run(ctx, updates))
+
+		assert.True(t, strings.HasSuffix(strings.Split(nOutput.String(), "\n")[0], fmt.Sprintf("($ID$=%d)", secret)))
+	})
 }
