@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ghostsecurity/reaper/backend/app"
+	"github.com/ghostsecurity/reaper/backend"
+
 	"github.com/ghostsecurity/reaper/backend/log"
 	"github.com/ghostsecurity/reaper/backend/settings"
 	"github.com/wailsapp/wails/v2"
@@ -39,7 +40,7 @@ func main() {
 	logger.Infof("Log level is %s", level)
 
 	// Create an instance of the app structure
-	application := app.New(logger.WithPrefix("app"), userSettings)
+	application := backend.New(logger.WithPrefix("app"), userSettings)
 
 	// Create application with options
 	if err := wails.Run(&options.App{

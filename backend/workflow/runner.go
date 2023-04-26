@@ -2,6 +2,7 @@ package workflow
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/ghostsecurity/reaper/backend/workflow/node"
 	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
@@ -36,7 +37,7 @@ const (
 	NodeStatusError   NodeStatus = "error"
 )
 
-func (r *runner) Run(updateChan chan<- Update) error {
+func (r *runner) Run(updateChan chan<- Update, wr io.Writer) error {
 
 	if r.workflow == nil {
 		return fmt.Errorf("workflow is nil")
@@ -61,10 +62,14 @@ func (r *runner) Run(updateChan chan<- Update) error {
 
 	return r.RunNode(start, map[string]transmission.Transmission{
 		r.workflow.Input.To.Connector: transmission.NewRequest(r.workflow.Request),
-	}, updateChan, true)
+	}, updateChan, true, wr)
 }
 
-func (r *runner) RunNode(n node.Node, params map[string]transmission.Transmission, updateChan chan<- Update, lastInput bool) error {
+func (r *runner) RunNode(n node.Node, params map[string]transmission.Transmission, updateChan chan<- Update, lastInput bool, wr io.Writer) error {
+
+	if err := n.Validate(params); err != nil {
+		return fmt.Errorf("invalid node: %s", err)
+	}
 
 	updateChan <- Update{
 		Node:    n.ID(),
@@ -72,7 +77,12 @@ func (r *runner) RunNode(n node.Node, params map[string]transmission.Transmissio
 		Message: "In Progress...",
 	}
 
-	outputChan, errChan := n.Run(r.ctx, params)
+	var writer io.Writer = io.Discard
+	if n.ID() == r.workflow.Output.ID() {
+		writer = wr
+	}
+	outputChan, errChan := n.Run(r.ctx, params, writer)
+	defer waitForChannels(outputChan, errChan)
 	for {
 		select {
 		case <-r.ctx.Done():
@@ -108,7 +118,7 @@ func (r *runner) RunNode(n node.Node, params map[string]transmission.Transmissio
 					}
 					if err := r.RunNode(nextNode, map[string]transmission.Transmission{
 						link.To.Connector: output.Data,
-					}, updateChan, output.Complete); err != nil {
+					}, updateChan, output.Complete, wr); err != nil {
 						return fmt.Errorf("error with node '%s': %s", nextNode.Name(), err)
 					}
 				}
@@ -123,5 +133,12 @@ func (r *runner) RunNode(n node.Node, params map[string]transmission.Transmissio
 				return err
 			}
 		}
+	}
+}
+
+func waitForChannels(c <-chan node.OutputInstance, errChan <-chan error) {
+	for range c {
+	}
+	for range errChan {
 	}
 }

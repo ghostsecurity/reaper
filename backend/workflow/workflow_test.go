@@ -1,6 +1,7 @@
 package workflow
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -41,15 +42,15 @@ func Test_FuzzingWorkflow(t *testing.T) {
 	go func() { _ = srv.Serve(ln) }()
 
 	fuzzer := node.NewFuzzer()
-	fuzzer.SetStaticInputValues(map[string]transmission.Transmission{
+	require.NoError(t, fuzzer.SetStaticInputValues(map[string]transmission.Transmission{
 		"placeholder": transmission.NewString("$ID$"),
 		"list":        transmission.NewNumericRangeIterator(0, 100),
-	})
+	}))
 	verifier := node.NewVerifier()
-	verifier.SetStaticInputValues(map[string]transmission.Transmission{
+	require.NoError(t, verifier.SetStaticInputValues(map[string]transmission.Transmission{
 		"min": transmission.NewInt(200),
 		"max": transmission.NewInt(200),
-	})
+	}))
 
 	nOutput := node.NewOutput()
 	nError := node.NewOutput()
@@ -116,22 +117,19 @@ func Test_FuzzingWorkflow(t *testing.T) {
 
 		go func() {
 			for update := range updates {
-				_ = update
-				//fmt.Printf("update: %s: %s\n", update.Node, update.Message)
+				fmt.Printf("update: %s: %s\n", update.Node, update.Message)
 			}
 		}()
 
-		require.NoError(t, workflow.Run(ctx, updates))
-
-		assert.True(t, strings.HasSuffix(strings.Split(nOutput.String(), "\n")[0], fmt.Sprintf("($ID$=%d)", secret)))
-
+		buf := bytes.NewBuffer(nil)
+		require.NoError(t, workflow.Run(ctx, updates, buf))
+		assert.True(t, strings.HasSuffix(strings.Split(buf.String(), "\n")[0], fmt.Sprintf("($ID$=%d)", secret)))
 	})
 
 	t.Run("save to disk, reload and run", func(t *testing.T) {
+
 		data, err := json.Marshal(workflow)
 		require.NoError(t, err)
-
-		fmt.Println(string(data))
 
 		var w Workflow
 		require.NoError(t, json.Unmarshal(data, &w))
@@ -144,13 +142,12 @@ func Test_FuzzingWorkflow(t *testing.T) {
 
 		go func() {
 			for update := range updates {
-				_ = update
-				//fmt.Printf("update: %s: %s\n", update.Node, update.Message)
+				fmt.Printf("update: %s: %s\n", update.Node, update.Message)
 			}
 		}()
 
-		require.NoError(t, w.Run(ctx, updates))
-
-		assert.True(t, strings.HasSuffix(strings.Split(nOutput.String(), "\n")[0], fmt.Sprintf("($ID$=%d)", secret)))
+		buf := bytes.NewBuffer(nil)
+		require.NoError(t, w.Run(ctx, updates, buf))
+		assert.True(t, strings.HasSuffix(strings.Split(buf.String(), "\n")[0], fmt.Sprintf("($ID$=%d)", secret)))
 	})
 }

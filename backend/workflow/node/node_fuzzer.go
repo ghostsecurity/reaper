@@ -2,6 +2,7 @@ package node
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
@@ -54,8 +55,12 @@ func (n *FuzzerNode) GetOutputs() Connectors {
 	return n.vars.GetOutputs()
 }
 
-func (n *FuzzerNode) SetStaticInputValues(values map[string]transmission.Transmission) {
-	n.vars.SetStaticInputValues(values)
+func (n *FuzzerNode) SetStaticInputValues(values map[string]transmission.Transmission) error {
+	return n.vars.SetStaticInputValues(values)
+}
+
+func (n *FuzzerNode) Validate(params map[string]transmission.Transmission) error {
+	return n.vars.Validate(params)
 }
 
 func (n *FuzzerNode) GetVars() *VarStorage {
@@ -70,7 +75,7 @@ func (n *FuzzerNode) SetID(id uuid.UUID) {
 	n.id = id
 }
 
-func (n *FuzzerNode) Run(ctx context.Context, in map[string]transmission.Transmission) (<-chan OutputInstance, <-chan error) {
+func (n *FuzzerNode) Run(ctx context.Context, in map[string]transmission.Transmission, _ io.Writer) (<-chan OutputInstance, <-chan error) {
 
 	output := make(chan OutputInstance)
 	errs := make(chan error)
@@ -99,6 +104,12 @@ func (n *FuzzerNode) Run(ctx context.Context, in map[string]transmission.Transmi
 			word, ok := list.Next()
 			if !ok {
 				break
+			}
+			select {
+			case <-ctx.Done():
+				errs <- ctx.Err()
+				return
+			default:
 			}
 			request, err := n.vars.ReadInputRequest("request", in)
 			if err != nil {

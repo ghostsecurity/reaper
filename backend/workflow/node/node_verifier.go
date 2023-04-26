@@ -2,6 +2,7 @@ package node
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
 	"github.com/google/uuid"
@@ -47,12 +48,16 @@ func (n *VerifierNode) GetOutputs() Connectors {
 	return n.vars.GetOutputs()
 }
 
-func (n *VerifierNode) SetStaticInputValues(values map[string]transmission.Transmission) {
-	n.vars.SetStaticInputValues(values)
+func (n *VerifierNode) SetStaticInputValues(values map[string]transmission.Transmission) error {
+	return n.vars.SetStaticInputValues(values)
 }
 
 func (n *VerifierNode) Type() NodeType {
 	return TypeVerifier
+}
+
+func (n *VerifierNode) Validate(params map[string]transmission.Transmission) error {
+	return n.vars.Validate(params)
 }
 
 func (n *VerifierNode) GetVars() *VarStorage {
@@ -67,7 +72,7 @@ func (n *VerifierNode) SetID(id uuid.UUID) {
 	n.id = id
 }
 
-func (n *VerifierNode) Run(ctx context.Context, in map[string]transmission.Transmission) (<-chan OutputInstance, <-chan error) {
+func (n *VerifierNode) Run(ctx context.Context, in map[string]transmission.Transmission, _ io.Writer) (<-chan OutputInstance, <-chan error) {
 
 	output := make(chan OutputInstance)
 	errs := make(chan error)

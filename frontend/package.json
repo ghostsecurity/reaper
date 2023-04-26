@@ -19,6 +19,7 @@
     "vitest": "^0.26.3",
     "vue": "^3.2.37",
     "vue-prism-editor": "^2.0.0-alpha.2",
+    "vue-uuid": "^3.0.0",
     "vuetify": "^3.0.1"
   },
   "devDependencies": {

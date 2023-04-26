@@ -1,8 +1,8 @@
 package node
 
 import (
-	"bytes"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
@@ -13,14 +13,12 @@ import (
 type OutputNode struct {
 	id   uuid.UUID
 	name string
-	w    *bytes.Buffer
 	vars *VarStorage
 }
 
 func NewOutput() *OutputNode {
 	return &OutputNode{
 		id: uuid.New(),
-		w:  bytes.NewBuffer(nil),
 		vars: NewVarStorage(Connectors{
 			NewConnector("input", transmission.TypeRequest|transmission.TypeResponse),
 		}, nil),
@@ -44,12 +42,16 @@ func (n *OutputNode) GetOutputs() Connectors {
 	return n.vars.GetOutputs()
 }
 
-func (n *OutputNode) SetStaticInputValues(values map[string]transmission.Transmission) {
-	n.vars.SetStaticInputValues(values)
+func (n *OutputNode) SetStaticInputValues(values map[string]transmission.Transmission) error {
+	return n.vars.SetStaticInputValues(values)
 }
 
 func (n *OutputNode) Type() NodeType {
 	return TypeOutput
+}
+
+func (n *OutputNode) Validate(params map[string]transmission.Transmission) error {
+	return n.vars.Validate(params)
 }
 
 func (n *OutputNode) GetVars() *VarStorage {
@@ -64,7 +66,7 @@ func (n *OutputNode) SetID(id uuid.UUID) {
 	n.id = id
 }
 
-func (n *OutputNode) Run(ctx context.Context, in map[string]transmission.Transmission) (<-chan OutputInstance, <-chan error) {
+func (n *OutputNode) Run(ctx context.Context, in map[string]transmission.Transmission, w io.Writer) (<-chan OutputInstance, <-chan error) {
 
 	out := make(chan OutputInstance)
 	errs := make(chan error)
@@ -98,12 +100,8 @@ func (n *OutputNode) Run(ctx context.Context, in map[string]transmission.Transmi
 			paramSummary = append(paramSummary, fmt.Sprintf("%s=%s", k, v))
 		}
 
-		fmt.Fprintf(n.w, "%s %s -> %d (%s)\n", req.Method, req.URL, statusCode, strings.Join(paramSummary, ", "))
+		fmt.Fprintf(w, "%s %s -> %d (%s)\n", req.Method, req.URL, statusCode, strings.Join(paramSummary, ", "))
 	}()
 
 	return out, errs
-}
-
-func (n *OutputNode) String() string {
-	return n.w.String()
 }

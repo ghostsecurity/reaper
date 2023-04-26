@@ -1,0 +1,123 @@
+<script lang="ts" setup>
+import {onMounted, PropType, reactive, ref, watch} from "vue";
+import {workflow, workspace} from "../../../wailsjs/go/models.js";
+import List from "./List.vue";
+import {PlusIcon, BeakerIcon} from "@heroicons/vue/20/solid";
+import {uuid} from 'vue-uuid';
+import InputBox from "../InputBox.vue";
+import Editor from "./Editor.vue";
+
+const props = defineProps({
+  ws: {type: Object as PropType<workspace.Workspace>, required: true},
+})
+
+const safe = ref<workspace.Workspace>(JSON.parse(JSON.stringify(props.ws)))
+watch(() => props.ws, (ws) => {
+  if (ws) {
+    safe.value = JSON.parse(JSON.stringify(props.ws)) as workspace.Workspace
+  }
+})
+
+const selected = ref("")
+
+const root = ref()
+const leftPanel = ref()
+const rightPanel = ref()
+const handle = ref()
+const resizing = ref(false)
+
+const creating = ref(false)
+const currentFlow = ref<workflow.WorkflowM | null>(null)
+
+const emit = defineEmits(['save'])
+
+onMounted(() => {
+  root.value.addEventListener('mousemove', (e: MouseEvent) => {
+    if (!resizing.value) {
+      return
+    }
+    if (e.buttons === 0) {
+      resizing.value = false
+      return
+    }
+
+    // Get offset
+    const containerOffsetLeft = root.value.offsetLeft
+
+    // Get x-coordinate of pointer relative to container
+    const pointerRelativeXpos = e.clientX - containerOffsetLeft
+
+    // Arbitrary minimum width set on box A, otherwise its inner content will collapse to width of 0
+    const boxAminWidth = 475
+
+    rightPanel.value.style.width = `${Math.min(
+        Math.max(400, root.value.offsetWidth - (pointerRelativeXpos + 10)), // 8px padding + 2px border
+        root.value.offsetWidth - boxAminWidth,
+    )}px`
+    rightPanel.value.style.flexGrow = 0
+    rightPanel.value.style.flexShrink = 0
+  })
+  root.value.addEventListener('mouseup', () => {
+    resizing.value = false
+  })
+})
+
+function addWorkflow(name: string) {
+  creating.value = false
+  safe.value.workflows.push(new workflow.WorkflowM({
+    id: uuid.v4(),
+    name: name,
+    input: null,
+    output: null,
+    error: null,
+    nodes: [],
+    links: [],
+    positioning: null,
+  }))
+  saveWorkspace(safe.value)
+}
+
+function saveWorkspace(w: workspace.Workspace) {
+  emit('save', w)
+}
+
+function saveWorkflow(w: workflow.WorkflowM) {
+  const index = safe.value.workflows.findIndex((wf) => wf.id === w.id)
+  if (index === -1) {
+    return
+  }
+  safe.value.workflows[index] = w
+  saveWorkspace(safe.value)
+}
+
+function selectWorkflow(id: string) {
+  selected.value = id
+  currentFlow.value = safe.value.workflows.find((wf) => wf.id === id) || null
+}
+</script>
+
+<template>
+
+  <div ref="root" class="flex h-full overflow-x-hidden">
+
+    <InputBox v-if="creating" title="New Workflow" message="Enter the workflow name." @cancel="creating = false"
+              @confirm="addWorkflow($event)"/>
+    <div ref="leftPanel" class="box-border flex-auto overflow-y-auto h-full text-right pr-2">
+      <button type="button" @click="creating = true"
+              class="mb-1 rounded-full bg-indigo-600 p-1.5 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+        <PlusIcon class="h-5 w-5" aria-hidden="true"/>
+      </button>
+      <List :selected="selected" :flows="safe.workflows" @select="selectWorkflow($event)"/>
+    </div>
+
+    <div @mousedown.prevent="resizing = true" ref="handle"
+         class="w-0.5 flex-none cursor-ew-resize bg-gray-500 dark:bg-polar-night-4"></div>
+
+    <div v-if="currentFlow" ref="rightPanel" class="mx-2 box-border h-full flex-auto overflow-hidden px-2 w-[60%]">
+      <Editor :flow="currentFlow" @save="saveWorkflow($event)"/>
+    </div>
+
+  </div>
+
+
+</template>

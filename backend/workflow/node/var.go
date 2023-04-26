@@ -78,11 +78,35 @@ func (s *VarStorage) GetOutputs() Connectors {
 	return s.outputs
 }
 
-func (s *VarStorage) SetStaticInputValues(values map[string]transmission.Transmission) {
-
-	// TODO validate these against inputs
-
+func (s *VarStorage) SetStaticInputValues(values map[string]transmission.Transmission) error {
+	if err := s.validate(values); err != nil {
+		return err
+	}
 	s.static = values
+	return nil
+}
+
+func (s *VarStorage) validate(values map[string]transmission.Transmission) error {
+	for key, value := range values {
+		input, ok := s.GetInputs().FindByName(key)
+		if !ok {
+			return fmt.Errorf("unexpected input '%s'", key)
+		}
+		if err := transmission.NewType(input.Type, 0).Validate(value); err != nil {
+			return fmt.Errorf("invalid value for input '%s': %s", key, err)
+		}
+	}
+	return nil
+}
+
+func (s *VarStorage) Validate(params map[string]transmission.Transmission) error {
+	if err := s.validate(s.static); err != nil {
+		return fmt.Errorf("invalid static inputs: %s", err)
+	}
+	if err := s.validate(params); err != nil {
+		return fmt.Errorf("invalid dynamic inputs: %s", err)
+	}
+	return nil
 }
 
 func (s *VarStorage) ReadValue(name string, dynamicInputs map[string]transmission.Transmission) (transmission.Transmission, error) {

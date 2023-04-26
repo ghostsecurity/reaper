@@ -2,10 +2,10 @@ package workflow
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/ghostsecurity/reaper/backend/packaging"
 	"github.com/ghostsecurity/reaper/backend/workflow/node"
-	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
 	"github.com/google/uuid"
 	"golang.org/x/net/context"
 )
@@ -27,23 +27,23 @@ type Position struct {
 	Y int `json:"y"`
 }
 
-func (w *Workflow) Run(ctx context.Context, updateChan chan<- Update) error {
+func (w *Workflow) Run(ctx context.Context, updateChan chan<- Update, wr io.Writer) error {
 	if w.Input.To.Node == uuid.Nil {
 		return fmt.Errorf("workflow has no input connected")
 	}
-	return newRunner(ctx, w).Run(updateChan)
+	return newRunner(ctx, w).Run(updateChan, wr)
 }
 
 func (w *Workflow) Validate() error {
 	for _, node := range w.Nodes {
-		if err := w.validateNode(node); err != nil {
+		if err := node.Validate(nil); err != nil {
 			return err
 		}
 	}
-	if err := w.validateNode(w.Output); err != nil {
+	if err := w.Output.Validate(nil); err != nil {
 		return err
 	}
-	if err := w.validateNode(w.Error); err != nil {
+	if err := w.Error.Validate(nil); err != nil {
 		return err
 	}
 	for _, link := range w.Links {
@@ -71,17 +71,6 @@ func (w *Workflow) Validate() error {
 		}
 		if link.From.Node == link.To.Node {
 			return fmt.Errorf("link: from and to node are the same")
-		}
-	}
-	return nil
-}
-
-func (w *Workflow) validateNode(n node.Node) error {
-	for _, in := range n.GetInputs() {
-		if val, err := n.GetVars().ReadValue(in.Name, nil); err == nil {
-			if err := transmission.NewType(in.Type, 0).Validate(val); err != nil {
-				return fmt.Errorf("node %s: problem with '%s': %s", n.Name(), in.Name, err.Error())
-			}
 		}
 	}
 	return nil
