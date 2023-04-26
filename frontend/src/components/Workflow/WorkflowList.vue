@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import {PropType} from "vue";
-import {workflow} from "../../../wailsjs/go/models.js";
-import {BeakerIcon} from "@heroicons/vue/20/solid";
+import { PropType } from 'vue'
+import { BeakerIcon } from '@heroicons/vue/20/solid'
+import { workflow } from '../../../wailsjs/go/models'
 
-const props = defineProps({
-  flows: {type: Array as PropType<workflow.WorkflowM[]>, required: true},
-  selected: {type: String, required: true},
+defineProps({
+  flows: { type: Array as PropType<workflow.WorkflowM[]>, required: true },
+  selected: { type: String, required: true },
 })
 
 const emit = defineEmits(['select'])

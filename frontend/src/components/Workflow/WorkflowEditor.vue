@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import {PropType, ref, watch} from "vue";
-import {workflow} from "../../../wailsjs/go/models.js";
-import {BeakerIcon} from "@heroicons/vue/20/solid";
+import { PropType, ref, watch } from 'vue'
+import { BeakerIcon } from '@heroicons/vue/20/solid'
+import { workflow } from '../../../wailsjs/go/models'
 
 const props = defineProps({
-  flow: {type: Object as PropType<workflow.WorkflowM>, required: true},
+  flow: { type: Object as PropType<workflow.WorkflowM>, required: true },
 })
 
 const safe = ref<workflow.WorkflowM>(JSON.parse(JSON.stringify(props.flow)))
-watch(() => props.flow, (flow) => {
+watch(() => props.flow, flow => {
   if (flow) {
     safe.value = JSON.parse(JSON.stringify(props.flow)) as workflow.WorkflowM
   }
@@ -49,6 +49,7 @@ function linkNodes(nodeA: string, connectorA: string, nodeB: string, connectorB:
       {{ safe.name }}
       <div class="bg-polar-night-1a border border-polar-night-4 flex-auto my-2">
         diagram goes here
+        <a @click="linkNodes('a', 'b', 'c', 'd')">link</a>
       </div>
     </div>
   </div>
