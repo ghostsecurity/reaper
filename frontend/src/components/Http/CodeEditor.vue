@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { watch, ref, onMounted } from 'vue'
 
-import { HighlightHTTP, HighlightBody } from '../../../wailsjs/go/app/App'
+import { HighlightHTTP, HighlightBody } from '../../../wailsjs/go/backend/App'
 
 const props = defineProps({
   code: { type: String, required: true },

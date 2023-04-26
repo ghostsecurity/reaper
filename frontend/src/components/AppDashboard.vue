@@ -11,6 +11,7 @@ import WorkspaceMenu from './WorkspaceMenu.vue'
 import Search from './SearchInput.vue'
 import IDE from './Http/IDE.vue'
 import RequestInterceptor from './RequestInterceptor.vue'
+import GUI from './Workflow/WorkflowGUI.vue'
 
 const props = defineProps({
   ws: { type: Object as PropType<workspace.Workspace>, required: true },
@@ -33,6 +34,7 @@ const emit = defineEmits([
   'request-rename',
   'criteria-change',
   'workspace-edit',
+  'workspace-save',
   'copy-request-as-curl',
   'send-request',
   'update-request',
@@ -153,6 +155,10 @@ onBeforeMount(() => {
 onMounted(() => {
   root.value.addEventListener('mousemove', (e: MouseEvent) => {
     if (!resizing.value) {
+      return
+    }
+    if (e.buttons === 0) {
+      resizing.value = false
       return
     }
 
@@ -356,7 +362,7 @@ function closeInterceptedRequest() {
                               @duplicate-request="duplicateRequest"
                               @request-group-delete="deleteGroup" @request-rename="renameRequest"
                               @request-group-rename="renameGroup"/>
-          <div v-if="selectedTab() === 'workflows'">TODO: Attack Workflows</div>
+          <GUI v-if="selectedTab() === 'workflows'" :ws="ws" @save="emit('workspace-save', $event)"/>
           <RequestInterceptor v-if="selectedTab() === 'intercepted'" :request="interceptedRequest"
                               :previous="sentInterceptedRequest"
                               :count="interceptionCount"

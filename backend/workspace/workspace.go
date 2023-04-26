@@ -9,6 +9,8 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/ghostsecurity/reaper/backend/workflow"
+
 	"github.com/kirsle/configdir"
 
 	"github.com/ghostsecurity/reaper/backend/log"
@@ -30,14 +32,14 @@ func getDir() (string, error) {
 }
 
 type Workspace struct {
-	ID                string     `json:"id"`
-	Name              string     `json:"name"`
-	Scope             Scope      `json:"scope"`
-	InterceptionScope Scope      `json:"interception_scope"`
-	Collection        Collection `json:"collection"`
-	Tree              Tree       `json:"tree"`
+	ID                string               `json:"id"`
+	Name              string               `json:"name"`
+	Scope             Scope                `json:"scope"`
+	InterceptionScope Scope                `json:"interception_scope"`
+	Collection        Collection           `json:"collection"`
+	Tree              Tree                 `json:"tree"`
+	Workflows         []workflow.WorkflowM `json:"workflows"`
 	mu                sync.Mutex
-	// TODO: flows
 }
 
 func New() *Workspace {
@@ -130,6 +132,10 @@ func loadFile(file string) (*Workspace, error) {
 	var workspace Workspace
 	if err := json.NewDecoder(f).Decode(&workspace); err != nil {
 		return nil, fmt.Errorf("failed to decode workspace: %w", err)
+	}
+
+	if workspace.Workflows == nil {
+		workspace.Workflows = []workflow.WorkflowM{}
 	}
 
 	return &workspace, nil

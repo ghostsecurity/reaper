@@ -186,5 +186,6 @@ func UnpackageHttpRequest(h *HttpRequest) (*http.Request, error) {
 }
 
 func UnpackageHttpResponse(h *HttpResponse, req *http.Request) (*http.Response, error) {
+
 	return nil, fmt.Errorf("not implemented")
 }

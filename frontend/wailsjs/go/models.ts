@@ -1,3 +1,152 @@
+export namespace workflow {
+	
+	export class LinkDirectionM {
+	    node: string;
+	    connector: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new LinkDirectionM(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.node = source["node"];
+	        this.connector = source["connector"];
+	    }
+	}
+	export class LinkM {
+	    from: LinkDirectionM;
+	    to: LinkDirectionM;
+	    annotation: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new LinkM(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.from = this.convertValues(source["from"], LinkDirectionM);
+	        this.to = this.convertValues(source["to"], LinkDirectionM);
+	        this.annotation = source["annotation"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class NodeM {
+	    id: number[];
+	    type: number;
+	    // Go type: node
+	    vars?: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new NodeM(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.type = source["type"];
+	        this.vars = this.convertValues(source["vars"], null);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class Position {
+	    x: number;
+	    y: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new Position(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.x = source["x"];
+	        this.y = source["y"];
+	    }
+	}
+	export class WorkflowM {
+	    id: string;
+	    name: string;
+	    // Go type: packaging
+	    request: any;
+	    input: LinkM;
+	    output: NodeM;
+	    error: NodeM;
+	    nodes: NodeM[];
+	    links: LinkM[];
+	    positioning: {[key: string]: Position};
+	
+	    static createFrom(source: any = {}) {
+	        return new WorkflowM(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.request = this.convertValues(source["request"], null);
+	        this.input = this.convertValues(source["input"], LinkM);
+	        this.output = this.convertValues(source["output"], NodeM);
+	        this.error = this.convertValues(source["error"], NodeM);
+	        this.nodes = this.convertValues(source["nodes"], NodeM);
+	        this.links = this.convertValues(source["links"], LinkM);
+	        this.positioning = this.convertValues(source["positioning"], Position, true);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+
+}
+
 export namespace workspace {
 	
 	export class Request {
@@ -247,6 +396,7 @@ export namespace workspace {
 	    interception_scope: Scope;
 	    collection: Collection;
 	    tree: Tree;
+	    workflows: workflow.WorkflowM[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Workspace(source);
@@ -260,6 +410,7 @@ export namespace workspace {
 	        this.interception_scope = this.convertValues(source["interception_scope"], Scope);
 	        this.collection = this.convertValues(source["collection"], Collection);
 	        this.tree = this.convertValues(source["tree"], Tree);
+	        this.workflows = this.convertValues(source["workflows"], workflow.WorkflowM);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

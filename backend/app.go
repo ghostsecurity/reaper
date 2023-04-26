@@ -1,4 +1,4 @@
-package app
+package backend
 
 import (
 	"context"
@@ -191,6 +191,10 @@ func (a *App) sendRequest(request packaging.HttpRequest) {
 		return
 	}
 	port := a.userSettings.Get().ProxyPort
+	dialer := &net.Dialer{
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
+	}
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
@@ -201,10 +205,7 @@ func (a *App) sendRequest(request packaging.HttpRequest) {
 				Host:   fmt.Sprintf("127.0.0.1:%d", port),
 			},
 		),
-		DialContext: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-		}).DialContext,
+		DialContext:           dialer.DialContext,
 		ForceAttemptHTTP2:     true,
 		MaxIdleConns:          100,
 		IdleConnTimeout:       90 * time.Second,

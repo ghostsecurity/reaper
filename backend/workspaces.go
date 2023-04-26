@@ -1,4 +1,4 @@
-package app
+package backend
 
 import (
 	"github.com/ghostsecurity/reaper/backend/workspace"

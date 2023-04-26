@@ -1,6 +1,11 @@
-package workflow
+package transmission
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
+
+var _ Transmission = (*numericRangeIterator)(nil)
 
 type numericRangeIterator struct {
 	min     int
@@ -33,4 +38,26 @@ func (n *numericRangeIterator) Count() int {
 
 func (n *numericRangeIterator) Complete() bool {
 	return n.current >= n.max
+}
+
+func (n *numericRangeIterator) Type() Type {
+	return NewType(TypeList, InternalTypeNumericRangeList)
+}
+
+func (n *numericRangeIterator) MarshalJSON() ([]byte, error) {
+	return json.Marshal([2]int{
+		n.min,
+		n.max,
+	})
+}
+
+func (n *numericRangeIterator) UnmarshalJSON(data []byte) error {
+	var v [2]int
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	n.min = v[0]
+	n.max = v[1]
+	n.current = v[0] - 1
+	return nil
 }
