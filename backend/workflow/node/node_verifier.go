@@ -10,9 +10,8 @@ import (
 )
 
 type VerifierNode struct {
-	id      uuid.UUID
-	storage VarStorage
-	vars    *VarStorage
+	id   uuid.UUID
+	vars *VarStorage
 }
 
 func NewVerifier() *VerifierNode {
