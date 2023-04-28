@@ -25,6 +25,8 @@ const linkStrokeWidth = "2"
 const editingNode = ref(<workflow.NodeM | null>null)
 const menuMode = ref("")
 const resetting = ref(false)
+// used to prevent click + drag events overlapping
+const mouseMoved = ref(false)
 
 const safe = ref<workflow.WorkflowM>(JSON.parse(JSON.stringify(props.flow)))
 let initial = true
@@ -189,6 +191,7 @@ function getOffsetFrom(el: HTMLElement, className: string) {
 }
 
 function dragStart(id: string, ev: MouseEvent) {
+  mouseMoved.value = false
   if (!canvas.value) {
     return
   }
@@ -210,6 +213,7 @@ function dragEnd(ev: MouseEvent) {
 }
 
 function drag(ev: MouseEvent) {
+  mouseMoved.value = true
   if (dragId === "" || !canvas.value) {
     if (currentLink) {
       moveLink(ev)
@@ -596,7 +600,7 @@ function requestReset() {
             </div>
             <div class="flex-grow group">
               <div
-                  @click="editNode(node.id)"
+                  @click="!mouseMoved && editNode(node.id)"
                   :class="[editingNode && editingNode.id == node.id ? 'border-snow-storm-1 bg-polar-night-2' : (node.type == NodeType.START ? 'border-aurora-4 bg-aurora-4/25' : 'border-polar-night-4 bg-polar-night-2'),  'px-2 py-4 border rounded cursor-move  relative']"
                   style="min-width:90px">
                 {{ node.name }}
