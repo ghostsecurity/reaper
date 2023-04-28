@@ -4,6 +4,10 @@ import {settings} from '../models';
 
 export function Confirm(arg1:string,arg2:string):Promise<boolean>;
 
+export function CreateNode(arg1:number):Promise<any>;
+
+export function CreateWorkflow():Promise<any>;
+
 export function CreateWorkspace(arg1:any):Promise<any>;
 
 export function DeleteWorkspace(arg1:string):Promise<void>;

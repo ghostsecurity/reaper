@@ -35,21 +35,25 @@ const (
 	NodeStatusRunning NodeStatus = "running"
 	NodeStatusSuccess NodeStatus = "success"
 	NodeStatusError   NodeStatus = "error"
+	NodeStatusAborted NodeStatus = "aborted"
 )
 
-func (r *runner) Run(updateChan chan<- Update, wr io.Writer) error {
+func (r *runner) Run(updateChan chan<- Update, stdout, stderr io.Writer) error {
 
 	if r.workflow == nil {
 		return fmt.Errorf("workflow is nil")
 	}
 
-	if r.workflow.Input.To.Node == uuid.Nil {
-		return fmt.Errorf("workflow has no input connected")
+	var startNode node.Node
+	for _, n := range r.workflow.Nodes {
+		if n.Type() == node.TypeStart {
+			startNode = n
+			break
+		}
 	}
 
-	start, err := r.workflow.FindNode(r.workflow.Input.To.Node)
-	if err != nil {
-		return err
+	if startNode == nil {
+		return fmt.Errorf("workflow has no start node")
 	}
 
 	for _, node := range r.workflow.Nodes {
@@ -60,12 +64,35 @@ func (r *runner) Run(updateChan chan<- Update, wr io.Writer) error {
 		}
 	}
 
-	return r.RunNode(start, map[string]transmission.Transmission{
-		r.workflow.Input.To.Connector: transmission.NewRequest(r.workflow.Request),
-	}, updateChan, true, wr)
+	for _, node := range r.workflow.Nodes {
+		injections := node.GetInjections()
+		if len(injections) == 0 {
+			continue
+		}
+		for _, link := range r.workflow.Links {
+			if link.From.Node == node.ID() {
+				for name, trans := range injections {
+					if name == link.From.Connector {
+						target, err := r.workflow.FindNode(link.To.Node)
+						if err != nil {
+							break
+						}
+						if _, ok := target.GetInputs().FindByName(link.To.Connector); !ok {
+							break
+						}
+						if err := target.AddStaticInputValue(link.To.Connector, trans); err != nil {
+							return fmt.Errorf("failed to inject value: %s", err)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return r.RunNode(startNode, nil, updateChan, true, stdout, stderr)
 }
 
-func (r *runner) RunNode(n node.Node, params map[string]transmission.Transmission, updateChan chan<- Update, lastInput bool, wr io.Writer) error {
+func (r *runner) RunNode(n node.Node, params map[string]transmission.Transmission, updateChan chan<- Update, lastInput bool, stdout, stderr io.Writer) error {
 
 	if err := n.Validate(params); err != nil {
 		return fmt.Errorf("invalid node: %s", err)
@@ -77,11 +104,7 @@ func (r *runner) RunNode(n node.Node, params map[string]transmission.Transmissio
 		Message: "In Progress...",
 	}
 
-	var writer io.Writer = io.Discard
-	if n.ID() == r.workflow.Output.ID() {
-		writer = wr
-	}
-	outputChan, errChan := n.Run(r.ctx, params, writer)
+	outputChan, errChan := n.Run(r.ctx, params, stdout, stderr)
 	defer waitForChannels(outputChan, errChan)
 	for {
 		select {
@@ -118,7 +141,7 @@ func (r *runner) RunNode(n node.Node, params map[string]transmission.Transmissio
 					}
 					if err := r.RunNode(nextNode, map[string]transmission.Transmission{
 						link.To.Connector: output.Data,
-					}, updateChan, output.Complete, wr); err != nil {
+					}, updateChan, output.Complete, stdout, stderr); err != nil {
 						return fmt.Errorf("error with node '%s': %s", nextNode.Name(), err)
 					}
 				}

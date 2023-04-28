@@ -8,26 +8,33 @@ import (
 	"golang.org/x/net/context"
 )
 
-type NodeType int
+type Type int
 
 const (
-	TypeUnknown NodeType = iota
+	TypeUnknown Type = iota
 	TypeFuzzer
 	TypeOutput
-	TypeVerifier
+	TypeStatusFilter
+	TypeRequest
+	TypeStart
+	TypeSender
 )
 
 type Node interface {
+	IsReadOnly() bool
 	ID() uuid.UUID
 	SetID(uuid.UUID)
-	Type() NodeType
+	SetName(string)
+	Type() Type
 	Name() string
 	GetInputs() Connectors
 	SetStaticInputValues(map[string]transmission.Transmission) error
+	AddStaticInputValue(string, transmission.Transmission) error
+	GetInjections() map[string]transmission.Transmission
 	GetOutputs() Connectors
 	GetVars() *VarStorage
 	SetVars(*VarStorage)
-	Run(context.Context, map[string]transmission.Transmission, io.Writer) (<-chan OutputInstance, <-chan error)
+	Run(context.Context, map[string]transmission.Transmission, io.Writer, io.Writer) (<-chan OutputInstance, <-chan error)
 	Validate(params map[string]transmission.Transmission) error
 }
 

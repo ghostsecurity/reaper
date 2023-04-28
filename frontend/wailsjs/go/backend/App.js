@@ -6,6 +6,14 @@ export function Confirm(arg1, arg2) {
   return window['go']['backend']['App']['Confirm'](arg1, arg2);
 }
 
+export function CreateNode(arg1) {
+  return window['go']['backend']['App']['CreateNode'](arg1);
+}
+
+export function CreateWorkflow() {
+  return window['go']['backend']['App']['CreateWorkflow']();
+}
+
 export function CreateWorkspace(arg1) {
   return window['go']['backend']['App']['CreateWorkspace'](arg1);
 }

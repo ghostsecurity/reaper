@@ -1,14 +1,15 @@
 <script lang="ts" setup>
-import { onMounted, PropType, ref, watch } from 'vue'
-import { PlusIcon } from '@heroicons/vue/20/solid'
-import { uuid } from 'vue-uuid'
-import { workflow, workspace } from '../../../wailsjs/go/models'
+import {onMounted, PropType, ref, watch} from 'vue'
+import {PlusIcon} from '@heroicons/vue/20/solid'
+import {uuid} from 'vue-uuid'
+import {workflow, workspace} from '../../../wailsjs/go/models'
 import List from './WorkflowList.vue'
 import InputBox from '../InputBox.vue'
 import Editor from './WorkflowEditor.vue'
+import {CreateWorkflow} from "../../../wailsjs/go/backend/App";
 
 const props = defineProps({
-  ws: { type: Object as PropType<workspace.Workspace>, required: true },
+  ws: {type: Object as PropType<workspace.Workspace>, required: true},
 })
 
 const safe = ref<workspace.Workspace>(JSON.parse(JSON.stringify(props.ws)))
@@ -51,8 +52,8 @@ onMounted(() => {
     const boxAminWidth = 475
 
     rightPanel.value.style.width = `${Math.min(
-      Math.max(400, root.value.offsetWidth - (pointerRelativeXpos + 10)), // 8px padding + 2px border
-      root.value.offsetWidth - boxAminWidth,
+        Math.max(400, root.value.offsetWidth - (pointerRelativeXpos + 10)), // 8px padding + 2px border
+        root.value.offsetWidth - boxAminWidth,
     )}px`
     rightPanel.value.style.flexGrow = 0
     rightPanel.value.style.flexShrink = 0
@@ -64,16 +65,10 @@ onMounted(() => {
 
 function addWorkflow(name: string) {
   creating.value = false
-  safe.value.workflows.push(new workflow.WorkflowM({
-    id: uuid.v4(),
-    name,
-    input: null,
-    output: null,
-    error: null,
-    nodes: [],
-    links: [],
-    positioning: null,
-  }))
+  CreateWorkflow().then((w) => {
+    w.name = name
+    safe.value.workflows.push(w)
+  })
   saveWorkspace(safe.value)
 }
 
@@ -104,7 +99,7 @@ function selectWorkflow(id: string) {
               @confirm="addWorkflow($event)"/>
     <div ref="leftPanel" class="box-border flex-auto overflow-y-auto h-full text-right pr-2">
       <button type="button" @click="creating = true"
-              class="mb-1 rounded-full bg-indigo-600 p-1.5 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+              class="mb-1 rounded-full bg-frost-4 p-1.5 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
         <PlusIcon class="h-5 w-5" aria-hidden="true"/>
       </button>
       <List :selected="selected" :flows="safe.workflows" @select="selectWorkflow($event)"/>
