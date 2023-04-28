@@ -26,14 +26,16 @@ import (
 
 // App struct
 type App struct {
-	ctx          context.Context
-	proxy        *proxy.Proxy
-	logger       *log.Logger
-	userSettings *settings.Provider
-	workspaceMu  sync.RWMutex
-	workspace    *workspace.Workspace
-	interceptor  *interceptor.Interceptor
-	proxyMu      sync.Mutex
+	ctx                   context.Context
+	proxy                 *proxy.Proxy
+	logger                *log.Logger
+	userSettings          *settings.Provider
+	workspaceMu           sync.RWMutex
+	workspace             *workspace.Workspace
+	interceptor           *interceptor.Interceptor
+	proxyMu               sync.Mutex
+	workflowContextCancel context.CancelFunc
+	runningWorkflowID     uuid.UUID
 }
 
 // New creates a new App application struct

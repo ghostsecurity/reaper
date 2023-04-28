@@ -29,8 +29,9 @@ type VarStorageM struct {
 }
 
 type TransmissionM struct {
-	Type transmission.Type `json:"type"`
-	Data interface{}       `json:"data"`
+	ParentType uint32      `json:"type"`
+	ChildType  uint32      `json:"internal"`
+	Data       interface{} `json:"data"`
 }
 
 func (m *TransmissionM) Unpack() (transmission.Transmission, error) {
@@ -38,7 +39,8 @@ func (m *TransmissionM) Unpack() (transmission.Transmission, error) {
 	if err != nil {
 		return nil, err
 	}
-	return transmission.UnmarshalJSON(m.Type, data)
+	t := transmission.NewType(transmission.ParentType(m.ParentType), transmission.InternalType(m.ChildType))
+	return transmission.UnmarshalJSON(t, data)
 }
 
 func (s *VarStorage) AddStaticInputValue(key string, value transmission.Transmission) error {
@@ -68,8 +70,9 @@ func (s *VarStorage) Pack() (*VarStorageM, error) {
 			return nil, fmt.Errorf("unmarshal %s: %v", name, err)
 		}
 		m[name] = TransmissionM{
-			Type: t.Type(),
-			Data: any,
+			ParentType: uint32(t.Type().Parent()),
+			ChildType:  uint32(t.Type().Internal()),
+			Data:       any,
 		}
 	}
 	return &VarStorageM{

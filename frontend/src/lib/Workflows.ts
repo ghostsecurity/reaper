@@ -20,6 +20,12 @@ export const enum ParentType {
     BOOLEAN = 256,
 }
 
+export const enum ChildType {
+    UNKNOWN = 1,
+    NUMERIC_RANGE_LIST = 2,
+    WORD_LIST = 3,
+}
+
 export function NodeTypeName(t: NodeType): string {
     switch (t) {
         case NodeType.FUZZER:

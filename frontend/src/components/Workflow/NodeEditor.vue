@@ -2,7 +2,9 @@
 import {computed, PropType, ref, watch} from "vue";
 import {XMarkIcon} from "@heroicons/vue/20/solid";
 import {node, workflow} from "../../../wailsjs/go/models";
-import {NodeType, ParentType, NodeTypeName} from "../../lib/Workflows";
+import {NodeType, ParentType, NodeTypeName, ChildType} from "../../lib/Workflows";
+import IDE from "../Http/IDE.vue";
+import {HttpRequest} from "../../lib/Http";
 
 const props = defineProps({
   node: {type: Object as PropType<workflow.NodeM>, required: true},
@@ -70,11 +72,71 @@ function updateIntField(field: node.Connector, event: Event) {
   publish()
 }
 
+function isFieldChildType(field: node.Connector, type: ChildType) {
+  let actual = safe.value.vars?.static[field.name]?.internal
+  if (!actual) {
+    return false
+  }
+  return actual === type
+}
+
+function updateListType(field: node.Connector, ev: Event) {
+  if (!safe.value || !safe.value.vars?.static[field.name]) {
+    return
+  }
+  let newType = parseInt((ev.target as HTMLSelectElement).value)
+  safe.value.vars.static[field.name] = new node.TransmissionM({
+    type: ParentType.LIST,
+    internal: newType,
+    data: createDefaultListData(newType),
+  })
+  publish()
+}
+
+function createDefaultListData(t: ChildType) {
+  switch (t) {
+    case ChildType.NUMERIC_RANGE_LIST:
+      return [0, 100]
+    case ChildType.WORD_LIST:
+      return ""
+    default:
+      return null
+  }
+}
+
+function updateNumericRangeStart(field: node.Connector, ev: Event) {
+  if (!safe.value || !safe.value.vars?.static[field.name]) {
+    return
+  }
+  let val = parseInt((ev.target as HTMLInputElement).value)
+  safe.value.vars.static[field.name].data[0] = val
+  publish()
+}
+
+function updateNumericRangeEnd(field: node.Connector, ev: Event) {
+  if (!safe.value || !safe.value.vars?.static[field.name]) {
+    return
+  }
+  let val = parseInt((ev.target as HTMLInputElement).value)
+  safe.value.vars.static[field.name].data[1] = val
+  publish()
+}
+
+const requestActions = new Map<string, string>([])
+
+function updateRequestField(field: node.Connector, req: HttpRequest) {
+  if (!safe.value || !safe.value.vars?.static[field.name]) {
+    return
+  }
+  safe.value.vars.static[field.name].data = req
+  publish()
+}
 
 </script>
 
 <template>
-  <div class="relative p-2 bg-polar-night-1 text-center">
+  <div
+      class="border rounded border-polar-night-3 relative p-2 bg-polar-night-1 text-center max-h-full overflow-y-auto pointer-events-auto">
     <button @click="emit('close')" class="absolute right-1 top-1">
       <XMarkIcon class="w-4 h-4"/>
     </button>
@@ -130,11 +192,52 @@ function updateIntField(field: node.Connector, event: Event) {
             <div
                 class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
               <select
+                  @change="updateListType(field, $event)"
                   class="flex-1 border-0 bg-transparent py-1.5 px-2 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6">
-                <option selected>Numeric Range</option>
-                <option>Wordlist</option>
+                <option :selected="isFieldChildType(field, ChildType.NUMERIC_RANGE_LIST)"
+                        :value="ChildType.NUMERIC_RANGE_LIST">
+                  Numeric Range
+                </option>
+                <option :selected="isFieldChildType(field, ChildType.WORD_LIST)"
+                        :value="ChildType.WORD_LIST">
+                  Wordlist
+                </option>
               </select>
             </div>
+          </div>
+          <div class="mt-1">
+            <div v-if="isFieldChildType(field, ChildType.NUMERIC_RANGE_LIST)">
+              <div class="mt-1">
+                <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">Start</label>
+                <div class="mt-1">
+                  <div
+                      class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
+                    <input type="number" autocomplete="off" autocapitalize="off"
+                           spellcheck="false"
+                           :value="safe.vars?.static[field.name].data[0]"
+                           @input="updateNumericRangeStart(field, $event)"
+                           class="flex-1 border-0 bg-transparent py-1.5 px-2 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6"/>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-1">
+                <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">End (inclusive)</label>
+                <div class="mt-1">
+                  <div
+                      class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
+                    <input type="number" autocomplete="off" autocapitalize="off"
+                           spellcheck="false"
+                           :value="safe.vars?.static[field.name].data[1]"
+                           @input="updateNumericRangeEnd(field, $event)"
+                           class="flex-1 border-0 bg-transparent py-1.5 px-2 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else-if="isFieldChildType(field, ChildType.WORD_LIST)">
+              word list
+            </div>
+
           </div>
         </div>
         <div v-else-if="field.type === ParentType.BOOLEAN" class="sm:col-span-4">
@@ -148,6 +251,11 @@ function updateIntField(field: node.Connector, event: Event) {
               <label :for="field.name" class="font-medium text-snow-storm-1 capitalize">{{ field.name }}</label>
             </div>
           </div>
+        </div>
+        <div v-else-if="field.type === ParentType.REQUEST" class="sm:col-span-4">
+          <IDE :request="safe.vars?.static[field.name].data" :actions="requestActions"
+               :readonly="false" :show-buttons="false"
+               @request-update="updateRequestField(field, $event)"/>
         </div>
         <div v-else class="sm:col-span-4">
           <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">{{ field.name }}</label>

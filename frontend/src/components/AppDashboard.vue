@@ -1,23 +1,24 @@
 <script lang="ts" setup>
-import { onBeforeMount, onMounted, PropType, reactive, ref, watch } from 'vue'
-import { BarsArrowDownIcon, BeakerIcon, StarIcon, HandRaisedIcon } from '@heroicons/vue/20/solid'
-import { EventsEmit, EventsOn } from '../../wailsjs/runtime'
-import { HttpRequest, HttpResponse } from '../lib/Http'
-import { Criteria } from '../lib/Criteria/Criteria'
-import { workspace } from '../../wailsjs/go/models'
+import {onBeforeMount, onMounted, PropType, reactive, ref, watch} from 'vue'
+import {BarsArrowDownIcon, BeakerIcon, StarIcon, HandRaisedIcon} from '@heroicons/vue/20/solid'
+import {EventsEmit, EventsOn} from '../../wailsjs/runtime'
+import {HttpRequest, HttpResponse} from '../lib/Http'
+import {Criteria} from '../lib/Criteria/Criteria'
+import {workspace} from '../../wailsjs/go/models'
 import RequestList from './Http/RequestList.vue'
 import GroupedRequestList from './Http/GroupedRequestList.vue'
 import WorkspaceMenu from './WorkspaceMenu.vue'
 import Search from './SearchInput.vue'
 import IDE from './Http/IDE.vue'
 import RequestInterceptor from './RequestInterceptor.vue'
-import GUI from './Workflow/WorkflowGUI.vue'
+import WorkflowGUI from './Workflow/WorkflowGUI.vue'
+import {RunWorkflow, StopWorkflow} from "../../wailsjs/go/backend/App";
 
 const props = defineProps({
-  ws: { type: Object as PropType<workspace.Workspace>, required: true },
-  criteria: { type: Object as PropType<Criteria>, required: true },
-  proxyAddress: { type: String, required: true },
-  savedRequestIds: { type: Array as PropType<string[]>, required: false, default: () => [] },
+  ws: {type: Object as PropType<workspace.Workspace>, required: true},
+  criteria: {type: Object as PropType<Criteria>, required: true},
+  proxyAddress: {type: String, required: true},
+  savedRequestIds: {type: Array as PropType<string[]>, required: false, default: () => []},
 })
 
 const emit = defineEmits([
@@ -40,13 +41,15 @@ const emit = defineEmits([
   'update-request',
 ])
 
+const workflowId = ref('')
+const runningWorkflowId = ref('')
 const requests = ref<HttpRequest[]>([])
 const req = ref<HttpRequest | null>(null)
 const tabs = ref([
-  { name: 'Log Stream', id: 'log', icon: BarsArrowDownIcon, current: true, count: 0 },
-  { name: 'Intercepted Requests', id: 'intercepted', icon: HandRaisedIcon, current: false, count: 0 },
-  { name: 'Saved Requests', id: 'saved', icon: StarIcon, current: false, count: 0 },
-  { name: 'Attack Workflows', id: 'workflows', icon: BeakerIcon, current: false, count: 0 },
+  {name: 'Log Stream', id: 'log', icon: BarsArrowDownIcon, current: true, count: 0},
+  {name: 'Intercepted Requests', id: 'intercepted', icon: HandRaisedIcon, current: false, count: 0},
+  {name: 'Saved Requests', id: 'saved', icon: StarIcon, current: false, count: 0},
+  {name: 'Attack Workflows', id: 'workflows', icon: BeakerIcon, current: false, count: 0},
 ])
 const liveCriteria = reactive(props.criteria)
 const reqReadOnly = ref(true)
@@ -93,10 +96,10 @@ function toggleFullscreenIDE() {
 }
 
 watch(
-  () => props.criteria,
-  criteria => {
-    Object.assign(liveCriteria, criteria)
-  },
+    () => props.criteria,
+    criteria => {
+      Object.assign(liveCriteria, criteria)
+    },
 )
 
 function compareRequests(a: HttpRequest, b: HttpRequest) {
@@ -113,6 +116,12 @@ function compareRequests(a: HttpRequest, b: HttpRequest) {
 }
 
 onBeforeMount(() => {
+  EventsOn('WorkflowStarted', (id: string) => {
+    runningWorkflowId.value = id
+  })
+  EventsOn('WorkflowFinished', () => {
+    runningWorkflowId.value = ''
+  })
   EventsOn('HttpRequest', (data: HttpRequest) => {
     requests.value.push(data)
     // TODO: better way to identify the request we're sending
@@ -172,8 +181,8 @@ onMounted(() => {
     const boxAminWidth = 475
 
     rightPanel.value.style.width = `${Math.min(
-      Math.max(400, root.value.offsetWidth - (pointerRelativeXpos + 10)), // 8px padding + 2px border
-      root.value.offsetWidth - boxAminWidth,
+        Math.max(400, root.value.offsetWidth - (pointerRelativeXpos + 10)), // 8px padding + 2px border
+        root.value.offsetWidth - boxAminWidth,
     )}px`
     rightPanel.value.style.flexGrow = 0
     rightPanel.value.style.flexShrink = 0
@@ -300,6 +309,22 @@ function sendInterceptedRequest(request: HttpRequest) {
 function closeInterceptedRequest() {
   sentInterceptedRequest.value = null
 }
+
+function runWorkflow(id: string) {
+  let w = props.ws?.workflows.find(w => w.id === id)
+  if (w === undefined) {
+    return
+  }
+  RunWorkflow(w)
+}
+
+function stopWorkflow(id: string) {
+  let w = props.ws?.workflows.find(w => w.id === id)
+  if (w === undefined) {
+    return
+  }
+  StopWorkflow(w)
+}
 </script>
 
 <template>
@@ -362,7 +387,11 @@ function closeInterceptedRequest() {
                               @duplicate-request="duplicateRequest"
                               @request-group-delete="deleteGroup" @request-rename="renameRequest"
                               @request-group-rename="renameGroup"/>
-          <GUI v-if="selectedTab() === 'workflows'" :ws="ws" @save="emit('workspace-save', $event)"/>
+          <WorkflowGUI v-if="selectedTab() === 'workflows'" :ws="ws" :selected-workflow-id="workflowId"
+                       :running-workflow-id="runningWorkflowId"
+                       @select="workflowId = $event" @save="emit('workspace-save', $event)" @run="runWorkflow($event)"
+                       @stop="stopWorkflow($event)"
+          />
           <RequestInterceptor v-if="selectedTab() === 'intercepted'" :request="interceptedRequest"
                               :previous="sentInterceptedRequest"
                               :count="interceptionCount"

@@ -28,6 +28,8 @@ export function LoadWorkspace(arg1:string):Promise<any>;
 
 export function Notify(arg1:string,arg2:string):Promise<void>;
 
+export function RunWorkflow(arg1:any):Promise<void>;
+
 export function SaveSettings(arg1:any):Promise<void>;
 
 export function SaveWorkspace(arg1:any):Promise<void>;
@@ -37,5 +39,7 @@ export function SetWorkspace(arg1:any):Promise<void>;
 export function StartProxy():Promise<void>;
 
 export function StopProxy():Promise<void>;
+
+export function StopWorkflow(arg1:any):Promise<void>;
 
 export function Warn(arg1:string,arg2:string):Promise<void>;

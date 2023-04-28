@@ -54,6 +54,10 @@ export function Notify(arg1, arg2) {
   return window['go']['backend']['App']['Notify'](arg1, arg2);
 }
 
+export function RunWorkflow(arg1) {
+  return window['go']['backend']['App']['RunWorkflow'](arg1);
+}
+
 export function SaveSettings(arg1) {
   return window['go']['backend']['App']['SaveSettings'](arg1);
 }
@@ -72,6 +76,10 @@ export function StartProxy() {
 
 export function StopProxy() {
   return window['go']['backend']['App']['StopProxy']();
+}
+
+export function StopWorkflow(arg1) {
+  return window['go']['backend']['App']['StopWorkflow'](arg1);
 }
 
 export function Warn(arg1, arg2) {

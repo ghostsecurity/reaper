@@ -121,7 +121,7 @@ func (n *SenderNode) Run(ctx context.Context, in map[string]transmission.Transmi
 
 		output <- OutputInstance{
 			OutputName: "output",
-			Complete:   true,
+			Complete:   false,
 			Data:       transmission.NewRequestResponsePairWithMap(*request, *response, replacements),
 		}
 	}()

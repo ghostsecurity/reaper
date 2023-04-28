@@ -46,7 +46,7 @@ func NewRequest() *RequestNode {
 						},
 					},
 					Query: []packaging.KeyValue{},
-					Tags:  nil,
+					Tags:  []string{},
 				}),
 			},
 		),

@@ -25,6 +25,7 @@ const props = defineProps({
   },
   readonly: { type: Boolean, default: true },
   fullscreen: { type: Boolean, default: false },
+  showButtons: { type: Boolean, default: true },
 })
 
 const emit = defineEmits(['action', 'close', 'fullscreen', 'request-update'])
@@ -353,7 +354,7 @@ function getContentType(headers: KeyValue[], def: string): string {
       </div>
 
       <!-- default action button -->
-      <button type="button" :class="[
+      <button v-if="defaultAction" type="button" :class="[
         extraActions.length > 0 ? 'rounded-r-none' : 'rounded-r-md',
         'flex-0 bg-frost-4 px-4 font-semibold text-snow-storm shadow-sm',
         'my-0 py-0 text-center align-middle hover:bg-frost-4/80 focus:outline-none',
@@ -389,7 +390,9 @@ function getContentType(headers: KeyValue[], def: string): string {
         </transition>
       </Menu>
 
-      <div class="flex-0 -mr-1 flex pl-2 pt-1 text-right align-middle">
+      <div v-if="!defaultAction" class="flex-0 rounded-r-md bg-snow-storm-1 align-middle dark:bg-polar-night-4 w-2"></div>
+
+      <div v-if="showButtons" class="flex-0 -mr-1 flex pl-2 pt-1 text-right align-middle">
         <a class="cursor-pointer pt-1 text-gray-400 hover:text-polar-night-1 dark:hover:text-snow-storm-1"
           @click="toggleFullscreen(!fullscreen)">
           <ArrowsPointingOutIcon v-if="!fullscreen" class="h-5 w-5" />

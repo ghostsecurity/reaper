@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import {onBeforeUpdate, onMounted, onUpdated, PropType, ref, watch} from 'vue'
-import {BeakerIcon, TrashIcon, PlusIcon, ArrowPathIcon, PlayIcon} from '@heroicons/vue/20/solid'
+import {BeakerIcon, TrashIcon, PlusIcon, ArrowPathIcon, PlayIcon, StopIcon} from '@heroicons/vue/20/solid'
 import {workflow} from '../../../wailsjs/go/models'
 import {CreateNode} from "../../../wailsjs/go/backend/App";
 import NodeEditor from "./NodeEditor.vue";
@@ -9,6 +9,7 @@ import ConfirmDialog from "../ConfirmDialog.vue";
 
 const props = defineProps({
   flow: {type: Object as PropType<workflow.WorkflowM>, required: true},
+  running: {type: Boolean, required: false, default: false},
 })
 
 const availableNodeTypes = ref(<NodeType[]>[
@@ -49,7 +50,7 @@ const svg = ref(<HTMLElement | null>null)
 const connector = ref(<HTMLElement | null>null)
 const paths = ref(<string[]>[])
 
-const emit = defineEmits(['save'])
+const emit = defineEmits(['save', 'run', 'stop'])
 
 function saveWorkflow(f: workflow.WorkflowM) {
   emit('save', f)
@@ -564,7 +565,7 @@ function requestReset() {
       <p class="mt-1 text-sm">Select or create a workflow from the list.</p>
     </div>
     <div v-else class="h-full flex flex-col">
-      <div class="border border-polar-night-4 flex-auto my-2 relative stripy w-full h-full overflow-auto"
+      <div class="border border-polar-night-4 flex-grow my-2 relative stripy w-full h-full overflow-auto"
            @mousemove="drag" @mouseup="dragEnd"
            ref="canvas"
       >
@@ -596,19 +597,19 @@ function requestReset() {
             <div class="flex-grow group">
               <div
                   @click="editNode(node.id)"
-                  :class="[editingNode && editingNode.id == node.id ? 'border-snow-storm-1' : 'border-polar-night-4',  'px-2 py-4 border rounded cursor-move bg-polar-night-2 relative']"
+                  :class="[editingNode && editingNode.id == node.id ? 'border-snow-storm-1 bg-polar-night-2' : (node.type == NodeType.START ? 'border-aurora-4 bg-aurora-4/25' : 'border-polar-night-4 bg-polar-night-2'),  'px-2 py-4 border rounded cursor-move  relative']"
                   style="min-width:90px">
                 {{ node.name }}
                 <div v-if="!node.readonly" @mousedown.prevent.stop
                      class="absolute top-0 right-0 invisible hover:visible group-hover:visible text-snow-storm-1">
-                  <button @click="deleteNode(node.id)" class="group/btn px-0.5">
+                  <button @click.prevent.stop="deleteNode(node.id)" class="group/btn px-0.5">
                     <TrashIcon class="h-4 w-4 group-hover/btn:text-aurora-2"/>
                   </button>
                 </div>
               </div>
-              <div
-                  class="absolute ml-1 top-0 py-0.5 p-2 text-xs bg-polar-night-2 rounded-md text-gray-400 italic"
-                  style="margin-top: -0.5rem;">
+              <div v-if="node.type != NodeType.START"
+                   class="absolute ml-1 top-0 py-0.5 p-2 text-xs bg-polar-night-2 rounded-md text-gray-400 italic"
+                   style="margin-top: -0.5rem;">
                 {{ NodeTypeName(node.type) }}
               </div>
 
@@ -630,33 +631,40 @@ function requestReset() {
             </div>
           </div>
         </div>
-        <div class="absolute right-5 top-5 text-right w-96">
-          <button type="button" @click="setMenu('add')"
-                  :class="[menuMode==='add'?'bg-frost-1':'bg-frost-4', 'mb-1 rounded-full  p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mx-0.5']">
-            <PlusIcon class="h-5 w-5" aria-hidden="true"/>
-          </button>
-          <button type="button" @click="setMenu('run')"
-                  :class="[menuMode==='run'?'bg-frost-1':'bg-frost-4', 'mb-1 rounded-full  p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mx-0.5']">
-            <PlayIcon class="h-5 w-5" aria-hidden="true"/>
-          </button>
-          <button type="button" @click="setMenu('');requestReset()"
-                  class="bg-frost-4 mb-1 rounded-full  p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mx-0.5">
-            <ArrowPathIcon class="h-5 w-5" aria-hidden="true"/>
-          </button>
-          <div v-if="editingNode" class="border rounded border-snow-storm-1 mt-2">
+        <div class="absolute right-5 text-right w-96 h-full pointer-events-none">
+          <div class="absolute pt-5 right-5 pointer-events-auto">
+            <button type="button" @click="setMenu('add')"
+                    :class="[menuMode==='add'?'bg-frost-1':'bg-frost-4', 'mb-1 rounded-full  p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mx-0.5']">
+              <PlusIcon class="h-5 w-5" aria-hidden="true"/>
+            </button>
+            <button type="button" @click="setMenu('run')"
+                    :class="[menuMode==='run'?'bg-frost-1':'bg-frost-4', 'mb-1 rounded-full  p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mx-0.5']">
+              <PlayIcon class="h-5 w-5" aria-hidden="true"/>
+            </button>
+            <button type="button" @click="setMenu('');requestReset()"
+                    class="bg-frost-4 mb-1 rounded-full  p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mx-0.5">
+              <ArrowPathIcon class="h-5 w-5" aria-hidden="true"/>
+            </button>
+          </div>
+          <div v-if="editingNode" class="h-full pt-5 overflow-y-hidden pointer-events-none">
             <NodeEditor :node="editingNode" @update="updateNode" @close="editingNode = null; menuMode = ''"/>
           </div>
-          <div v-else-if="menuMode==='add'" class="border rounded border-snow-storm-1 relative bg-polar-night-2">
+          <div v-else-if="menuMode==='add'"
+               class="mt-16 border rounded border-snow-storm-1 relative bg-polar-night-2 pointer-events-auto">
             <button v-for="t in availableNodeTypes" @click="addNode(t);setMenu('')"
                     class="w-full border border-polar-night-4 py-1 bg-polar-night-2 hover:bg-polar-night-4">
               {{ NodeTypeName(t) }}
             </button>
-            <button @click="reset" class="w-full border-b border-frost-4 py-1 bg-polar-night-2">Reset</button>
           </div>
         </div>
       </div>
-      <div v-if="menuMode==='run'">
-        lol
+      <div v-if="menuMode==='run'" class="w-full flex-shrink border border-polar-night-3 text-left p-1">
+        <button v-if="!running" class="bg-polar-night-4 rounded-md p-2" @click="emit('run', safe.id)">
+          <PlayIcon class="h-5 w-5" aria-hidden="true"/>
+        </button>
+        <button v-else class="bg-polar-night-4 rounded-md p-2" @click="emit('stop', safe.id)">
+          <StopIcon class="h-5 w-5" aria-hidden="true"/>
+        </button>
       </div>
     </div>
   </div>

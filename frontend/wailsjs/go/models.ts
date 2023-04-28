@@ -18,6 +18,7 @@ export namespace node {
 	}
 	export class TransmissionM {
 	    type: number;
+	    internal: number;
 	    data: any;
 	
 	    static createFrom(source: any = {}) {
@@ -27,6 +28,7 @@ export namespace node {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.type = source["type"];
+	        this.internal = source["internal"];
 	        this.data = source["data"];
 	    }
 	}
