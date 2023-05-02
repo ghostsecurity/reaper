@@ -14,6 +14,10 @@ export function CreateWorkflow() {
   return window['go']['backend']['App']['CreateWorkflow']();
 }
 
+export function CreateWorkflowFromRequest(arg1) {
+  return window['go']['backend']['App']['CreateWorkflowFromRequest'](arg1);
+}
+
 export function CreateWorkspace(arg1) {
   return window['go']['backend']['App']['CreateWorkspace'](arg1);
 }
@@ -44,6 +48,10 @@ export function HighlightBody(arg1, arg2) {
 
 export function HighlightHTTP(arg1) {
   return window['go']['backend']['App']['HighlightHTTP'](arg1);
+}
+
+export function IgnoreThisUsedBindings(arg1) {
+  return window['go']['backend']['App']['IgnoreThisUsedBindings'](arg1);
 }
 
 export function LoadWorkspace(arg1) {

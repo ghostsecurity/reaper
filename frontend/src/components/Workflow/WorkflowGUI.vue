@@ -11,6 +11,10 @@ const props = defineProps({
   ws: {type: Object as PropType<workspace.Workspace>, required: true},
   selectedWorkflowId: {type: String, required: false, default: ''},
   runningWorkflowId: {type: String, required: false, default: ''},
+  statuses: {type: Object as PropType<Map<string, string>>, required: true},
+  stdoutLines: {type: Array as PropType<string[]>, required: true},
+  stderrLines: {type: Array as PropType<string[]>, required: true},
+  activityLines: {type: Array as PropType<string[]>, required: true},
 })
 
 const safe = ref<workspace.Workspace>(JSON.parse(JSON.stringify(props.ws)))
@@ -35,8 +39,6 @@ watch(() => props.selectedWorkflowId, id => {
 const root = ref()
 const leftPanel = ref()
 const rightPanel = ref()
-const handle = ref()
-const resizing = ref(false)
 
 const creating = ref(false)
 const currentFlow = ref<workflow.WorkflowM | null>(safe.value.workflows.find(
@@ -44,37 +46,6 @@ const currentFlow = ref<workflow.WorkflowM | null>(safe.value.workflows.find(
 )
 
 const emit = defineEmits(['select', 'save', 'run', 'stop'])
-
-onMounted(() => {
-  root.value.addEventListener('mousemove', (e: MouseEvent) => {
-    if (!resizing.value) {
-      return
-    }
-    if (e.buttons === 0) {
-      resizing.value = false
-      return
-    }
-
-    // Get offset
-    const containerOffsetLeft = root.value.offsetLeft
-
-    // Get x-coordinate of pointer relative to container
-    const pointerRelativeXpos = e.clientX - containerOffsetLeft
-
-    // Arbitrary minimum width set on box A, otherwise its inner content will collapse to width of 0
-    const boxAminWidth = 475
-
-    rightPanel.value.style.width = `${Math.min(
-        Math.max(400, root.value.offsetWidth - (pointerRelativeXpos + 10)), // 8px padding + 2px border
-        root.value.offsetWidth - boxAminWidth,
-    )}px`
-    rightPanel.value.style.flexGrow = 0
-    rightPanel.value.style.flexShrink = 0
-  })
-  root.value.addEventListener('mouseup', () => {
-    resizing.value = false
-  })
-})
 
 function addWorkflow(name: string) {
   creating.value = false
@@ -114,6 +85,18 @@ function saveWorkflow(w: workflow.WorkflowM) {
 function selectWorkflow(id: string) {
   emit('select', id)
 }
+
+function renameWorkflow(id: string, name: string) {
+  const index = safe.value.workflows.findIndex(wf => wf.id === id)
+  if (index === -1) {
+    return
+  }
+  safe.value.workflows[index].name = name
+  saveWorkspace(safe.value)
+  emit('select', id)
+}
+
+
 </script>
 
 <template>
@@ -122,23 +105,23 @@ function selectWorkflow(id: string) {
 
     <InputBox v-if="creating" title="New Workflow" message="Enter the workflow name." @cancel="creating = false"
               @confirm="addWorkflow($event)"/>
-    <div ref="leftPanel" class="box-border flex-auto overflow-y-auto h-full text-right pr-2">
+    <div ref="leftPanel" class="box-border flex-shrink overflow-y-auto w-64 h-full text-right pr-2">
       <button type="button" @click="creating = true"
               class="mb-1 rounded-full bg-frost-4 p-1.5 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
         <PlusIcon class="h-5 w-5" aria-hidden="true"/>
       </button>
       <List :selected="selectedWorkflowId" :flows="safe.workflows" @select="selectWorkflow($event)"
-            @delete="deleteWorkflow"/>
+            @delete="deleteWorkflow" @rename="renameWorkflow"/>
     </div>
 
-    <div v-if="currentFlow" @mousedown.prevent="resizing = true" ref="handle"
-         class="w-0.5 flex-none cursor-ew-resize bg-gray-500 dark:bg-polar-night-4"></div>
-
     <div v-if="currentFlow" ref="rightPanel"
-         class="mx-2 box-border h-full flex-auto overflow-hidden px-2 w-[60%]">
+         class="mx-2 box-border h-full flex-grow overflow-hidden px-2 w-[60%]">
       <Editor :flow="currentFlow" @save="saveWorkflow($event)" @run="emit('run', $event)"
               @stop="emit('stop', $event)"
-              :running="runningWorkflowId===currentFlow.id"/>
+              :running="runningWorkflowId===currentFlow.id"
+              :statuses="statuses" :stdout-lines="stdoutLines" :stderr-lines="stderrLines"
+              :activity-lines="activityLines"
+      />
     </div>
 
   </div>

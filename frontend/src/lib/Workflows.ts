@@ -6,6 +6,7 @@ export const enum NodeType {
     REQUEST = 4,
     START = 5,
     SENDER = 6,
+    VARIABLES = 7,
 }
 
 export const enum ParentType {
@@ -40,6 +41,8 @@ export function NodeTypeName(t: NodeType): string {
             return 'Start'
         case NodeType.SENDER:
             return 'Sender'
+        case NodeType.VARIABLES:
+            return 'Variables'
         default:
             return 'Unknown (' + t + ')'
     }

@@ -157,6 +157,8 @@ func (n *NodeM) ToNode() (node.Node, error) {
 		real = node.NewStart()
 	case node.TypeSender:
 		real = node.NewSender()
+	case node.TypeVariables:
+		real = node.NewVars()
 	default:
 		return nil, fmt.Errorf("unknown node type: %v", n.Type)
 	}

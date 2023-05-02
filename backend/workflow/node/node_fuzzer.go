@@ -2,7 +2,6 @@ package node
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
 	"github.com/google/uuid"
@@ -73,7 +72,7 @@ func (n *FuzzerNode) SetID(id uuid.UUID) {
 	n.id = id
 }
 
-func (n *FuzzerNode) Run(ctx context.Context, in map[string]transmission.Transmission, _, _ io.Writer) (<-chan OutputInstance, <-chan error) {
+func (n *FuzzerNode) Run(ctx context.Context, in map[string]transmission.Transmission, out chan<- Output, last bool) (<-chan OutputInstance, <-chan error) {
 
 	output := make(chan OutputInstance)
 	errs := make(chan error)
@@ -123,7 +122,7 @@ func (n *FuzzerNode) Run(ctx context.Context, in map[string]transmission.Transmi
 				OutputName: "output",
 				Current:    int(i),
 				Total:      list.Count(),
-				Complete:   list.Complete(),
+				Complete:   list.Complete() && last,
 				Data:       transmission.NewMap(data),
 			}
 		}

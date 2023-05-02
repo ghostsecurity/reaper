@@ -1,8 +1,6 @@
 package node
 
 import (
-	"io"
-
 	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
 	"github.com/google/uuid"
 	"golang.org/x/net/context"
@@ -64,7 +62,7 @@ func (n *StartNode) SetID(id uuid.UUID) {
 	n.id = id
 }
 
-func (n *StartNode) Run(ctx context.Context, in map[string]transmission.Transmission, _, _ io.Writer) (<-chan OutputInstance, <-chan error) {
+func (n *StartNode) Run(ctx context.Context, in map[string]transmission.Transmission, output chan<- Output, last bool) (<-chan OutputInstance, <-chan error) {
 	out := make(chan OutputInstance)
 	errs := make(chan error)
 	go func() {
@@ -73,7 +71,7 @@ func (n *StartNode) Run(ctx context.Context, in map[string]transmission.Transmis
 		out <- OutputInstance{
 			OutputName: "output",
 			Data:       transmission.NewStart(),
-			Complete:   true,
+			Complete:   last,
 		}
 	}()
 	return out, errs

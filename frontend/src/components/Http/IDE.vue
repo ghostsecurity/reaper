@@ -28,7 +28,7 @@ const props = defineProps({
   showButtons: { type: Boolean, default: true },
 })
 
-const emit = defineEmits(['action', 'close', 'fullscreen', 'request-update'])
+const emit = defineEmits(['action', 'close', 'fullscreen', 'request-update', 'create-workflow-from-request'])
 const defaultAction = ref(props.actions.keys().next().value)
 const extraActions = ref([...props.actions.keys()].filter(key => key !== defaultAction.value))
 

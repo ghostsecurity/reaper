@@ -36,6 +36,7 @@ type App struct {
 	proxyMu               sync.Mutex
 	workflowContextCancel context.CancelFunc
 	runningWorkflowID     uuid.UUID
+	workflowMu            sync.Mutex
 }
 
 // New creates a new App application struct

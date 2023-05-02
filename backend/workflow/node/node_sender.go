@@ -2,7 +2,6 @@ package node
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 
@@ -25,6 +24,7 @@ func NewSender() *SenderNode {
 		name: "Sender",
 		VarStorage: NewVarStorage(
 			Connectors{
+				NewConnector("start", transmission.TypeStart, true),
 				NewConnector("request", transmission.TypeRequest, true),
 				NewConnector("replacements", transmission.TypeMap, true),
 			},
@@ -73,7 +73,7 @@ func (n *SenderNode) SetID(id uuid.UUID) {
 	n.id = id
 }
 
-func (n *SenderNode) Run(ctx context.Context, in map[string]transmission.Transmission, _, _ io.Writer) (<-chan OutputInstance, <-chan error) {
+func (n *SenderNode) Run(ctx context.Context, in map[string]transmission.Transmission, out chan<- Output, last bool) (<-chan OutputInstance, <-chan error) {
 
 	output := make(chan OutputInstance)
 	errs := make(chan error)
@@ -121,7 +121,7 @@ func (n *SenderNode) Run(ctx context.Context, in map[string]transmission.Transmi
 
 		output <- OutputInstance{
 			OutputName: "output",
-			Complete:   false,
+			Complete:   last,
 			Data:       transmission.NewRequestResponsePairWithMap(*request, *response, replacements),
 		}
 	}()

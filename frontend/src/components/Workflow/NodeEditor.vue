@@ -5,6 +5,8 @@ import {node, workflow} from "../../../wailsjs/go/models";
 import {NodeType, ParentType, NodeTypeName, ChildType} from "../../lib/Workflows";
 import IDE from "../Http/IDE.vue";
 import {HttpRequest} from "../../lib/Http";
+import KeyValEditor from "../KeyValEditor.vue";
+import {KeyValue} from "../../lib/KeyValue";
 
 const props = defineProps({
   node: {type: Object as PropType<workflow.NodeM>, required: true},
@@ -132,6 +134,40 @@ function updateRequestField(field: node.Connector, req: HttpRequest) {
   publish()
 }
 
+function updateMapField(field: node.Connector, kvs: KeyValue[]) {
+  if (!safe.value || !safe.value.vars?.static[field.name]) {
+    return
+  }
+  let m = new Map<string, string>([])
+  kvs.forEach(kv => {
+    m.set(kv.Key, kv.Value)
+  })
+  safe.value.vars.static[field.name].data = Object.fromEntries(m)
+  publish()
+}
+
+function keyValsFromMap(field: node.Connector): KeyValue[] {
+  let data = safe.value.vars?.static[field.name]?.data
+  if (data) {
+    return Object.entries(data).map(([k, v]) => {
+      return {
+        Key: k,
+        Value: v,
+      } as KeyValue
+    })
+  }
+  return []
+}
+
+function updateBooleanField(field: node.Connector, ev: Event) {
+  if (!safe.value || !safe.value.vars?.static[field.name]) {
+    return
+  }
+  let val = (ev.target as HTMLInputElement).checked
+  safe.value.vars.static[field.name].data = val
+  publish()
+}
+
 </script>
 
 <template>
@@ -245,6 +281,7 @@ function updateRequestField(field: node.Connector, req: HttpRequest) {
             <div class="flex h-6 items-center">
               <input :id="field.name" :name="field.name" type="checkbox"
                      :checked="safe.vars?.static[field.name].data"
+                     @change="updateBooleanField(field, $event)"
                      class="h-4 w-4 ml-2 bg-polar-night-4 rounded text-frost-1 focus:text-frost-1"/>
             </div>
             <div class="ml-2 text-sm leading-6">
@@ -256,6 +293,12 @@ function updateRequestField(field: node.Connector, req: HttpRequest) {
           <IDE :request="safe.vars?.static[field.name].data" :actions="requestActions"
                :readonly="false" :show-buttons="false"
                @request-update="updateRequestField(field, $event)"/>
+        </div>
+        <div v-else-if="field.type === ParentType.MAP" class="sm:col-span-4">
+          <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">{{ field.name }}</label>
+          <KeyValEditor :data="keyValsFromMap(field)"
+                        :readonly="false"
+                        @publish="updateMapField(field, $event)"/>
         </div>
         <div v-else class="sm:col-span-4">
           <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">{{ field.name }}</label>

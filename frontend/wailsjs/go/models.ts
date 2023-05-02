@@ -16,6 +16,22 @@ export namespace node {
 	        this.linkable = source["linkable"];
 	    }
 	}
+	export class OutputM {
+	    node: string;
+	    channel: string;
+	    message: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new OutputM(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.node = source["node"];
+	        this.channel = source["channel"];
+	        this.message = source["message"];
+	    }
+	}
 	export class TransmissionM {
 	    type: number;
 	    internal: number;
@@ -169,6 +185,22 @@ export namespace workflow {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.x = source["x"];
 	        this.y = source["y"];
+	    }
+	}
+	export class UpdateM {
+	    node: string;
+	    status: string;
+	    message: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new UpdateM(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.node = source["node"];
+	        this.status = source["status"];
+	        this.message = source["message"];
 	    }
 	}
 	export class WorkflowM {

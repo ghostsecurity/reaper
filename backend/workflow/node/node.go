@@ -1,12 +1,38 @@
 package node
 
 import (
-	"io"
-
 	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
 	"github.com/google/uuid"
 	"golang.org/x/net/context"
 )
+
+type Channel string
+
+const (
+	ChannelStdout   Channel = "stdout"
+	ChannelStderr   Channel = "stderr"
+	ChannelActivity Channel = "activity"
+)
+
+type Output struct {
+	Node    uuid.UUID
+	Channel Channel
+	Message string
+}
+
+type OutputM struct {
+	Node    string `json:"node"`
+	Channel string `json:"channel"`
+	Message string `json:"message"`
+}
+
+func (o Output) Pack() OutputM {
+	return OutputM{
+		Node:    o.Node.String(),
+		Channel: string(o.Channel),
+		Message: o.Message,
+	}
+}
 
 type Type int
 
@@ -18,6 +44,7 @@ const (
 	TypeRequest
 	TypeStart
 	TypeSender
+	TypeVariables
 )
 
 type Node interface {
@@ -34,7 +61,7 @@ type Node interface {
 	GetOutputs() Connectors
 	GetVars() *VarStorage
 	SetVars(*VarStorage)
-	Run(context.Context, map[string]transmission.Transmission, io.Writer, io.Writer) (<-chan OutputInstance, <-chan error)
+	Run(context.Context, map[string]transmission.Transmission, chan<- Output, bool) (<-chan OutputInstance, <-chan error)
 	Validate(params map[string]transmission.Transmission) error
 }
 

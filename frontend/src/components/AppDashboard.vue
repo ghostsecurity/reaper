@@ -4,7 +4,7 @@ import {BarsArrowDownIcon, BeakerIcon, StarIcon, HandRaisedIcon} from '@heroicon
 import {EventsEmit, EventsOn} from '../../wailsjs/runtime'
 import {HttpRequest, HttpResponse} from '../lib/Http'
 import {Criteria} from '../lib/Criteria/Criteria'
-import {workspace} from '../../wailsjs/go/models'
+import {node, workflow, workspace} from '../../wailsjs/go/models'
 import RequestList from './Http/RequestList.vue'
 import GroupedRequestList from './Http/GroupedRequestList.vue'
 import WorkspaceMenu from './WorkspaceMenu.vue'
@@ -12,13 +12,14 @@ import Search from './SearchInput.vue'
 import IDE from './Http/IDE.vue'
 import RequestInterceptor from './RequestInterceptor.vue'
 import WorkflowGUI from './Workflow/WorkflowGUI.vue'
-import {RunWorkflow, StopWorkflow} from "../../wailsjs/go/backend/App";
+import {CreateWorkflow, RunWorkflow, StopWorkflow} from "../../wailsjs/go/backend/App";
 
 const props = defineProps({
   ws: {type: Object as PropType<workspace.Workspace>, required: true},
   criteria: {type: Object as PropType<Criteria>, required: true},
   proxyAddress: {type: String, required: true},
   savedRequestIds: {type: Array as PropType<string[]>, required: false, default: () => []},
+  currentWorkflowId: {type: String, required: false, default: ''},
 })
 
 const emit = defineEmits([
@@ -39,9 +40,10 @@ const emit = defineEmits([
   'copy-request-as-curl',
   'send-request',
   'update-request',
+  'create-workflow-from-request',
 ])
 
-const workflowId = ref('')
+const workflowId = ref(props.currentWorkflowId)
 const runningWorkflowId = ref('')
 const requests = ref<HttpRequest[]>([])
 const req = ref<HttpRequest | null>(null)
@@ -63,13 +65,22 @@ const resizing = ref(false)
 
 let sendingReq: HttpRequest | null = null
 
+watch(() => props.currentWorkflowId, (id) => {
+  workflowId.value = id
+  if (id !== '') {
+    switchTab('workflows')
+  }
+})
+
 const readOnlyActions = new Map<string, string>([
   ['send', 'Resend'],
+  ['create-workflow-from-request', 'Create workflow from request'],
   ['copy-curl', 'Copy as curl'],
 ])
 
 const writeActions = new Map<string, string>([
   ['send', 'Send'],
+  ['create-workflow-from-request', 'Create workflow from request'],
   ['copy-curl', 'Copy as curl'],
 ])
 
@@ -82,6 +93,9 @@ function ideAction(action: string) {
     case 'send':
       sendingReq = req.value
       emit('send-request', req.value)
+      break
+    case 'create-workflow-from-request':
+      createWorkflowFromRequest(req.value as HttpRequest)
       break
     case 'copy-curl':
       break
@@ -115,12 +129,33 @@ function compareRequests(a: HttpRequest, b: HttpRequest) {
   return true
 }
 
+const flowStdout = ref([] as string[])
+const flowStderr = ref([] as string[])
+const flowActivity = ref([] as string[])
+const nodeStatuses = ref(new Map<string, string>([]))
+
 onBeforeMount(() => {
   EventsOn('WorkflowStarted', (id: string) => {
     runningWorkflowId.value = id
   })
   EventsOn('WorkflowFinished', () => {
     runningWorkflowId.value = ''
+  })
+  EventsOn('WorkflowUpdated', (data: workflow.UpdateM) => {
+    nodeStatuses.value.set(data.node, data.status)
+  })
+  EventsOn('WorkflowOutput', (data: node.OutputM) => {
+    switch (data.channel) {
+      case "stdout":
+        flowStdout.value.push(data.message)
+        break
+      case "stderr":
+        flowStderr.value.push(data.message)
+        break
+      case "activity":
+        flowActivity.value.push(data.message)
+        break
+    }
   })
   EventsOn('HttpRequest', (data: HttpRequest) => {
     requests.value.push(data)
@@ -315,6 +350,10 @@ function runWorkflow(id: string) {
   if (w === undefined) {
     return
   }
+  flowStdout.value = []
+  flowStderr.value = []
+  flowActivity.value = []
+  nodeStatuses.value = new Map<string, string>([])
   RunWorkflow(w)
 }
 
@@ -324,6 +363,10 @@ function stopWorkflow(id: string) {
     return
   }
   StopWorkflow(w)
+}
+
+function createWorkflowFromRequest(r: HttpRequest) {
+  emit('create-workflow-from-request', r)
 }
 </script>
 
@@ -375,7 +418,8 @@ function stopWorkflow(id: string) {
           <RequestList @save-request="saveRequest" @unsave-request="unsaveRequest" :saved-request-ids="savedRequestIds"
                        :key="liveCriteria.Raw" v-if="selectedTab() === 'log'"
                        :empty-message="'Reaper is ready to receive requests at ' + proxyAddress" :requests="requests"
-                       @select="examineRequest($event, true)" :selected="req ? req.ID : ''" :criteria="liveCriteria"/>
+                       @select="examineRequest($event, true)" :selected="req ? req.ID : ''" :criteria="liveCriteria"
+                       @create-workflow-from-request="createWorkflowFromRequest"/>
           <GroupedRequestList :key="liveCriteria.Raw" v-if="selectedTab() === 'saved'"
                               :groups="ws.collection.groups ? ws.collection.groups : []"
                               @select="examineRequest($event, false)"
@@ -386,11 +430,15 @@ function stopWorkflow(id: string) {
                               @group-order-change="reorderGroup" @unsave-request="unsaveRequest"
                               @duplicate-request="duplicateRequest"
                               @request-group-delete="deleteGroup" @request-rename="renameRequest"
-                              @request-group-rename="renameGroup"/>
+                              @request-group-rename="renameGroup"
+                              @create-workflow-from-request="createWorkflowFromRequest"
+          />
           <WorkflowGUI v-if="selectedTab() === 'workflows'" :ws="ws" :selected-workflow-id="workflowId"
                        :running-workflow-id="runningWorkflowId"
                        @select="workflowId = $event" @save="emit('workspace-save', $event)" @run="runWorkflow($event)"
-                       @stop="stopWorkflow($event)"
+                       @stop="stopWorkflow($event)" :statuses="nodeStatuses" :stdout-lines="flowStdout"
+                       :activity-lines="flowActivity"
+                       :stderr-lines="flowStderr"
           />
           <RequestInterceptor v-if="selectedTab() === 'intercepted'" :request="interceptedRequest"
                               :previous="sentInterceptedRequest"

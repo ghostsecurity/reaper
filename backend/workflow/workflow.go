@@ -2,7 +2,6 @@ package workflow
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/ghostsecurity/reaper/backend/workflow/node"
 	"github.com/google/uuid"
@@ -37,8 +36,8 @@ func NewWorkflow() *Workflow {
 	}
 }
 
-func (w *Workflow) Run(ctx context.Context, updateChan chan<- Update, stdout, stderr io.Writer) error {
-	return newRunner(ctx, w).Run(updateChan, stdout, stderr)
+func (w *Workflow) Run(ctx context.Context, updateChan chan<- Update, output chan<- node.Output) error {
+	return newRunner(ctx, w).Run(updateChan, output)
 }
 
 func (w *Workflow) Validate() error {

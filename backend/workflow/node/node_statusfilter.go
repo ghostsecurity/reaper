@@ -2,7 +2,6 @@ package node
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
 	"github.com/google/uuid"
@@ -73,7 +72,7 @@ func (n *StatusFilterNode) SetID(id uuid.UUID) {
 	n.id = id
 }
 
-func (n *StatusFilterNode) Run(ctx context.Context, in map[string]transmission.Transmission, _, _ io.Writer) (<-chan OutputInstance, <-chan error) {
+func (n *StatusFilterNode) Run(ctx context.Context, in map[string]transmission.Transmission, out chan<- Output, last bool) (<-chan OutputInstance, <-chan error) {
 
 	output := make(chan OutputInstance)
 	errs := make(chan error)
@@ -114,7 +113,7 @@ func (n *StatusFilterNode) Run(ctx context.Context, in map[string]transmission.T
 				OutputName: "good",
 				Current:    1,
 				Total:      1,
-				Complete:   true,
+				Complete:   last,
 				Data:       input,
 			}
 		} else {
@@ -122,7 +121,7 @@ func (n *StatusFilterNode) Run(ctx context.Context, in map[string]transmission.T
 				OutputName: "bad",
 				Current:    1,
 				Total:      1,
-				Complete:   true,
+				Complete:   last,
 				Data:       input,
 			}
 		}
