@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import {PropType, ref, watch} from 'vue'
-import {TrashIcon} from '@heroicons/vue/20/solid'
-import {KeyValue} from '../lib/KeyValue'
+import { PropType, ref, watch } from 'vue'
+import { TrashIcon } from '@heroicons/vue/20/solid'
+import { KeyValue } from '../lib/KeyValue'
 import AutocompleteInput from './Shared/AutocompleteInput.vue'
 
 const props = defineProps({
@@ -27,22 +27,22 @@ const props = defineProps({
 })
 
 watch(
-    () => props.data,
-    newVal => {
-      copy.value = newVal.map(kv => ({
-        Key: kv.Key,
-        Value: kv.Value,
-      }))
-    },
+  () => props.data,
+  newVal => {
+    copy.value = newVal.map(kv => ({
+      Key: kv.Key,
+      Value: kv.Value,
+    }))
+  },
 )
 
 const emit = defineEmits(['publish'])
 
 const copy = ref(
-    props.data.map(kv => ({
-      Key: kv.Key,
-      Value: kv.Value,
-    })),
+  props.data.map(kv => ({
+    Key: kv.Key,
+    Value: kv.Value,
+  })),
 )
 
 function publish() {
@@ -54,7 +54,7 @@ function updateKey(index: number, key: string) {
     return
   }
   if (index === copy.value.length) {
-    copy.value.push({Key: '', Value: ''})
+    copy.value.push({ Key: '', Value: '' })
   }
   copy.value[index].Key = key
   publish()
@@ -65,7 +65,7 @@ function updateValue(index: number, value: string) {
     return
   }
   if (index === copy.value.length) {
-    copy.value.push({Key: '', Value: ''})
+    copy.value.push({ Key: '', Value: '' })
   }
   copy.value[index].Value = value
   publish()
@@ -87,7 +87,7 @@ function localParams(c: KeyValue[]): KeyValue[] {
     Key: kv.Key,
     Value: kv.Value,
   }))
-  extra.push({Key: '', Value: ''})
+  extra.push({ Key: '', Value: '' })
   return extra
 }
 </script>

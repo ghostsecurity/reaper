@@ -1,17 +1,16 @@
 <script lang="ts" setup>
-import {computed, PropType, ref, watch} from "vue";
-import {XMarkIcon} from "@heroicons/vue/20/solid";
-import {node, workflow} from "../../../wailsjs/go/models";
-import {NodeType, ParentType, NodeTypeName, ChildType} from "../../lib/Workflows";
-import IDE from "../Http/IDE.vue";
-import {HttpRequest} from "../../lib/Http";
-import KeyValEditor from "../KeyValEditor.vue";
-import {KeyValue} from "../../lib/KeyValue";
+import { computed, PropType, ref, watch } from 'vue'
+import { XMarkIcon } from '@heroicons/vue/20/solid'
+import { node, workflow } from '../../../wailsjs/go/models'
+import { NodeType, ParentType, NodeTypeName, ChildType } from '../../lib/Workflows'
+import IDE from '../Http/IDE.vue'
+import { HttpRequest } from '../../lib/Http'
+import KeyValEditor from '../KeyValEditor.vue'
+import { KeyValue } from '../../lib/KeyValue'
 
 const props = defineProps({
-  node: {type: Object as PropType<workflow.NodeM>, required: true},
+  node: { type: Object as PropType<workflow.NodeM>, required: true },
 })
-
 
 const safe = ref<workflow.NodeM>(safeCopy(props.node))
 watch(() => props.node, n => {
@@ -23,34 +22,31 @@ watch(() => props.node, n => {
 const emit = defineEmits(['update', 'close'])
 
 function safeCopy(n: workflow.NodeM): workflow.NodeM {
-  let c = JSON.parse(JSON.stringify(n)) as workflow.NodeM
+  const c = JSON.parse(JSON.stringify(n)) as workflow.NodeM
   if (!c.name) {
     c.name = NodeTypeName(c.type as NodeType)
   }
   return c
 }
 
-
 function publish() {
   emit('update', safe.value)
 }
 
-const staticInputs = computed(() => {
-  return safe.value?.vars?.inputs?.filter(input => {
-    switch (input.type) {
-      case ParentType.STRING:
-        return true
-      case ParentType.INT:
-        return true
-      case ParentType.LIST:
-        return true
-      case ParentType.REQUEST:
-        return !input.linkable
-      default:
-        return !input.linkable
-    }
-  }) || []
-})
+const staticInputs = computed(() => safe.value?.vars?.inputs?.filter(input => {
+  switch (input.type) {
+    case ParentType.STRING:
+      return true
+    case ParentType.INT:
+      return true
+    case ParentType.LIST:
+      return true
+    case ParentType.REQUEST:
+      return !input.linkable
+    default:
+      return !input.linkable
+  }
+}) || [])
 
 function updateStringField(field: node.Connector, event: Event) {
   if (!safe.value?.vars?.static) {
@@ -60,22 +56,21 @@ function updateStringField(field: node.Connector, event: Event) {
   publish()
 }
 
-
 function updateIntField(field: node.Connector, event: Event) {
   if (!safe.value?.vars?.static) {
     return
   }
   event.preventDefault()
-  let el = (event.target as HTMLInputElement)
-  let val = el.value
-  let num = val.replace(/[^0-9]/g, "");
-  safe.value.vars.static[field.name].data = parseInt(num)
+  const el = (event.target as HTMLInputElement)
+  const val = el.value
+  const num = val.replace(/[^0-9]/g, '')
+  safe.value.vars.static[field.name].data = parseInt(num, 10)
   el.value = num
   publish()
 }
 
 function isFieldChildType(field: node.Connector, type: ChildType) {
-  let actual = safe.value.vars?.static[field.name]?.internal
+  const actual = safe.value.vars?.static[field.name]?.internal
   if (!actual) {
     return false
   }
@@ -86,7 +81,7 @@ function updateListType(field: node.Connector, ev: Event) {
   if (!safe.value || !safe.value.vars?.static[field.name]) {
     return
   }
-  let newType = parseInt((ev.target as HTMLSelectElement).value)
+  const newType = parseInt((ev.target as HTMLSelectElement).value, 10)
   safe.value.vars.static[field.name] = new node.TransmissionM({
     type: ParentType.LIST,
     internal: newType,
@@ -100,7 +95,7 @@ function createDefaultListData(t: ChildType) {
     case ChildType.NUMERIC_RANGE_LIST:
       return [0, 100]
     case ChildType.WORD_LIST:
-      return ""
+      return ''
     default:
       return null
   }
@@ -110,7 +105,7 @@ function updateNumericRangeStart(field: node.Connector, ev: Event) {
   if (!safe.value || !safe.value.vars?.static[field.name]) {
     return
   }
-  let val = parseInt((ev.target as HTMLInputElement).value)
+  const val = parseInt((ev.target as HTMLInputElement).value, 10)
   safe.value.vars.static[field.name].data[0] = val
   publish()
 }
@@ -119,7 +114,7 @@ function updateNumericRangeEnd(field: node.Connector, ev: Event) {
   if (!safe.value || !safe.value.vars?.static[field.name]) {
     return
   }
-  let val = parseInt((ev.target as HTMLInputElement).value)
+  const val = parseInt((ev.target as HTMLInputElement).value, 10)
   safe.value.vars.static[field.name].data[1] = val
   publish()
 }
@@ -138,7 +133,7 @@ function updateMapField(field: node.Connector, kvs: KeyValue[]) {
   if (!safe.value || !safe.value.vars?.static[field.name]) {
     return
   }
-  let m = new Map<string, string>([])
+  const m = new Map<string, string>([])
   kvs.forEach(kv => {
     m.set(kv.Key, kv.Value)
   })
@@ -147,14 +142,12 @@ function updateMapField(field: node.Connector, kvs: KeyValue[]) {
 }
 
 function keyValsFromMap(field: node.Connector): KeyValue[] {
-  let data = safe.value.vars?.static[field.name]?.data
+  const data = safe.value.vars?.static[field.name]?.data
   if (data) {
-    return Object.entries(data).map(([k, v]) => {
-      return {
-        Key: k,
-        Value: v,
-      } as KeyValue
-    })
+    return Object.entries(data).map(([k, v]) => ({
+      Key: k,
+      Value: v,
+    } as KeyValue))
   }
   return []
 }
@@ -163,17 +156,17 @@ function updateBooleanField(field: node.Connector, ev: Event) {
   if (!safe.value || !safe.value.vars?.static[field.name]) {
     return
   }
-  let val = (ev.target as HTMLInputElement).checked
+  const val = (ev.target as HTMLInputElement).checked
   safe.value.vars.static[field.name].data = val
   publish()
 }
 
 function getLabel(field: node.Connector) {
-  let label = field.name.replace(/_/g, " ")
+  const label = field.name.replace(/_/g, ' ')
   if (!field.description) {
     return label
   }
-  return label + ` (${field.description})`
+  return `${label} (${field.description})`
 }
 
 </script>

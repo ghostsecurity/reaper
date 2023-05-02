@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import {ref} from 'vue'
-import {Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot} from '@headlessui/vue'
-import {PencilIcon} from '@heroicons/vue/24/outline'
+import { ref } from 'vue'
+import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
+import { PencilIcon } from '@heroicons/vue/24/outline'
 
 const props = defineProps({
   title: {

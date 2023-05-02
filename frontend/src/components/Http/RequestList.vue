@@ -1,19 +1,19 @@
 <script lang="ts" setup>
-import {PropType} from 'vue'
-import {RocketLaunchIcon, MagnifyingGlassCircleIcon, StarIcon} from '@heroicons/vue/20/solid'
-import {StarIcon as EmptyStarIcon} from '@heroicons/vue/24/outline'
-import {HttpRequest, MethodClass, StatusClass} from '../../lib/Http'
-import {Criteria} from '../../lib/Criteria/Criteria'
+import { PropType } from 'vue'
+import { RocketLaunchIcon, MagnifyingGlassCircleIcon, StarIcon } from '@heroicons/vue/20/solid'
+import { StarIcon as EmptyStarIcon } from '@heroicons/vue/24/outline'
+import { HttpRequest, MethodClass, StatusClass } from '../../lib/Http'
+import { Criteria } from '../../lib/Criteria/Criteria'
 import RequestItemSummary from './RequestItemSummary.vue'
 
 const props = defineProps({
-  requests: {type: Array as PropType<HttpRequest[]>, required: true},
-  selected: {type: String},
-  criteria: {type: Object as PropType<Criteria>, required: true},
-  emptyTitle: {type: String, required: false, default: 'All Systems Go!'},
-  emptyMessage: {type: String, required: false, default: 'Reaper is ready to receive requests!'},
-  emptyIcon: {type: Object, required: false, default: RocketLaunchIcon},
-  savedRequestIds: {type: Array as PropType<string[]>, required: false, default: () => []},
+  requests: { type: Array as PropType<HttpRequest[]>, required: true },
+  selected: { type: String },
+  criteria: { type: Object as PropType<Criteria>, required: true },
+  emptyTitle: { type: String, required: false, default: 'All Systems Go!' },
+  emptyMessage: { type: String, required: false, default: 'Reaper is ready to receive requests!' },
+  emptyIcon: { type: Object, required: false, default: RocketLaunchIcon },
+  savedRequestIds: { type: Array as PropType<string[]>, required: false, default: () => [] },
 })
 
 const emit = defineEmits(['save-request', 'unsave-request', 'select', 'create-workflow-from-request'])
@@ -61,6 +61,8 @@ function actionRequest(action: string, r: HttpRequest) {
     case 'create-workflow-from-request':
       emit('create-workflow-from-request', r)
       break
+    default:
+      throw new Error(`Unknown action: ${action}`)
   }
 }
 </script>

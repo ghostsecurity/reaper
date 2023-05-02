@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {onBeforeUpdate, onMounted, onUpdated, PropType, ref, watch} from 'vue'
+import { onBeforeUpdate, onMounted, onUpdated, PropType, ref, watch } from 'vue'
 import {
   BeakerIcon,
   PlayIcon,
@@ -9,23 +9,22 @@ import {
   TrashIcon,
   CheckCircleIcon,
   PauseCircleIcon,
-  ExclamationCircleIcon, BarsArrowDownIcon, BoltIcon, EyeSlashIcon
+  ExclamationCircleIcon, BarsArrowDownIcon, BoltIcon, EyeSlashIcon,
 
 } from '@heroicons/vue/20/solid'
-import {workflow} from '../../../wailsjs/go/models'
-import {CreateNode} from "../../../wailsjs/go/backend/App";
-import NodeEditor from "./NodeEditor.vue";
-import {NodeType, NodeTypeName} from "../../lib/Workflows";
-import ConfirmDialog from "../ConfirmDialog.vue";
-import {uuid} from "vue-uuid";
+import { uuid } from 'vue-uuid'
+import { workflow } from '../../../wailsjs/go/models'
+import { CreateNode } from '../../../wailsjs/go/backend/App'
+import NodeEditor from './NodeEditor.vue'
+import { NodeType, NodeTypeName } from '../../lib/Workflows'
 
 const props = defineProps({
-  flow: {type: Object as PropType<workflow.WorkflowM>, required: true},
-  running: {type: Boolean, required: false, default: false},
-  statuses: {type: Object as PropType<Map<string, string>>, required: true},
-  stdoutLines: {type: Array as PropType<string[]>, required: true},
-  stderrLines: {type: Array as PropType<string[]>, required: true},
-  activityLines: {type: Array as PropType<string[]>, required: true},
+  flow: { type: Object as PropType<workflow.WorkflowM>, required: true },
+  running: { type: Boolean, required: false, default: false },
+  statuses: { type: Object as PropType<Map<string, string>>, required: true },
+  stdoutLines: { type: Array as PropType<string[]>, required: true },
+  stderrLines: { type: Array as PropType<string[]>, required: true },
+  activityLines: { type: Array as PropType<string[]>, required: true },
 })
 
 const availableNodeTypes = ref(<NodeType[]>[
@@ -37,11 +36,10 @@ const availableNodeTypes = ref(<NodeType[]>[
   NodeType.VARIABLES,
 ])
 
-const linkColour = "#8FBCBB"
-const linkStrokeWidth = "2"
+const linkColour = '#8FBCBB'
+const linkStrokeWidth = '2'
 const editingNode = ref(<workflow.NodeM | null>null)
-const menuMode = ref("")
-const resetting = ref(false)
+const menuMode = ref('')
 // used to prevent click + drag events overlapping
 const mouseMoved = ref(false)
 
@@ -77,9 +75,9 @@ function saveWorkflow(f: workflow.WorkflowM) {
 }
 
 const tabs = ref([
-  {name: 'Stdout', id: 'stdout', icon: BarsArrowDownIcon, current: true},
-  {name: 'Stderr', id: 'stderr', icon: BarsArrowDownIcon, current: false},
-  {name: 'Activity', id: 'activity', icon: BoltIcon, current: false},
+  { name: 'Stdout', id: 'stdout', icon: BarsArrowDownIcon, current: true },
+  { name: 'Stderr', id: 'stderr', icon: BarsArrowDownIcon, current: false },
+  { name: 'Activity', id: 'activity', icon: BoltIcon, current: false },
 ])
 
 function selectedTab(): string {
@@ -102,10 +100,9 @@ function redraw() {
   if (!safe.value) {
     return
   }
-  let newPaths: string[] = []
+  const newPaths: string[] = []
   let ok = true
-  safe.value.links.forEach((link) => {
-
+  safe.value.links.forEach(link => {
     const fromNode = movers.value.get(link.from.node) as HTMLElement
     const toNode = movers.value.get(link.to.node) as HTMLElement
     if (!fromNode || !toNode) {
@@ -113,28 +110,27 @@ function redraw() {
       return
     }
 
-    let fromConn = fromNode.querySelector(".connector.output[data-connector=\"" + link.from.connector + "\"]") as HTMLElement
-    let toConn = toNode.querySelector(".connector.input[data-connector=\"" + link.to.connector + "\"]") as HTMLElement
+    const fromConn = fromNode.querySelector(`.connector.output[data-connector="${link.from.connector}"]`) as HTMLElement
+    const toConn = toNode.querySelector(`.connector.input[data-connector="${link.to.connector}"]`) as HTMLElement
     if (!fromConn || !toConn) {
       ok = false
       return
     }
 
-    let posA = {
+    const posA = {
       x: (fromConn.offsetLeft + fromConn.offsetWidth) + fromNode.offsetLeft,
-      y: (fromConn.offsetTop + fromConn.offsetHeight / 2) + fromNode.offsetTop
-    };
-    let posB = {
+      y: (fromConn.offsetTop + fromConn.offsetHeight / 2) + fromNode.offsetTop,
+    }
+    const posB = {
       x: toConn.offsetLeft + toNode.offsetLeft,
-      y: (toConn.offsetTop + toConn.offsetHeight / 2) + toNode.offsetTop
-    };
-    let path =
-        "M" +
-        (posA.x) + "," + (posA.y) + " " +
-        "C" +
-        (posA.x + 100) + "," + (posA.y) + " " +
-        (posB.x - 100) + "," + (posB.y) + " " +
-        (posB.x) + "," + (posB.y);
+      y: (toConn.offsetTop + toConn.offsetHeight / 2) + toNode.offsetTop,
+    }
+    const path = `M${
+      posA.x},${posA.y} `
+        + `C${
+          posA.x + 100},${posA.y} ${
+          posB.x - 100},${posB.y} ${
+          posB.x},${posB.y}`
     newPaths.push(path)
   })
   if (!ok) {
@@ -145,14 +141,14 @@ function redraw() {
 }
 
 function getRawPosition(id: string, i: number) {
-  let def = {
+  const def = {
     x: 50 + (((i % 4) * 300)),
     y: 50 + (((i - (i % 4)) / 4) * 100),
   }
   if (!safe.value || !safe.value.positioning) {
     return def
   }
-  let pos = safe.value.positioning[id]
+  const pos = safe.value.positioning[id]
   if (!pos) {
     return def
   }
@@ -163,10 +159,10 @@ function getRawPosition(id: string, i: number) {
 }
 
 function getPosition(id: string, i: number) {
-  let pos = getRawPosition(id, i)
+  const pos = getRawPosition(id, i)
   return {
-    left: pos.x + 'px',
-    top: pos.y + 'px',
+    left: `${pos.x}px`,
+    top: `${pos.y}px`,
   }
 }
 
@@ -178,8 +174,8 @@ function setPosition(id: string, x: number, y: number) {
     safe.value.positioning = {}
   }
   safe.value.positioning[id] = new workflow.Position({
-    x: x,
-    y: y,
+    x,
+    y,
   })
   saveWorkflow(safe.value)
 }
@@ -188,25 +184,16 @@ function addNode(t: number) {
   if (!safe.value) {
     return
   }
-  CreateNode(t).then((n) => {
+  CreateNode(t).then(n => {
     safe.value.nodes.push(n)
     editingNode.value = n
-    menuMode.value = ""
+    menuMode.value = ''
     saveWorkflow(safe.value)
   })
 }
 
-function reset() {
-  safe.value.nodes = safe.value.nodes.filter((n) => {
-    return n.readonly
-  })
-  safe.value.links = []
-  saveWorkflow(safe.value)
-  resetting.value = false
-}
-
 const canvas = ref(<HTMLDivElement | null>null)
-let dragId = ""
+let dragId = ''
 let offsetX = 0
 let offsetY = 0
 
@@ -224,8 +211,8 @@ function getOffsetFrom(el: HTMLElement, className: string) {
     el = el.offsetParent as HTMLElement
   }
   return {
-    x: x,
-    y: y,
+    x,
+    y,
   }
 }
 
@@ -235,67 +222,65 @@ function dragStart(id: string, ev: MouseEvent) {
     return
   }
   dragId = id
-  let el = ev.target as HTMLDivElement
-  let offset = getOffsetFrom(el, "mover")
+  const el = ev.target as HTMLDivElement
+  const offset = getOffsetFrom(el, 'mover')
   offsetX = ev.offsetX + offset.x
   offsetY = ev.offsetY + offset.y
 }
 
-function dragEnd(ev: MouseEvent) {
+function dragEnd() {
   if (!canvas.value) {
     return
   }
-  dragId = ""
+  dragId = ''
   if (currentLink) {
-    endLinking(ev)
+    endLinking()
   }
 }
 
 function drag(ev: MouseEvent) {
   mouseMoved.value = true
-  if (dragId === "" || !canvas.value) {
+  if (dragId === '' || !canvas.value) {
     if (currentLink) {
       moveLink(ev)
     }
     return
   }
   ev.preventDefault()
-  let x = ev.clientX - canvas.value.offsetLeft
-  let y = ev.clientY - canvas.value.offsetTop
-  let el = movers.value.get(dragId) as HTMLElement
+  const x = ev.clientX - canvas.value.offsetLeft
+  const y = ev.clientY - canvas.value.offsetTop
+  const el = movers.value.get(dragId) as HTMLElement
   if (!el) {
     return
   }
-  el.style.left = (x - offsetX) + 'px'
-  el.style.top = (y - offsetY) + 'px'
+  el.style.left = `${x - offsetX}px`
+  el.style.top = `${y - offsetY}px`
   setPosition(dragId, x - offsetX, y - offsetY)
 }
 
-//const movers = ref([] as any)
-const movers = ref(new Map<string, any>())
+// const movers = ref([] as any)
+const movers = ref(new Map<string, HTMLElement>())
 
 // Make sure to reset the refs before each update.
 onBeforeUpdate(() => {
-  movers.value = new Map<string, any>()
-});
+  movers.value = new Map<string, HTMLElement>()
+})
 
 let currentLink: workflow.LinkM | null = null
-let currentLinkNode = ""
-let currentLinkConnector = ""
+let currentLinkNode = ''
+let currentLinkConnector = ''
 
-let linkSearchMode = '';
+let linkSearchMode = ''
 
-function startLinkFromInput(nodeId: string, connector: string) {
+function startLinkFromInput(nodeId: string, conn: string) {
   if (!safe.value) {
     return
   }
   linkSearchMode = 'output'
   currentLinkNode = nodeId
-  currentLinkConnector = connector
-  const existing = safe.value.links.find((l) => {
-    return l.to.node == nodeId && l.to.connector == connector
-  })
-  unlinkAnyFromInput(nodeId, connector)
+  currentLinkConnector = conn
+  const existing = safe.value.links.find(l => l.to.node === nodeId && l.to.connector === conn)
+  unlinkAnyFromInput(nodeId, conn)
   if (existing) {
     linkSearchMode = 'input'
     currentLinkNode = existing.from.node
@@ -306,43 +291,41 @@ function startLinkFromInput(nodeId: string, connector: string) {
         connector: existing.from.connector,
       }),
       to: new workflow.LinkDirectionM({
-        node: "",
-        connector: "",
+        node: '',
+        connector: '',
       }),
     })
   } else {
     currentLink = new workflow.LinkM({
       from: new workflow.LinkDirectionM({
-        node: "",
-        connector: "",
+        node: '',
+        connector: '',
       }),
       to: new workflow.LinkDirectionM({
         node: nodeId,
-        connector: connector,
+        connector: conn,
       }),
     })
   }
 }
 
-function startLinkFromOutput(nodeId: string, connector: string) {
+function startLinkFromOutput(nodeId: string, conn: string) {
   if (!safe.value) {
     return
   }
   linkSearchMode = 'input'
   currentLinkNode = nodeId
-  currentLinkConnector = connector
-  const existing = safe.value.links.find((l) => {
-    return l.from.node == nodeId && l.from.connector == connector
-  })
-  unlinkAnyFromOutput(nodeId, connector)
+  currentLinkConnector = conn
+  const existing = safe.value.links.find(l => l.from.node === nodeId && l.from.connector === conn)
+  unlinkAnyFromOutput(nodeId, conn)
   if (existing) {
     linkSearchMode = 'output'
     currentLinkNode = existing.to.node
     currentLinkConnector = existing.to.connector
     currentLink = new workflow.LinkM({
       from: new workflow.LinkDirectionM({
-        node: "",
-        connector: "",
+        node: '',
+        connector: '',
       }),
       to: new workflow.LinkDirectionM({
         node: existing.to.node,
@@ -353,15 +336,14 @@ function startLinkFromOutput(nodeId: string, connector: string) {
     currentLink = new workflow.LinkM({
       from: new workflow.LinkDirectionM({
         node: nodeId,
-        connector: connector,
+        connector: conn,
       }),
       to: new workflow.LinkDirectionM({
-        node: "",
-        connector: "",
+        node: '',
+        connector: '',
       }),
     })
   }
-
 }
 
 // x and y are offsets into the canvas
@@ -370,14 +352,14 @@ function findConnectorAt(x: number, y: number, className: string): HTMLElement |
     return null
   }
   const magnetism = 25
-  let connectors = canvas.value.querySelectorAll(".connector." + className)
-  for (let i = 0; i < connectors.length; i++) {
-    let el = connectors[i] as HTMLElement
+  const connectors = canvas.value.querySelectorAll(`.connector.${className}`)
+  for (let i = 0; i < connectors.length; i += 1) {
+    const el = connectors[i] as HTMLElement
     if (!el.parentElement || !canvas.value) {
       continue
     }
-    let rect = el.parentElement.getBoundingClientRect()
-    let area = {
+    const rect = el.parentElement.getBoundingClientRect()
+    const area = {
       x1: rect.left - canvas.value.offsetLeft - magnetism,
       y1: rect.top - canvas.value.offsetTop,
       x2: rect.right - canvas.value.offsetLeft + magnetism,
@@ -395,38 +377,38 @@ function moveLink(ev: MouseEvent) {
     return
   }
 
-  let selector = ".connector."
+  let selector = '.connector.'
   if (linkSearchMode === 'input') {
     selector += 'output'
   } else {
     selector += 'input'
   }
 
-  let nodeA = movers.value.get(currentLinkNode) as HTMLElement
-  let connectorA = nodeA.querySelector(selector + "[data-connector=\"" + currentLinkConnector + "\"]") as HTMLElement
+  const nodeA = movers.value.get(currentLinkNode) as HTMLElement
+  const connectorA = nodeA.querySelector(`${selector}[data-connector="${currentLinkConnector}"]`) as HTMLElement
 
   let posA = {
     x: (connectorA.offsetLeft + connectorA.offsetWidth) + nodeA.offsetLeft,
-    y: (connectorA.offsetTop + connectorA.offsetHeight / 2) + nodeA.offsetTop
-  };
+    y: (connectorA.offsetTop + connectorA.offsetHeight / 2) + nodeA.offsetTop,
+  }
 
   let posB = {
     x: ev.clientX - canvas.value.offsetLeft,
-    y: ev.clientY - canvas.value.offsetTop
+    y: ev.clientY - canvas.value.offsetTop,
   }
 
-  let connectorB = findConnectorAt(posB.x, posB.y, linkSearchMode)
+  const connectorB = findConnectorAt(posB.x, posB.y, linkSearchMode)
   if (connectorB) {
     let nodeB = connectorB.parentElement as HTMLElement
-    while (nodeB && !nodeB.className.includes("mover")) {
+    while (nodeB && !nodeB.className.includes('mover')) {
       nodeB = nodeB.parentElement as HTMLElement
     }
     posB = {
       x: connectorB.offsetLeft + nodeB.offsetLeft,
-      y: connectorB.offsetTop + nodeB.offsetTop + (connectorB.offsetHeight / 2)
+      y: connectorB.offsetTop + nodeB.offsetTop + (connectorB.offsetHeight / 2),
     }
-    let node = connectorB.getAttribute("data-node")
-    let conn = connectorB.getAttribute("data-connector")
+    const node = connectorB.getAttribute('data-node')
+    const conn = connectorB.getAttribute('data-connector')
     if (node && conn) {
       if (linkSearchMode === 'input') {
         currentLink.to.node = node
@@ -436,63 +418,51 @@ function moveLink(ev: MouseEvent) {
         currentLink.from.connector = conn
       }
       if (canLink(currentLink)) {
-        connector.value.setAttribute("stroke", "green")
+        connector.value.setAttribute('stroke', 'green')
       } else {
-        connector.value.setAttribute("stroke", "red")
+        connector.value.setAttribute('stroke', 'red')
       }
     }
+  } else if (linkSearchMode === 'input') {
+    currentLink.to.node = ''
+    currentLink.to.connector = ''
   } else {
-    if (linkSearchMode === 'input') {
-      currentLink.to.node = ""
-      currentLink.to.connector = ""
-    } else {
-      currentLink.from.node = ""
-      currentLink.from.connector = ""
-    }
+    currentLink.from.node = ''
+    currentLink.from.connector = ''
   }
 
   if (posA.x > posB.x) {
-    let buf = posA
+    const buf = posA
     posA = posB
     posB = buf
   }
 
-  let dStr =
-      "M" +
-      (posA.x) + "," + (posA.y) + " " +
-      "C" +
-      (posA.x + 100) + "," + (posA.y) + " " +
-      (posB.x - 100) + "," + (posB.y) + " " +
-      (posB.x) + "," + (posB.y);
-  connector.value.setAttribute("d", dStr);
+  const dStr = `M${
+    posA.x},${posA.y} `
+      + `C${
+        posA.x + 100},${posA.y} ${
+        posB.x - 100},${posB.y} ${
+        posB.x},${posB.y}`
+  connector.value.setAttribute('d', dStr)
   if (!connectorB) {
-    connector.value.setAttribute("stroke", "blue")
+    connector.value.setAttribute('stroke', 'blue')
   }
 }
-
 
 function canLink(link: workflow.LinkM): boolean {
   if (!safe.value) {
     return false
   }
-  if (link.from.node == link.to.node) {
+  if (link.from.node === link.to.node) {
     return false
   }
-  let fromNode = safe.value.nodes.find((n) => {
-    return n.id == link.from.node
-  })
-  let toNode = safe.value.nodes.find((n) => {
-    return n.id == link.to.node
-  })
+  const fromNode = safe.value.nodes.find(n => n.id === link.from.node)
+  const toNode = safe.value.nodes.find(n => n.id === link.to.node)
   if (!fromNode || !toNode || !fromNode.vars || !toNode.vars) {
     return false
   }
-  let output = fromNode.vars.outputs.find((o) => {
-    return o.name == link.from.connector
-  })
-  let input = toNode.vars.inputs.find((i) => {
-    return i.name == link.to.connector
-  })
+  const output = fromNode.vars.outputs.find(o => o.name === link.from.connector)
+  const input = toNode.vars.inputs.find(i => i.name === link.to.connector)
   if (!output || !input) {
     return false
   }
@@ -502,7 +472,7 @@ function canLink(link: workflow.LinkM): boolean {
   return true
 }
 
-function endLinking(ev: MouseEvent) {
+function endLinking() {
   if (!currentLink || !connector.value || !canvas.value || !safe.value) {
     return
   }
@@ -512,33 +482,28 @@ function endLinking(ev: MouseEvent) {
     saveWorkflow(safe.value)
   }
 
-  connector.value.setAttribute("d", "");
+  connector.value.setAttribute('d', '')
   currentLink = null
-  currentLinkConnector = ""
-  currentLinkNode = ""
+  currentLinkConnector = ''
+  currentLinkNode = ''
 }
 
-function unlinkAnyFromOutput(node: string, connector: string) {
+function unlinkAnyFromOutput(node: string, conn: string) {
   if (!safe.value) {
     return
   }
-  let index = safe.value.links.findIndex((l) => {
-    return l.from.node === node && (l.from.connector === connector || connector === "")
-  })
+  const index = safe.value.links.findIndex(l => l.from.node === node && (l.from.connector === conn || conn === ''))
   if (index >= 0) {
     safe.value.links.splice(index, 1)
     saveWorkflow(safe.value)
-
   }
 }
 
-function unlinkAnyFromInput(node: string, connector: string) {
+function unlinkAnyFromInput(node: string, conn: string) {
   if (!safe.value) {
     return
   }
-  let index = safe.value.links.findIndex((l) => {
-    return l.to.node === node && (l.to.connector === connector || connector === "")
-  })
+  const index = safe.value.links.findIndex(l => l.to.node === node && (l.to.connector === conn || conn === ''))
   if (index >= 0) {
     safe.value.links.splice(index, 1)
     saveWorkflow(safe.value)
@@ -546,23 +511,19 @@ function unlinkAnyFromInput(node: string, connector: string) {
 }
 
 function editNode(id: string) {
-  editingNode.value = safe.value.nodes.find((n) => {
-    return n.id == id
-  }) as workflow.NodeM
-  menuMode.value = ""
+  editingNode.value = safe.value.nodes.find(n => n.id === id) as workflow.NodeM
+  menuMode.value = ''
 }
 
 function duplicateNode(id: string) {
   if (!safe.value) {
     return
   }
-  let node = safe.value.nodes.find((n) => {
-    return n.id == id
-  })
+  const node = safe.value.nodes.find(n => n.id === id)
   if (!node) {
     return
   }
-  let newNode = JSON.parse(JSON.stringify(node)) as workflow.NodeM
+  const newNode = JSON.parse(JSON.stringify(node)) as workflow.NodeM
   newNode.id = uuid.v4()
   safe.value.nodes.push(newNode)
   editingNode.value = newNode
@@ -573,18 +534,16 @@ function deleteNode(id: string) {
   if (!safe.value) {
     return
   }
-  if (editingNode.value && editingNode.value.id == id) {
+  if (editingNode.value && editingNode.value.id === id) {
     editingNode.value = null
   }
-  const index = safe.value.nodes.findIndex((n) => {
-    return n.id == id
-  })
+  const index = safe.value.nodes.findIndex(n => n.id === id)
   if (index < 0) {
     return
   }
   safe.value.nodes.splice(index, 1)
-  unlinkAnyFromInput(id, "")
-  unlinkAnyFromOutput(id, "")
+  unlinkAnyFromInput(id, '')
+  unlinkAnyFromOutput(id, '')
   saveWorkflow(safe.value)
 }
 
@@ -592,9 +551,7 @@ function updateNode(n: workflow.NodeM) {
   if (!safe.value) {
     return
   }
-  const index = safe.value.nodes.findIndex((node) => {
-    return node.id == n.id
-  })
+  const index = safe.value.nodes.findIndex(node => node.id === n.id)
   if (index < 0) {
     return
   }
@@ -605,39 +562,33 @@ function updateNode(n: workflow.NodeM) {
 function setMenu(n: string) {
   editingNode.value = null
   if (menuMode.value === n) {
-    menuMode.value = ""
+    menuMode.value = ''
     return
   }
   menuMode.value = n
 }
 
-function requestReset() {
-  resetting.value = true
-}
-
 function getStatusClass(id: string): string {
   switch (props.statuses.get(id)) {
-    case "pending":
-      return "border-grey-500"
-    case "running":
-      return "border-aurora-3"
-    case "error":
-      return "border-aurora-1"
-    case "aborted":
-      return "border-aurora-5"
-    case "success":
-      return "border-aurora-4"
+    case 'pending':
+      return 'border-grey-500'
+    case 'running':
+      return 'border-aurora-3'
+    case 'error':
+      return 'border-aurora-1'
+    case 'aborted':
+      return 'border-aurora-5'
+    case 'success':
+      return 'border-aurora-4'
+    default:
+      return 'bg-polar-night-4'
   }
-  return "bg-polar-night-4"
 }
 
 </script>
 
 <template>
   <div class="h-full">
-    <ConfirmDialog :show="resetting" title="Reset Workflow" cancel="Cancel" confirm="Reset"
-                   message="Are you sure you want to reset the workflow? This will remove all nodes except the 'Start'."
-                   @confirm="reset" @cancel="resetting = false"/>
     <div v-if="!safe" class="flex flex-col items-center mt-16">
       <BeakerIcon class="h-12 w-12"/>
       <h3 class="mt-2 text-sm font-bold">No Workflow Selected</h3>
@@ -722,7 +673,7 @@ function getStatusClass(id: string): string {
             </div>
             <div class="flex-shrink">
               <div @mousedown.prevent.stop="startLinkFromOutput(node.id, output.name)"
-                   v-for="(output, j) in node.vars?.outputs"
+                   v-for="output in node.vars?.outputs"
                    :key="output.name"
                    class="flex items-center pl-2 py-0 my-0 leading-4 group">
                 <div :data-node="node.id" :data-connector="output.name"
@@ -748,7 +699,7 @@ function getStatusClass(id: string): string {
           </div>
           <div v-else-if="menuMode==='add'"
                class="mt-16 border rounded border-snow-storm-1 relative bg-polar-night-2 pointer-events-auto">
-            <button v-for="t in availableNodeTypes" @click="addNode(t);setMenu('')"
+            <button v-for="t in availableNodeTypes" :key="t" @click="addNode(t);setMenu('')"
                     class="w-full border border-polar-night-4 py-1 bg-polar-night-2 hover:bg-polar-night-4">
               {{ NodeTypeName(t) }}
             </button>
@@ -825,7 +776,6 @@ function getStatusClass(id: string): string {
             </div>
           </div>
         </div>
-
 
       </div>
     </div>

@@ -1,15 +1,15 @@
 <script lang="ts" setup>
-import {Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot} from '@headlessui/vue'
-import {ExclamationTriangleIcon} from '@heroicons/vue/24/outline'
+import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
+import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline'
 
 const emit = defineEmits(['confirm', 'cancel'])
 
 defineProps({
-  show: {type: Boolean, required: true},
-  title: {type: String, required: true},
-  message: {type: String, required: true},
-  confirm: {type: String, required: true},
-  cancel: {type: String, required: true},
+  show: { type: Boolean, required: true },
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  confirm: { type: String, required: true },
+  cancel: { type: String, required: true },
 })
 </script>
 

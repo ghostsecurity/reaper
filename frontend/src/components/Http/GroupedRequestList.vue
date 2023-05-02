@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {PropType, reactive, ref} from 'vue'
+import { PropType, reactive, ref } from 'vue'
 import {
   MagnifyingGlassCircleIcon,
   Bars3Icon,
@@ -11,10 +11,10 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
 } from '@heroicons/vue/20/solid'
-import {FolderIcon, FolderOpenIcon} from '@heroicons/vue/24/outline'
-import {HttpRequest, MethodClass} from '../../lib/Http'
-import {Criteria} from '../../lib/Criteria/Criteria'
-import {workspace} from '../../../wailsjs/go/models'
+import { FolderIcon, FolderOpenIcon } from '@heroicons/vue/24/outline'
+import { HttpRequest, MethodClass } from '../../lib/Http'
+import { Criteria } from '../../lib/Criteria/Criteria'
+import { workspace } from '../../../wailsjs/go/models'
 import Group = workspace.Group
 import Request = workspace.Request
 
@@ -22,12 +22,12 @@ import InputBox from '../InputBox.vue'
 import RequestItemSummary from './RequestItemSummary.vue'
 
 const props = defineProps({
-  groups: {type: Array as PropType<Group[]>, required: true},
-  selected: {type: String},
-  criteria: {type: Object as PropType<Criteria>, required: true},
-  emptyTitle: {type: String, required: false, default: 'Nothing found'},
-  emptyMessage: {type: String, required: false, default: 'There are no requests/groups yet'},
-  emptyIcon: {type: Function, required: false, default: QuestionMarkCircleIcon},
+  groups: { type: Array as PropType<Group[]>, required: true },
+  selected: { type: String },
+  criteria: { type: Object as PropType<Criteria>, required: true },
+  emptyTitle: { type: String, required: false, default: 'Nothing found' },
+  emptyMessage: { type: String, required: false, default: 'There are no requests/groups yet' },
+  emptyIcon: { type: Function, required: false, default: QuestionMarkCircleIcon },
 })
 
 const emit = defineEmits([
