@@ -45,7 +45,7 @@ const currentFlow = ref<workflow.WorkflowM | null>(safe.value.workflows.find(
     wf => wf.id === props.selectedWorkflowId) ?? null
 )
 
-const emit = defineEmits(['select', 'save', 'run', 'stop'])
+const emit = defineEmits(['select', 'save', 'run', 'stop', 'clean'])
 
 function addWorkflow(name: string) {
   creating.value = false
@@ -115,12 +115,13 @@ function renameWorkflow(id: string, name: string) {
     </div>
 
     <div v-if="currentFlow" ref="rightPanel"
-         class="mx-2 box-border h-full flex-grow overflow-hidden px-2 w-[60%]">
+         class="mx-2 box-border h-full flex-grow px-2 w-[60%]">
       <Editor :flow="currentFlow" @save="saveWorkflow($event)" @run="emit('run', $event)"
               @stop="emit('stop', $event)"
               :running="runningWorkflowId===currentFlow.id"
               :statuses="statuses" :stdout-lines="stdoutLines" :stderr-lines="stderrLines"
               :activity-lines="activityLines"
+              @clean="emit('clean', $event)"
       />
     </div>
 

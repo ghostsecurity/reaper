@@ -47,7 +47,7 @@ func (i *Interceptor) SetScope(scope workspace.Scope) {
 func (i *Interceptor) isInScope(req *http.Request) bool {
 	i.Lock()
 	defer i.Unlock()
-	return i.scope.Includes(req)
+	return len(i.scope.Include) > 0 && i.scope.Includes(req)
 }
 
 func (i *Interceptor) Intercept(req *http.Request, id int64) (*http.Request, *http.Response) {

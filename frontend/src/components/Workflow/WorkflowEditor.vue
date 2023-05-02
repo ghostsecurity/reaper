@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import {onBeforeUpdate, onMounted, onUpdated, PropType, ref, watch} from 'vue'
 import {
-  ArrowPathIcon,
   BeakerIcon,
   PlayIcon,
   PlusIcon,
@@ -10,7 +9,7 @@ import {
   TrashIcon,
   CheckCircleIcon,
   PauseCircleIcon,
-  ExclamationCircleIcon, BarsArrowDownIcon, BoltIcon
+  ExclamationCircleIcon, BarsArrowDownIcon, BoltIcon, EyeSlashIcon
 
 } from '@heroicons/vue/20/solid'
 import {workflow} from '../../../wailsjs/go/models'
@@ -70,7 +69,7 @@ const svg = ref(<HTMLElement | null>null)
 const connector = ref(<HTMLElement | null>null)
 const paths = ref(<string[]>[])
 
-const emit = defineEmits(['save', 'run', 'stop'])
+const emit = defineEmits(['save', 'run', 'stop', 'clean'])
 
 function saveWorkflow(f: workflow.WorkflowM) {
   emit('save', f)
@@ -738,18 +737,10 @@ function getStatusClass(id: string): string {
           </div>
         </div>
         <div class="absolute right-5 text-right w-96 h-full pointer-events-none">
-          <div class="absolute pt-5 right-5 pointer-events-auto">
+          <div class="absolute pt-5 right-0 pointer-events-auto">
             <button type="button" @click="setMenu('add')"
                     :class="[menuMode==='add'?'bg-frost-1':'bg-frost-4', 'mb-1 rounded-full  p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mx-0.5']">
               <PlusIcon class="h-5 w-5" aria-hidden="true"/>
-            </button>
-            <button type="button" @click="setMenu('run')"
-                    :class="[menuMode==='run'?'bg-frost-1':'bg-frost-4', 'mb-1 rounded-full  p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mx-0.5']">
-              <PlayIcon class="h-5 w-5" aria-hidden="true"/>
-            </button>
-            <button type="button" @click="setMenu('');requestReset()"
-                    class="bg-frost-4 mb-1 rounded-full  p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mx-0.5">
-              <ArrowPathIcon class="h-5 w-5" aria-hidden="true"/>
             </button>
           </div>
           <div v-if="editingNode" class="h-full pt-5 overflow-y-hidden pointer-events-none">
@@ -764,7 +755,7 @@ function getStatusClass(id: string): string {
           </div>
         </div>
       </div>
-      <div v-if="menuMode==='run'" class="w-full flex-shrink border border-polar-night-3 text-left p-1 overflow-hidden">
+      <div class="w-full flex-shrink border border-polar-night-3 text-left p-1">
         <div>
           <button :disabled="running"
                   :class="['bg-polar-night-4 rounded-md p-2 mr-0.5', !running ? 'text-snow-storm-1' : 'text-snow-storm-1/20']"
@@ -776,9 +767,14 @@ function getStatusClass(id: string): string {
                   @click="emit('stop', safe.id)">
             <StopIcon class="h-5 w-5" aria-hidden="true"/>
           </button>
+          <button :disabled="running"
+                  :class="['bg-polar-night-4 rounded-md p-2 mx-0.5', !running ? 'text-snow-storm-1' : 'text-snow-storm-1/20']"
+                  @click="emit('clean', safe.id)">
+            <EyeSlashIcon class="h-5 w-5" aria-hidden="true"/>
+          </button>
         </div>
 
-        <div class="w-full overflow-hidden">
+        <div class="w-full">
           <div class="sm:hidden">
             <label for="tabs" class="sr-only">Select a tab</label>
             <!-- Use an "onChange" listener to redirect the user to the selected tab URL. -->

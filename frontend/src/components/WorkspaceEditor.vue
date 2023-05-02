@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { HandRaisedIcon, PencilSquareIcon, ViewfinderCircleIcon } from '@heroicons/vue/20/solid'
-import { reactive, ref, PropType } from 'vue'
+import {HandRaisedIcon, PencilSquareIcon, ViewfinderCircleIcon} from '@heroicons/vue/20/solid'
+import {reactive, ref, PropType} from 'vue'
 import ScopeEditor from './ScopeEditor.vue'
-import { workspace } from '../../wailsjs/go/models'
+import {workspace} from '../../wailsjs/go/models'
 
 const props = defineProps({
   ws: {
@@ -13,9 +13,9 @@ const props = defineProps({
 
 const openTab = ref('overview')
 const tabs = [
-  { name: 'Overview', icon: PencilSquareIcon, id: 'overview' },
-  { name: 'Scope', icon: ViewfinderCircleIcon, id: 'scope' },
-  { name: 'Interception', icon: HandRaisedIcon, id: 'interception' },
+  {name: 'Overview', icon: PencilSquareIcon, id: 'overview'},
+  {name: 'Scope', icon: ViewfinderCircleIcon, id: 'scope'},
+  {name: 'Interception', icon: HandRaisedIcon, id: 'interception'},
 ]
 const modifiedWorkspace = reactive(props.ws)
 
@@ -135,16 +135,16 @@ function toggleTab(tabId: string) {
             <div class="px-4 sm:px-6 pb-4">
               <div>
                 <button
-                    @click="saveWorkspace"
-                    type="button"
-                    class="inline-flex items-center rounded border border-transparent bg-aurora-4 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">
-                  Save Changes
-                </button>
-                <button
                     @click="cancel"
                     type="button"
-                    class="ml-2 inline-flex items-center rounded border border-transparent bg-aurora-1 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">
+                    class="rounded border border-transparent bg-aurora-1 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">
                   Cancel
+                </button>
+                <button
+                    @click="saveWorkspace"
+                    type="button"
+                    class="ml-2 rounded border border-transparent bg-aurora-4 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">
+                  Save Changes
                 </button>
               </div>
             </div>

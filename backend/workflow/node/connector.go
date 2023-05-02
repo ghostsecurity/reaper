@@ -1,18 +1,24 @@
 package node
 
-import "github.com/ghostsecurity/reaper/backend/workflow/transmission"
+import (
+	"strings"
+
+	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
+)
 
 type Connector struct {
-	Name     string                  `json:"name"`
-	Type     transmission.ParentType `json:"type"`
-	Linkable bool                    `json:"linkable"`
+	Name        string                  `json:"name"`
+	Type        transmission.ParentType `json:"type"`
+	Linkable    bool                    `json:"linkable"`
+	Description string                  `json:"description"`
 }
 
-func NewConnector(name string, t transmission.ParentType, linkable bool) Connector {
+func NewConnector(name string, t transmission.ParentType, linkable bool, description ...string) Connector {
 	return Connector{
-		Name:     name,
-		Type:     t,
-		Linkable: linkable,
+		Name:        name,
+		Type:        t,
+		Linkable:    linkable,
+		Description: strings.Join(description, ", "),
 	}
 }
 

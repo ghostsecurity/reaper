@@ -4,6 +4,7 @@ export namespace node {
 	    name: string;
 	    type: number;
 	    linkable: boolean;
+	    description: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Connector(source);
@@ -14,6 +15,7 @@ export namespace node {
 	        this.name = source["name"];
 	        this.type = source["type"];
 	        this.linkable = source["linkable"];
+	        this.description = source["description"];
 	    }
 	}
 	export class OutputM {

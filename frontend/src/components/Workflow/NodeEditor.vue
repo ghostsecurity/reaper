@@ -168,6 +168,14 @@ function updateBooleanField(field: node.Connector, ev: Event) {
   publish()
 }
 
+function getLabel(field: node.Connector) {
+  let label = field.name.replace(/_/g, " ")
+  if (!field.description) {
+    return label
+  }
+  return label + ` (${field.description})`
+}
+
 </script>
 
 <template>
@@ -198,7 +206,9 @@ function updateBooleanField(field: node.Connector, ev: Event) {
 
       <div v-for="field in staticInputs" class="mt-2" :key="field.name">
         <div v-if="field.type === ParentType.STRING" class="sm:col-span-4">
-          <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">{{ field.name }}</label>
+          <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">{{
+              getLabel(field)
+            }}</label>
           <div class="mt-1">
             <div
                 class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
@@ -210,7 +220,9 @@ function updateBooleanField(field: node.Connector, ev: Event) {
           </div>
         </div>
         <div v-else-if="field.type === ParentType.INT" class="sm:col-span-4">
-          <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">{{ field.name }}</label>
+          <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">{{
+              getLabel(field)
+            }}</label>
           <div class="mt-1">
             <div
                 class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
@@ -223,7 +235,9 @@ function updateBooleanField(field: node.Connector, ev: Event) {
           </div>
         </div>
         <div v-else-if="field.type === ParentType.LIST" class="sm:col-span-4">
-          <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">{{ field.name }}</label>
+          <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">{{
+              getLabel(field)
+            }}</label>
           <div class="mt-1">
             <div
                 class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
@@ -285,7 +299,9 @@ function updateBooleanField(field: node.Connector, ev: Event) {
                      class="h-4 w-4 ml-2 bg-polar-night-4 rounded text-frost-1 focus:text-frost-1"/>
             </div>
             <div class="ml-2 text-sm leading-6">
-              <label :for="field.name" class="font-medium text-snow-storm-1 capitalize">{{ field.name }}</label>
+              <label :for="field.name" class="font-medium text-snow-storm-1 capitalize">{{
+                  getLabel(field)
+                }}</label>
             </div>
           </div>
         </div>
@@ -295,7 +311,9 @@ function updateBooleanField(field: node.Connector, ev: Event) {
                @request-update="updateRequestField(field, $event)"/>
         </div>
         <div v-else-if="field.type === ParentType.MAP" class="sm:col-span-4">
-          <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">{{ field.name }}</label>
+          <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">{{
+              getLabel(field)
+            }}</label>
           <KeyValEditor :data="keyValsFromMap(field)"
                         :readonly="false"
                         @publish="updateMapField(field, $event)"/>

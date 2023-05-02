@@ -100,6 +100,7 @@ function saveWorkspace(ws: workspace.Workspace) {
   saveTimeout = setTimeout(() => {
     SaveWorkspace(currentWorkspace)
   }, 1000) as unknown as number
+  closeWorkspaceConfig()
 }
 
 function showSettings() {

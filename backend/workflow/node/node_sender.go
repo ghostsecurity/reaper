@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/ghostsecurity/reaper/backend/packaging"
 	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
@@ -13,9 +14,8 @@ import (
 
 type SenderNode struct {
 	*VarStorage
-	id     uuid.UUID
-	name   string
-	client *http.Client
+	id   uuid.UUID
+	name string
 }
 
 func NewSender() *SenderNode {
@@ -27,13 +27,17 @@ func NewSender() *SenderNode {
 				NewConnector("start", transmission.TypeStart, true),
 				NewConnector("request", transmission.TypeRequest, true),
 				NewConnector("replacements", transmission.TypeMap, true),
+				NewConnector("timeout", transmission.TypeInt, false, "in milliseconds"),
+				NewConnector("follow_redirects", transmission.TypeBoolean, false, ""),
 			},
 			Connectors{
 				NewConnector("output", transmission.TypeRequest|transmission.TypeResponse|transmission.TypeMap, true),
 			},
-			nil,
+			map[string]transmission.Transmission{
+				"timeout":          transmission.NewInt(5000),
+				"follow_redirects": transmission.NewBoolean(false),
+			},
 		),
-		client: http.DefaultClient,
 	}
 }
 
@@ -107,7 +111,30 @@ func (n *SenderNode) Run(ctx context.Context, in map[string]transmission.Transmi
 			return
 		}
 
-		resp, err := n.client.Do(r)
+		timeout, err := n.ReadInputInt("timeout", in)
+		if err != nil {
+			errs <- err
+			return
+		}
+
+		client := http.Client{
+			CheckRedirect: nil,
+			Timeout:       time.Millisecond * time.Duration(timeout),
+		}
+
+		follow, err := n.ReadInputBool("follow_redirects", in)
+		if err != nil {
+			errs <- err
+			return
+		}
+
+		if !follow {
+			client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			}
+		}
+
+		resp, err := client.Do(r)
 		if err != nil {
 			errs <- err
 			return

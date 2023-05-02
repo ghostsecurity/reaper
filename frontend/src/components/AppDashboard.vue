@@ -439,6 +439,7 @@ function createWorkflowFromRequest(r: HttpRequest) {
                        @stop="stopWorkflow($event)" :statuses="nodeStatuses" :stdout-lines="flowStdout"
                        :activity-lines="flowActivity"
                        :stderr-lines="flowStderr"
+                       @clean="nodeStatuses.clear()"
           />
           <RequestInterceptor v-if="selectedTab() === 'intercepted'" :request="interceptedRequest"
                               :previous="sentInterceptedRequest"
