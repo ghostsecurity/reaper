@@ -90,8 +90,14 @@ func (w *wordlistIterator) Next() (string, bool) {
 		w.scanner = bufio.NewScanner(f)
 	}
 
-	if w.scanner.Scan() {
-		return w.scanner.Text(), true
+	for {
+		if !w.scanner.Scan() {
+			break
+		}
+		text := w.scanner.Text()
+		if text != "" {
+			return text, true
+		}
 	}
 
 	w.complete = true
