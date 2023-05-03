@@ -3,6 +3,7 @@ package backend
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
@@ -21,6 +22,15 @@ func (a *App) IgnoreThisUsedBindings(_ node.OutputM) workflow.UpdateM {
 	return workflow.UpdateM{}
 }
 
+func (a *App) SelectFile(title string) (string, error) {
+	if title == "" {
+		title = "Select a file"
+	}
+	return runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
+		Title: title,
+	})
+}
+
 func (a *App) RunWorkflow(w *workflow.WorkflowM) {
 	a.workflowMu.Lock()
 	defer a.workflowMu.Unlock()
@@ -30,6 +40,7 @@ func (a *App) RunWorkflow(w *workflow.WorkflowM) {
 	}
 	flow, err := w.Unpack()
 	if err != nil {
+		a.Error("Workflow error", err.Error())
 		return
 	}
 	ctx, cancel := context.WithCancel(a.ctx)
@@ -60,8 +71,11 @@ func (a *App) RunWorkflow(w *workflow.WorkflowM) {
 	runtime.EventsEmit(a.ctx, EventWorkflowStarted, w.ID)
 	defer runtime.EventsEmit(a.ctx, EventWorkflowFinished, w.ID)
 	if err := flow.Run(ctx, updateChan, outputChan); err != nil {
-		a.Error("Workflow error", err.Error())
-		return
+		if errors.Is(err, context.Canceled) {
+			a.Notify("Workflow canceled", "The workflow was canceled.")
+		} else {
+			a.Error("Workflow error", err.Error())
+		}
 	}
 }
 

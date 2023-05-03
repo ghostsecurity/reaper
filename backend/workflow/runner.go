@@ -45,6 +45,8 @@ func (u Update) Pack() UpdateM {
 	}
 }
 
+var ChildNodeError = errors.New("child node error")
+
 type NodeStatus string
 
 const (
@@ -80,6 +82,12 @@ func (r *runner) Run(updateChan chan<- Update, output chan<- node.Output) error 
 			Message: "Waiting for input(s)...",
 		}, updateChan)
 	}
+
+	r.updateStatus(Update{
+		Node:    startNode.ID(),
+		Status:  NodeStatusSuccess,
+		Message: "Process started.",
+	}, updateChan)
 
 	for _, node := range r.workflow.Nodes {
 		injections := node.GetInjections()
@@ -136,6 +144,9 @@ func (r *runner) Run(updateChan chan<- Update, output chan<- node.Output) error 
 func (r *runner) updateStatus(update Update, c chan<- Update) {
 	if old, ok := r.statuses[update.Node]; ok {
 		if old.Status == update.Status && old.Message == update.Message {
+			return
+		}
+		if old.Status == NodeStatusSuccess {
 			return
 		}
 	}
@@ -209,7 +220,11 @@ func (r *runner) RunNode(n node.Node, params map[string]transmission.Transmissio
 							if err := r.RunNode(nextNode, map[string]transmission.Transmission{
 								link.To.Connector: output.Data,
 							}, updateChan, output.Complete, out); err != nil {
-								concurrentErrChan <- fmt.Errorf("error with node '%s': %w", nextNode.Name(), err)
+								if errors.Is(err, context.Canceled) {
+									concurrentErrChan <- err
+								} else {
+									concurrentErrChan <- fmt.Errorf("%w with node '%s': %s", ChildNodeError, nextNode.Name(), err)
+								}
 								return
 							}
 						}(link)
@@ -221,7 +236,7 @@ func (r *runner) RunNode(n node.Node, params map[string]transmission.Transmissio
 				select {
 				case err := <-concurrentErrChan:
 					if err != nil {
-						return err
+						return fmt.Errorf("error with node '%s': %w", n.Name(), err)
 					}
 				default:
 				}
@@ -233,6 +248,12 @@ func (r *runner) RunNode(n node.Node, params map[string]transmission.Transmissio
 						Node:    n.ID(),
 						Status:  NodeStatusAborted,
 						Message: fmt.Sprintf("Workflow cancelled: %s", err),
+					}, updateChan)
+				} else if errors.Is(err, ChildNodeError) {
+					r.updateStatus(Update{
+						Node:    n.ID(),
+						Status:  NodeStatusAborted,
+						Message: fmt.Sprintf("Workflow aborted: %s", err),
 					}, updateChan)
 				} else {
 					r.updateStatus(Update{

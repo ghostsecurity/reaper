@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onBeforeUpdate, onMounted, onUpdated, PropType, ref, watch } from 'vue'
+import {onActivated, onBeforeUpdate, onMounted, onUpdated, PropType, ref, watch} from 'vue'
 import {
   BeakerIcon,
   PlayIcon,
@@ -10,22 +10,23 @@ import {
   CheckCircleIcon,
   PauseCircleIcon,
   ExclamationCircleIcon, BarsArrowDownIcon, BoltIcon, EyeSlashIcon,
-
+  XCircleIcon,
 } from '@heroicons/vue/20/solid'
-import { uuid } from 'vue-uuid'
-import { workflow } from '../../../wailsjs/go/models'
-import { CreateNode } from '../../../wailsjs/go/backend/App'
+import {uuid} from 'vue-uuid'
+import {workflow} from '../../../wailsjs/go/models'
+import {CreateNode} from '../../../wailsjs/go/backend/App'
 import NodeEditor from './NodeEditor.vue'
-import { NodeType, NodeTypeName } from '../../lib/Workflows'
+import {NodeType, NodeTypeName} from '../../lib/Workflows'
 import Spinner from '../Shared/LoadingSpinner.vue'
+import ScrollingOutput from "../Shared/ScrollingOutput.vue";
 
 const props = defineProps({
-  flow: { type: Object as PropType<workflow.WorkflowM>, required: true },
-  running: { type: Boolean, required: false, default: false },
-  statuses: { type: Object as PropType<Map<string, string>>, required: true },
-  stdoutLines: { type: Array as PropType<string[]>, required: true },
-  stderrLines: { type: Array as PropType<string[]>, required: true },
-  activityLines: { type: Array as PropType<string[]>, required: true },
+  flow: {type: Object as PropType<workflow.WorkflowM>, required: true},
+  running: {type: Boolean, required: false, default: false},
+  statuses: {type: Object as PropType<Map<string, string>>, required: true},
+  stdoutLines: {type: Array as PropType<string[]>, required: true},
+  stderrLines: {type: Array as PropType<string[]>, required: true},
+  activityLines: {type: Array as PropType<string[]>, required: true},
 })
 
 const availableNodeTypes = ref(<NodeType[]>[
@@ -53,9 +54,8 @@ watch(() => props.flow, flow => {
   }
 })
 
-onMounted(() => {
-  redraw()
-})
+onMounted(redraw)
+onActivated(redraw)
 
 onUpdated(() => {
   if (initial) {
@@ -76,9 +76,9 @@ function saveWorkflow(f: workflow.WorkflowM) {
 }
 
 const tabs = ref([
-  { name: 'Stdout', id: 'stdout', icon: BarsArrowDownIcon, current: true },
-  { name: 'Stderr', id: 'stderr', icon: BarsArrowDownIcon, current: false },
-  { name: 'Activity', id: 'activity', icon: BoltIcon, current: false },
+  {name: 'Stdout', id: 'stdout', icon: BarsArrowDownIcon, current: true},
+  {name: 'Stderr', id: 'stderr', icon: BarsArrowDownIcon, current: false},
+  {name: 'Activity', id: 'activity', icon: BoltIcon, current: false},
 ])
 
 function selectedTab(): string {
@@ -138,11 +138,11 @@ function redraw() {
       y: (toConn.offsetTop + toConn.offsetHeight / 2) + toNode.offsetTop,
     }
     const path = `M${
-      posA.x},${posA.y} `
+            posA.x},${posA.y} `
         + `C${
-          posA.x + curveOffset.value},${posA.y} ${
-          posB.x - curveOffset.value},${posB.y} ${
-          posB.x},${posB.y}`
+            posA.x + curveOffset.value},${posA.y} ${
+            posB.x - curveOffset.value},${posB.y} ${
+            posB.x},${posB.y}`
     newPaths.push(path)
   })
   if (!ok) {
@@ -453,11 +453,11 @@ function moveLink(ev: MouseEvent) {
   }
 
   const dStr = `M${
-    posA.x},${posA.y} `
+          posA.x},${posA.y} `
       + `C${
-        posA.x + curveOffset.value},${posA.y} ${
-        posB.x - curveOffset.value},${posB.y} ${
-        posB.x},${posB.y}`
+          posA.x + curveOffset.value},${posA.y} ${
+          posB.x - curveOffset.value},${posB.y} ${
+          posB.x},${posB.y}`
   connector.value.setAttribute('d', dStr)
   if (!connectorB) {
     connector.value.setAttribute('stroke', 'blue')
@@ -610,14 +610,14 @@ function trackMover(id: string, el: any) {
 </script>
 
 <template>
-  <div class="h-full relative">
+  <div class="w-full h-full box-border relative">
     <div v-if="!safe" class="flex flex-col items-center mt-16">
       <BeakerIcon class="h-12 w-12"/>
       <h3 class="mt-2 text-sm font-bold">No Workflow Selected</h3>
       <p class="mt-1 text-sm">Select or create a workflow from the list.</p>
     </div>
-    <div v-else class="h-full flex flex-col my-2 overflow-hidden">
-      <div class="canvas border border-polar-night-4 stripy flex-grow relative w-full h-full overflow-auto"
+    <div v-else class="w-full h-full flex flex-col overflow-hidden">
+      <div class="canvas border border-polar-night-4 stripy grow-[3] relative w-full h-full overflow-auto"
            @mousemove="drag" @mouseup="dragEnd"
            @scroll="redraw"
            @resize="redraw"
@@ -666,12 +666,12 @@ function trackMover(id: string, el: any) {
                     <Spinner v-if="running && props.statuses.get(node.id) === 'running'"/>
                     <CheckCircleIcon v-else-if="props.statuses.get(node.id) === 'success'"
                                      class="w-4 h-4 mr-2 text-aurora-4"/>
-                    <ExclamationCircleIcon v-else-if="props.statuses.get(node.id) === 'error'"
-                                           class="w-4 h-4 mr-2 text-aurora-1"/>
+                    <XCircleIcon v-else-if="props.statuses.get(node.id) === 'error'"
+                                 class="w-4 h-4 mr-2 text-aurora-1"/>
                     <PauseCircleIcon v-else-if="props.statuses.get(node.id) === 'pending'"
                                      class="w-4 h-4 mr-2 text-aurora-3"/>
                     <ExclamationCircleIcon v-else-if="props.statuses.get(node.id) === 'aborted'"
-                                           class="w-4 h-4 mr-2 text-aurora-2"/>
+                                           class="w-4 h-4 mr-2 text-gray-400"/>
                   </div>
                 </div>
                 <div v-if="!node.readonly" @mousedown.prevent.stop
@@ -720,8 +720,10 @@ function trackMover(id: string, el: any) {
           </button>
         </div>
       </div>
-      <div class="w-full flex-shrink border border-polar-night-3 text-left p-1">
-        <div>
+      <div
+          class="flex flex-col box-border w-full box-border relative border-x border-b border-polar-night-3 text-left h-[25%]"
+          style="flex: 0 0 auto">
+        <div class="flex-shrink p-1">
           <button :disabled="running"
                   :class="['bg-polar-night-4 rounded-md p-2 mr-0.5', !running ? 'text-snow-storm-1 hover:text-frost-1' : 'text-snow-storm-1/20']"
                   @click="emit('run', safe.id)">
@@ -739,7 +741,7 @@ function trackMover(id: string, el: any) {
           </button>
         </div>
 
-        <div class="w-full">
+        <div class="flex-shrink px-1">
           <div class="sm:hidden">
             <label for="tabs" class="sr-only">Select a tab</label>
             <!-- Use an "onChange" listener to redirect the user to the selected tab URL. -->
@@ -750,12 +752,12 @@ function trackMover(id: string, el: any) {
           </div>
           <div class="hidden sm:block">
             <div>
-              <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+              <nav class="-mb-px flex space-x-8 pt-2" aria-label="Tabs">
                 <a v-for="tab in tabs" :key="tab.name" @click="switchTab(tab.id)"
                    :class="[tab.current
                     ? 'border-frost text-frost'
                     : 'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-200',
-                  'group inline-flex cursor-pointer items-center border-b-2 py-4 px-1 text-sm font-medium']"
+                  'group inline-flex cursor-pointer items-center border-b-2 py-2 px-1 text-sm font-medium']"
                    :aria-current="tab.current ? 'page' : undefined">
                   <component :is="tab.icon" :class="[
                     tab.current ? 'text-frost' : 'text-gray-400 group-hover:text-gray-300',
@@ -767,29 +769,12 @@ function trackMover(id: string, el: any) {
           </div>
         </div>
 
-        <div>
-          <div v-if="selectedTab() === 'stdout'"
-               class="h-48 overflow-auto flex bg-black p-1 border border-polar-night-3"
-               style="flex-direction: column-reverse">
-            <div>
-              <pre><template v-for="line in stdoutLines">{{ line }}</template></pre>
-            </div>
-          </div>
-          <div v-else-if="selectedTab() === 'stderr'"
-               class="h-48 overflow-auto flex bg-black p-1 border border-polar-night-3"
-               style="flex-direction: column-reverse">
-            <div>
-              <pre><template v-for="line in stderrLines">{{ line }}</template></pre>
-            </div>
-          </div>
-          <div v-else-if="selectedTab() === 'activity'"
-               class="h-48 overflow-auto flex bg-black p-1 border border-polar-night-3"
-               style="flex-direction: column-reverse">
-            <div>
-              <pre><template v-for="line in activityLines">{{ line }}</template></pre>
-            </div>
-          </div>
+        <div class="flex-grow overflow-hidden box-border border-t border-polar-night-3">
+          <ScrollingOutput v-if="selectedTab() === 'stdout'" :lines="stdoutLines"/>
+          <ScrollingOutput v-else-if="selectedTab() === 'stderr'" :lines="stderrLines"/>
+          <ScrollingOutput v-else-if="selectedTab() === 'activity'" :lines="activityLines"/>
         </div>
+
 
       </div>
     </div>

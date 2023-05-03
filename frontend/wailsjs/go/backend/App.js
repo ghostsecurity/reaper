@@ -74,6 +74,10 @@ export function SaveWorkspace(arg1) {
   return window['go']['backend']['App']['SaveWorkspace'](arg1);
 }
 
+export function SelectFile(arg1) {
+  return window['go']['backend']['App']['SelectFile'](arg1);
+}
+
 export function SetWorkspace(arg1) {
   return window['go']['backend']['App']['SetWorkspace'](arg1);
 }

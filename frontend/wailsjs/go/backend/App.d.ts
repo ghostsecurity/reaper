@@ -40,6 +40,8 @@ export function SaveSettings(arg1:any):Promise<void>;
 
 export function SaveWorkspace(arg1:any):Promise<void>;
 
+export function SelectFile(arg1:string):Promise<string>;
+
 export function SetWorkspace(arg1:any):Promise<void>;
 
 export function StartProxy():Promise<void>;

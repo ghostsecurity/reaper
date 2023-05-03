@@ -120,8 +120,10 @@ func (t Type) Validate(transmission Transmission) error {
 type InternalType uint32
 
 const (
-	InternalTypeNone InternalType = 1 << iota
+	InternalTypeNone InternalType = iota
+	InternalTypeUnknown
 	InternalTypeNumericRangeList
+	InternalTypeWordlist
 )
 
 func (t ParentType) Contains(other ParentType) bool {
