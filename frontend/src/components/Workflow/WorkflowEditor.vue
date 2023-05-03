@@ -97,6 +97,8 @@ function selectTab(e: Event) {
   switchTab((e.target as HTMLSelectElement).value)
 }
 
+const curveOffset = ref(100)
+
 function redraw() {
   if (!safe.value) {
     return
@@ -138,8 +140,8 @@ function redraw() {
     const path = `M${
       posA.x},${posA.y} `
         + `C${
-          posA.x + 100},${posA.y} ${
-          posB.x - 100},${posB.y} ${
+          posA.x + curveOffset.value},${posA.y} ${
+          posB.x - curveOffset.value},${posB.y} ${
           posB.x},${posB.y}`
     newPaths.push(path)
   })
@@ -453,8 +455,8 @@ function moveLink(ev: MouseEvent) {
   const dStr = `M${
     posA.x},${posA.y} `
       + `C${
-        posA.x + 100},${posA.y} ${
-        posB.x - 100},${posB.y} ${
+        posA.x + curveOffset.value},${posA.y} ${
+        posB.x - curveOffset.value},${posB.y} ${
         posB.x},${posB.y}`
   connector.value.setAttribute('d', dStr)
   if (!connectorB) {
@@ -621,7 +623,9 @@ function trackMover(id: string, el: any) {
            @resize="redraw"
            ref="canvas"
       >
-        <svg ref="svg" xmlns="http://www.w3.org/2000/svg" class="absolute w-full h-full">
+        <svg ref="svg" xmlns="http://www.w3.org/2000/svg" class="absolute w-full h-full"
+             @click="setMenu('')"
+        >
           <path ref="connector" fill="none" stroke="" :stroke-width="linkStrokeWidth"/>
           <path v-for="path in paths" :d="path" fill="none" :stroke="linkColour" :stroke-width="linkStrokeWidth"
                 :key="path"/>
@@ -649,7 +653,7 @@ function trackMover(id: string, el: any) {
             <div class="flex-grow group">
               <div
                   @click="!mouseMoved && editNode(node.id)"
-                  :class="[editingNode && editingNode.id == node.id ? 'border-snow-storm-1 bg-polar-night-2' : (node.type == NodeType.START ? 'border-aurora-4 bg-aurora-4/25' : 'bg-polar-night-2'),  'px-2 py-4 border rounded cursor-move relative',  getStatusClass(node.id)]"
+                  :class="[editingNode && editingNode.id == node.id ? 'border-snow-storm-1 bg-polar-night-2' : (node.type == NodeType.START ? 'border-aurora-4 bg-aurora-4/25' : 'bg-polar-night-2 border-frost-1/50'),  'px-2 py-4 border rounded cursor-move relative',  getStatusClass(node.id)]"
                   style="min-width:90px">
                 {{ node.name }}
                 <div v-if="node.type != NodeType.START && NodeTypeName(node.type) !== node.name"
