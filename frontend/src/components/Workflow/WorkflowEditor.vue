@@ -101,6 +101,15 @@ function redraw() {
   if (!safe.value) {
     return
   }
+
+  if (!canvas.value || !svg.value) {
+    return
+  }
+  if (svg.value) {
+    svg.value.style.height = `${canvas.value.clientHeight + canvas.value.scrollTop}px`
+    svg.value.style.width = `${canvas.value.clientWidth + canvas.value.scrollLeft}px`
+  }
+
   const newPaths: string[] = []
   let ok = true
   safe.value.links.forEach(link => {
@@ -248,8 +257,9 @@ function drag(ev: MouseEvent) {
     return
   }
   ev.preventDefault()
-  const x = ev.clientX - canvas.value.offsetLeft
-  const y = ev.clientY - canvas.value.offsetTop
+  const off = getOffsetFrom(ev.target as HTMLElement, 'canvas')
+  const x = ev.offsetX + off.x - canvas.value.offsetLeft
+  const y = ev.offsetY + off.y - canvas.value.offsetTop
   const el = movers.value.get(dragId) as HTMLElement
   if (!el) {
     return
@@ -359,12 +369,13 @@ function findConnectorAt(x: number, y: number, className: string): HTMLElement |
     if (!el.parentElement || !canvas.value) {
       continue
     }
+    const offset = getOffsetFrom(el, 'canvas')
     const rect = el.parentElement.getBoundingClientRect()
     const area = {
-      x1: rect.left - canvas.value.offsetLeft - magnetism,
-      y1: rect.top - canvas.value.offsetTop,
-      x2: rect.right - canvas.value.offsetLeft + magnetism,
-      y2: rect.bottom - canvas.value.offsetTop,
+      x1: offset.x - magnetism,
+      y1: offset.y,
+      x2: offset.x + rect.width + magnetism,
+      y2: offset.y + rect.height,
     }
     if (x >= area.x1 && x <= area.x2 && y >= area.y1 && y <= area.y2) {
       return el
@@ -389,13 +400,14 @@ function moveLink(ev: MouseEvent) {
   const connectorA = nodeA.querySelector(`${selector}[data-connector="${currentLinkConnector}"]`) as HTMLElement
 
   let posA = {
-    x: (connectorA.offsetLeft + connectorA.offsetWidth) + nodeA.offsetLeft,
-    y: (connectorA.offsetTop + connectorA.offsetHeight / 2) + nodeA.offsetTop,
+    x: (connectorA.offsetLeft + connectorA.offsetWidth) + nodeA.offsetLeft - canvas.value.offsetLeft,
+    y: (connectorA.offsetTop + connectorA.offsetHeight / 2) + nodeA.offsetTop - canvas.value.offsetTop,
   }
 
+  const off = getOffsetFrom(ev.target as HTMLElement, 'canvas')
   let posB = {
-    x: ev.clientX - canvas.value.offsetLeft,
-    y: ev.clientY - canvas.value.offsetTop,
+    x: ev.offsetX + off.x,
+    y: ev.offsetY + off.y,
   }
 
   const connectorB = findConnectorAt(posB.x, posB.y, linkSearchMode)
@@ -432,7 +444,7 @@ function moveLink(ev: MouseEvent) {
     currentLink.from.connector = ''
   }
 
-  if (posA.x > posB.x) {
+  if (linkSearchMode !== 'input') {
     const buf = posA
     posA = posB
     posB = buf
@@ -596,15 +608,17 @@ function trackMover(id: string, el: any) {
 </script>
 
 <template>
-  <div class="h-full">
+  <div class="h-full relative">
     <div v-if="!safe" class="flex flex-col items-center mt-16">
       <BeakerIcon class="h-12 w-12"/>
       <h3 class="mt-2 text-sm font-bold">No Workflow Selected</h3>
       <p class="mt-1 text-sm">Select or create a workflow from the list.</p>
     </div>
-    <div v-else class="h-full flex flex-col">
-      <div class="border border-polar-night-4 flex-grow my-2 relative stripy w-full h-full overflow-auto"
+    <div v-else class="h-full flex flex-col my-2 overflow-hidden">
+      <div class="canvas border border-polar-night-4 stripy flex-grow relative w-full h-full overflow-auto"
            @mousemove="drag" @mouseup="dragEnd"
+           @scroll="redraw"
+           @resize="redraw"
            ref="canvas"
       >
         <svg ref="svg" xmlns="http://www.w3.org/2000/svg" class="absolute w-full h-full">
@@ -683,39 +697,39 @@ function trackMover(id: string, el: any) {
             </div>
           </div>
         </div>
-        <div class="absolute right-5 text-right w-96 h-full pointer-events-none">
-          <div class="absolute pt-5 right-0 pointer-events-auto">
-            <button type="button" @click="setMenu('add')"
-                    :class="[menuMode==='add'?'bg-frost-1':'bg-frost-4', 'mb-1 rounded-full  p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mx-0.5']">
-              <PlusIcon class="h-5 w-5" aria-hidden="true"/>
-            </button>
-          </div>
-          <div v-if="editingNode" class="h-full pt-5 overflow-y-hidden pointer-events-none">
-            <NodeEditor :node="editingNode" @update="updateNode" @close="editingNode = null; menuMode = ''"/>
-          </div>
-          <div v-else-if="menuMode==='add'"
-               class="mt-16 border rounded border-snow-storm-1 relative bg-polar-night-2 pointer-events-auto">
-            <button v-for="t in availableNodeTypes" :key="t" @click="addNode(t);setMenu('')"
-                    class="w-full border border-polar-night-4 py-1 bg-polar-night-2 hover:bg-polar-night-4">
-              {{ NodeTypeName(t) }}
-            </button>
-          </div>
+      </div>
+      <div class="absolute right-5 top-5 text-right w-96 h-full pointer-events-none">
+        <div class="pointer-events-auto">
+          <button type="button" @click="setMenu('add')"
+                  :class="[menuMode==='add'?'bg-frost-1':'bg-frost-4', 'mb-1 rounded-full  p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mx-0.5']">
+            <PlusIcon class="h-5 w-5" aria-hidden="true"/>
+          </button>
+        </div>
+        <div v-if="editingNode" class="mt-1 h-full overflow-y-hidden pointer-events-none">
+          <NodeEditor :node="editingNode" @update="updateNode" @close="editingNode = null; menuMode = ''"/>
+        </div>
+        <div v-else-if="menuMode==='add'"
+             class="mt-1 border rounded border-snow-storm-1 relative bg-polar-night-2 pointer-events-auto">
+          <button v-for="t in availableNodeTypes" :key="t" @click="addNode(t);setMenu('')"
+                  class="w-full border border-polar-night-4 py-1 bg-polar-night-2 hover:bg-polar-night-4">
+            {{ NodeTypeName(t) }}
+          </button>
         </div>
       </div>
       <div class="w-full flex-shrink border border-polar-night-3 text-left p-1">
         <div>
           <button :disabled="running"
-                  :class="['bg-polar-night-4 rounded-md p-2 mr-0.5', !running ? 'text-snow-storm-1' : 'text-snow-storm-1/20']"
+                  :class="['bg-polar-night-4 rounded-md p-2 mr-0.5', !running ? 'text-snow-storm-1 hover:text-frost-1' : 'text-snow-storm-1/20']"
                   @click="emit('run', safe.id)">
             <PlayIcon class="h-5 w-5" aria-hidden="true"/>
           </button>
           <button :disabled="!running"
-                  :class="['bg-polar-night-4 rounded-md p-2 mx-0.5', running ? 'text-snow-storm-1' : 'text-snow-storm-1/20']"
+                  :class="['bg-polar-night-4 rounded-md p-2 mx-0.5', running ? 'text-snow-storm-1 hover:text-frost-1' : 'text-snow-storm-1/20']"
                   @click="emit('stop', safe.id)">
             <StopIcon class="h-5 w-5" aria-hidden="true"/>
           </button>
           <button :disabled="running"
-                  :class="['bg-polar-night-4 rounded-md p-2 mx-0.5', !running ? 'text-snow-storm-1' : 'text-snow-storm-1/20']"
+                  :class="['bg-polar-night-4 rounded-md p-2 mx-0.5', !running ? 'text-snow-storm-1 hover:text-frost-1' : 'text-snow-storm-1/20']"
                   @click="emit('clean', safe.id)">
             <EyeSlashIcon class="h-5 w-5" aria-hidden="true"/>
           </button>

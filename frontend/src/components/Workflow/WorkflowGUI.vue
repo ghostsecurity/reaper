@@ -100,7 +100,7 @@ function renameWorkflow(id: string, name: string) {
 
 <template>
 
-  <div ref="root" class="flex h-full overflow-x-hidden">
+  <div ref="root" class="flex h-full overflow-hidden">
 
     <InputBox v-if="creating" title="New Workflow" message="Enter the workflow name." @cancel="creating = false"
               @confirm="addWorkflow($event)"/>
