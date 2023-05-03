@@ -1,16 +1,16 @@
 <script lang="ts" setup>
-import { computed, PropType, ref, watch } from 'vue'
-import { XMarkIcon, FolderIcon } from '@heroicons/vue/20/solid'
-import { node, workflow } from '../../../wailsjs/go/models'
-import { NodeType, ParentType, NodeTypeName, ChildType } from '../../lib/Workflows'
+import {computed, PropType, ref, watch} from 'vue'
+import {XMarkIcon, FolderIcon} from '@heroicons/vue/20/solid'
+import {node, workflow} from '../../../wailsjs/go/models'
+import {NodeType, ParentType, NodeTypeName, ChildType} from '../../lib/Workflows'
 import IDE from '../Http/IDE.vue'
-import { HttpRequest } from '../../lib/Http'
+import {HttpRequest} from '../../lib/Http'
 import KeyValEditor from '../KeyValEditor.vue'
-import { KeyValue } from '../../lib/KeyValue'
-import { SelectFile } from '../../../wailsjs/go/backend/App'
+import {KeyValue} from '../../lib/KeyValue'
+import {SelectFile} from '../../../wailsjs/go/backend/App'
 
 const props = defineProps({
-  node: { type: Object as PropType<workflow.NodeM>, required: true },
+  node: {type: Object as PropType<workflow.NodeM>, required: true},
 })
 
 const safe = ref<workflow.NodeM>(safeCopy(props.node))
@@ -180,19 +180,19 @@ function updateWordList(field: node.Connector) {
     return
   }
   SelectFile('Select wordlist').then(
-    (path: string) => {
-      if (!path) {
-        return
-      }
-      if (!safe.value.vars) {
-        safe.value.vars = new node.VarStorageM({})
-      }
-      safe.value.vars.static[field.name].data = path
-      publish()
-    },
-    (err: Error) => {
-      throw err
-    },
+      (path: string) => {
+        if (!path) {
+          return
+        }
+        if (!safe.value.vars) {
+          safe.value.vars = new node.VarStorageM({})
+        }
+        safe.value.vars.static[field.name].data = path
+        publish()
+      },
+      (err: Error) => {
+        throw err
+      },
   )
 }
 
@@ -308,7 +308,7 @@ function updateWordList(field: node.Connector) {
                  class="text-snow-storm-1/80 mt-2">
               <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">Wordlist</label>
               <div class="flex py-1 text-sm border rounded border-polar-night-4 bg-white/5 mt-1">
-                <button @click="updateWordList(field, $event)" class="mx-2 flex-shrink">
+                <button @click="updateWordList(field)" class="mx-2 flex-shrink">
                   <FolderIcon class="h-4 w-4 text-snow-storm-1"/>
                 </button>
                 <div class="flex-grow pt-1 cursor-pointer" @click="updateWordList(field)">
