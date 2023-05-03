@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { onMounted, onUpdated, PropType, ref } from 'vue'
+import {onMounted, onUpdated, PropType, ref} from 'vue'
 
 defineProps({
-  lines: { type: Array as PropType<string[]>, required: true },
+  lines: {type: Array as PropType<string[]>, required: true},
 })
 
 const terminal = ref(null)
@@ -28,6 +28,3 @@ onMounted(scrollToBottom)
   </div>
 </template>
 
-<style scoped>
-
-</style>
