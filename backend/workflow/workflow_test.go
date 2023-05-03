@@ -153,18 +153,11 @@ func Test_FuzzingWorkflow(t *testing.T) {
 				fmt.Printf("update: %s: %s\n", update.Node, update.Message)
 			}
 		}()
-		var output string
-		outs := make(chan node.Output)
+		outs := make(chan node.Output, 100)
 		defer close(outs)
 
-		go func() {
-			for out := range outs {
-				output += out.Message
-			}
-		}()
-
 		require.NoError(t, flow.Run(ctx, updates, outs))
-		assert.Equal(t, fmt.Sprintf("Account: %d\n", secret), output)
+		assert.Equal(t, fmt.Sprintf("Account: %d\n", secret), (<-outs).Message)
 	})
 
 	t.Run("save to disk, reload and run", func(t *testing.T) {
@@ -187,17 +180,10 @@ func Test_FuzzingWorkflow(t *testing.T) {
 			}
 		}()
 
-		var output string
-		outs := make(chan node.Output)
+		outs := make(chan node.Output, 100)
 		defer close(outs)
 
-		go func() {
-			for out := range outs {
-				output += out.Message
-			}
-		}()
-
 		require.NoError(t, w.Run(ctx, updates, outs))
-		assert.Equal(t, fmt.Sprintf("Account: %d\n", secret), output)
+		assert.Equal(t, fmt.Sprintf("Account: %d\n", secret), (<-outs).Message)
 	})
 }

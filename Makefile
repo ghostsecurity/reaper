@@ -19,6 +19,7 @@ test: test-go test-js
 
 .PHONY: test-go
 test-go:
+	go clean -testcache
 	go test ./... -race
 
 .PHONY: test-js
