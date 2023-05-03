@@ -2,37 +2,42 @@ package node
 
 import (
 	"fmt"
-	"io"
-	"net/http"
-	"strings"
 
-	"github.com/ghostsecurity/reaper/backend/packaging"
 	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
 	"github.com/google/uuid"
 	"golang.org/x/net/context"
 )
 
 type FuzzerNode struct {
-	id     uuid.UUID
-	vars   *VarStorage
-	client *http.Client
+	*VarStorage
+	id   uuid.UUID
+	name string
 }
 
 func NewFuzzer() *FuzzerNode {
 	return &FuzzerNode{
-		id: uuid.New(),
-		vars: NewVarStorage(
+		id:   uuid.New(),
+		name: "Fuzzer",
+		VarStorage: NewVarStorage(
 			Connectors{
-				NewConnector("request", transmission.TypeRequest),
-				NewConnector("placeholder", transmission.TypeString),
-				NewConnector("list", transmission.TypeList),
+				NewConnector("start", transmission.TypeStart, true),
+				NewConnector("vars", transmission.TypeMap, true),
+				NewConnector("placeholder", transmission.TypeString, false),
+				NewConnector("list", transmission.TypeList, false),
 			},
 			Connectors{
-				NewConnector("output", transmission.TypeRequest|transmission.TypeResponse),
+				NewConnector("output", transmission.TypeMap, true),
+			},
+			map[string]transmission.Transmission{
+				"placeholder": transmission.NewString("$FUZZ$"),
+				"list":        transmission.NewNumericRangeIterator(0, 100),
 			},
 		),
-		client: http.DefaultClient,
 	}
+}
+
+func (n *FuzzerNode) IsReadOnly() bool {
+	return false
 }
 
 func (n *FuzzerNode) ID() uuid.UUID {
@@ -40,42 +45,34 @@ func (n *FuzzerNode) ID() uuid.UUID {
 }
 
 func (n *FuzzerNode) Name() string {
-	return "Fuzzer"
+	return n.name
 }
 
-func (n *FuzzerNode) Type() NodeType {
+func (n *FuzzerNode) Type() Type {
 	return TypeFuzzer
 }
 
-func (n *FuzzerNode) GetInputs() Connectors {
-	return n.vars.GetInputs()
+func (n *FuzzerNode) SetName(name string) {
+	n.name = name
 }
 
-func (n *FuzzerNode) GetOutputs() Connectors {
-	return n.vars.GetOutputs()
-}
-
-func (n *FuzzerNode) SetStaticInputValues(values map[string]transmission.Transmission) error {
-	return n.vars.SetStaticInputValues(values)
-}
-
-func (n *FuzzerNode) Validate(params map[string]transmission.Transmission) error {
-	return n.vars.Validate(params)
+func (n *FuzzerNode) GetInjections() map[string]transmission.Transmission {
+	return nil
 }
 
 func (n *FuzzerNode) GetVars() *VarStorage {
-	return n.vars
+	return n.VarStorage
 }
 
 func (n *FuzzerNode) SetVars(vars *VarStorage) {
-	n.vars = vars
+	n.VarStorage = vars
 }
 
 func (n *FuzzerNode) SetID(id uuid.UUID) {
 	n.id = id
 }
 
-func (n *FuzzerNode) Run(ctx context.Context, in map[string]transmission.Transmission, _ io.Writer) (<-chan OutputInstance, <-chan error) {
+func (n *FuzzerNode) Run(ctx context.Context, in map[string]transmission.Transmission, out chan<- Output, last bool) (<-chan OutputInstance, <-chan error) {
 
 	output := make(chan OutputInstance)
 	errs := make(chan error)
@@ -87,16 +84,18 @@ func (n *FuzzerNode) Run(ctx context.Context, in map[string]transmission.Transmi
 			errs <- fmt.Errorf("input is nil")
 			return
 		}
-		list, err := n.vars.ReadInputList("list", in)
+		list, err := n.ReadInputList("list", in)
 		if err != nil {
 			errs <- fmt.Errorf("input not found: no list specified")
 			return
 		}
-		placeholder, err := n.vars.ReadInputString("placeholder", in)
+		placeholder, err := n.ReadInputString("placeholder", in)
 		if err != nil {
 			errs <- fmt.Errorf("input not found: no placeholder specified")
 			return
 		}
+
+		vars, _ := n.ReadInputMap("vars", in)
 
 		var i int64
 		for {
@@ -111,43 +110,20 @@ func (n *FuzzerNode) Run(ctx context.Context, in map[string]transmission.Transmi
 				return
 			default:
 			}
-			request, err := n.vars.ReadInputRequest("request", in)
-			if err != nil {
-				errs <- fmt.Errorf("input not found: no request specified")
-				return
-			}
-			request.URL = strings.ReplaceAll(request.URL, placeholder, word)
-			request.Body = strings.ReplaceAll(request.Body, placeholder, word)
-			for i, header := range request.Headers {
-				request.Headers[i].Value = strings.ReplaceAll(header.Value, placeholder, word)
-			}
 
-			r, err := packaging.UnpackageHttpRequest(request)
-			if err != nil {
-				errs <- err
-				return
+			data := map[string]string{
+				placeholder: word,
 			}
-
-			resp, err := n.client.Do(r)
-			if err != nil {
-				errs <- err
-				return
-			}
-
-			response, err := packaging.PackageHttpResponse(resp, n.id.String(), i)
-			if err != nil {
-				errs <- err
-				return
+			for k, v := range vars {
+				data[k] = v
 			}
 
 			output <- OutputInstance{
 				OutputName: "output",
 				Current:    int(i),
 				Total:      list.Count(),
-				Complete:   list.Complete(),
-				Data: transmission.NewRequestResponsePairWithMap(*request, *response, map[string]string{
-					placeholder: word,
-				}),
+				Complete:   list.Complete() && last,
+				Data:       transmission.NewMap(data),
 			}
 		}
 	}()

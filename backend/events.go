@@ -13,6 +13,10 @@ const (
 	EventTreeUpdate                    = "TreeUpdate"
 	EventSendRequest                   = "SendRequest"
 	EventInterceptedRequestQueueChange = "InterceptedRequestQueueChange"
+	EventWorkflowStarted               = "WorkflowStarted"
+	EventWorkflowFinished              = "WorkflowFinished"
+	EventWorkflowUpdate                = "WorkflowUpdated"
+	EventWorkflowOutput                = "WorkflowOutput"
 )
 
 func (a *App) emitProxyStatus(status bool, addr, message string) {

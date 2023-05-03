@@ -2,9 +2,7 @@ package workflow
 
 import (
 	"fmt"
-	"io"
 
-	"github.com/ghostsecurity/reaper/backend/packaging"
 	"github.com/ghostsecurity/reaper/backend/workflow/node"
 	"github.com/google/uuid"
 	"golang.org/x/net/context"
@@ -13,10 +11,6 @@ import (
 type Workflow struct {
 	ID          uuid.UUID
 	Name        string
-	Request     packaging.HttpRequest
-	Input       node.Link
-	Output      node.Node
-	Error       node.Node
 	Nodes       []node.Node
 	Links       []node.Link
 	Positioning map[uuid.UUID]Position
@@ -27,11 +21,23 @@ type Position struct {
 	Y int `json:"y"`
 }
 
-func (w *Workflow) Run(ctx context.Context, updateChan chan<- Update, wr io.Writer) error {
-	if w.Input.To.Node == uuid.Nil {
-		return fmt.Errorf("workflow has no input connected")
+func NewWorkflow() *Workflow {
+	start := node.NewStart()
+	return &Workflow{
+		ID:   uuid.New(),
+		Name: "New Workflow",
+		Nodes: []node.Node{
+			start,
+		},
+		Links: []node.Link{},
+		Positioning: map[uuid.UUID]Position{
+			start.ID(): Position{X: 50, Y: 50},
+		},
 	}
-	return newRunner(ctx, w).Run(updateChan, wr)
+}
+
+func (w *Workflow) Run(ctx context.Context, updateChan chan<- Update, output chan<- node.Output) error {
+	return newRunner(ctx, w).Run(updateChan, output)
 }
 
 func (w *Workflow) Validate() error {
@@ -40,16 +46,10 @@ func (w *Workflow) Validate() error {
 			return err
 		}
 	}
-	if err := w.Output.Validate(nil); err != nil {
-		return err
-	}
-	if err := w.Error.Validate(nil); err != nil {
-		return err
-	}
 	for _, link := range w.Links {
 		var foundFrom bool
 		var foundTo bool
-		for _, node := range append(w.Nodes, w.Output, w.Error) {
+		for _, node := range w.Nodes {
 			if node.ID() == link.From.Node {
 				foundFrom = true
 				if _, ok := node.GetOutputs().FindByName(link.From.Connector); !ok {
@@ -81,12 +81,6 @@ func (w *Workflow) FindNode(id uuid.UUID) (node.Node, error) {
 		if n.ID() == id {
 			return n, nil
 		}
-	}
-	if w.Output.ID() == id {
-		return w.Output, nil
-	}
-	if w.Error.ID() == id {
-		return w.Error, nil
 	}
 	return nil, fmt.Errorf("node not found")
 }

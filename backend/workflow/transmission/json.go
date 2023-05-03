@@ -18,6 +18,8 @@ func UnmarshalJSON(t Type, data json.RawMessage) (Transmission, error) {
 		switch t.Internal() {
 		case InternalTypeNumericRangeList:
 			target = new(numericRangeIterator)
+		case InternalTypeWordlist:
+			target = new(wordlistIterator)
 		default:
 			return nil, fmt.Errorf("unknown internal list type %q", t.Internal())
 		}
@@ -27,6 +29,10 @@ func UnmarshalJSON(t Type, data json.RawMessage) (Transmission, error) {
 		target = new(Response)
 	case TypeRequest | TypeResponse:
 		target = new(RequestResponsePair)
+	case TypeBoolean:
+		target = new(Boolean)
+	case TypeStart:
+		target = new(Start)
 	default:
 		return nil, fmt.Errorf("unknown type %q", t)
 	}

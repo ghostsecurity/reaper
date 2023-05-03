@@ -6,8 +6,8 @@ var _ Transmission = (*Map)(nil)
 
 type Map map[string]string
 
-func NewMap() *Map {
-	m := make(Map)
+func NewMap(data map[string]string) *Map {
+	m := Map(data)
 	return &m
 }
 

@@ -75,17 +75,17 @@ function cancelDelete() {
       <label for="name" class="block text-sm font-medium text-snow-storm">Workspace Name</label>
       <div class="relative mt-1 rounded-md shadow-sm">
         <input
-          autofocus
-          autocomplete="off"
-          autocapitalize="off"
-          spellcheck="false"
-          v-model="ws.name"
-          type="text"
-          name="name"
-          id="name"
-          class="block w-full rounded-md bg-polar-night-4 pr-10 focus:outline-none sm:text-sm"
-          aria-invalid="true"
-          aria-describedby="name-error" />
+            autofocus
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+            v-model="ws.name"
+            type="text"
+            name="name"
+            id="name"
+            class="block w-full rounded-md bg-polar-night-4 pr-10 focus:outline-none sm:text-sm"
+            aria-invalid="true"
+            aria-describedby="name-error"/>
       </div>
     </div>
     <div class="mt-8 italic text-gray-400 text-sm">
@@ -93,19 +93,19 @@ function cancelDelete() {
       requests will be treated as being in scope.
     </div>
     <div class="mt-4">
-      <ScopeEditor :scope="ws.scope" @save="setScope" :allowSimpleView="true" />
+      <ScopeEditor :scope="ws.scope" @save="setScope" :allowSimpleView="true"/>
     </div>
 
     <div class="divide-y divide-gray-200 pt-6 text-right">
       <div class="pb-4">
         <button
-          @click="selectNewWorkspace"
-          class="inline-flex items-center rounded border border-transparent bg-aurora-4 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">
+            @click="selectNewWorkspace"
+            class="inline-flex items-center rounded border border-transparent bg-aurora-4 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">
           Create
         </button>
         <button
-          @click="creating = false"
-          class="ml-2 inline-flex items-center rounded border border-transparent bg-aurora-1 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">
+            @click="creating = false"
+            class="ml-2 inline-flex items-center rounded border border-transparent bg-aurora-1 px-2.5 py-1.5 text-xs font-medium text-snow-storm-3 shadow-sm hover:bg-aurora-5 focus:outline-none">
           Cancel
         </button>
       </div>
@@ -117,17 +117,17 @@ function cancelDelete() {
         <div class="text-center pl-8 m-auto">
           <div class="flex flex-col items-center">
             <div class="flex-shrink-0">
-              <PlusCircleIcon class="h-12 w-12 text-frost-3" />
+              <PlusCircleIcon class="h-12 w-12 text-frost-3"/>
             </div>
             <p class="mt-1 text-base font-medium text-frost-3">Create new workspace</p>
             <p class="mt-1 text-sm text-gray-500 italic">A whole new world, a new fantastic point of view.</p>
           </div>
           <div class="mt-6">
             <button
-              @click="createWorkspace"
-              type="button"
-              class="inline-flex items-center rounded-md border border-transparent bg-frost-3 px-4 py-2 text-sm font-medium text-snow-storm-1 shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-aurora-5 focus:ring-offset-2">
-              <PlusIcon class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+                @click="createWorkspace"
+                type="button"
+                class="inline-flex items-center rounded-md border border-transparent bg-frost-3 px-4 py-2 text-sm font-medium text-snow-storm-1 shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-aurora-5 focus:ring-offset-2">
+              <PlusIcon class="-ml-1 mr-2 h-5 w-5" aria-hidden="true"/>
               New Workspace
             </button>
           </div>
@@ -138,7 +138,7 @@ function cancelDelete() {
           <div class="text-center pl-8 m-auto">
             <div class="flex flex-col items-center">
               <div class="flex-shrink-0">
-                <NoSymbolIcon class="h-12 w-12 text-gray-500" />
+                <NoSymbolIcon class="h-12 w-12 text-gray-500"/>
               </div>
               <p class="mt-1 text-base font-medium text-gray-500">No existing workspaces found</p>
               <p class="mt-1 text-sm text-gray-500 italic">Workspaces you create will show up here.</p>
@@ -149,11 +149,11 @@ function cancelDelete() {
           <li v-for="ws in props.workspaces" :key="ws.id">
             <div class="flex items-center px-2 py-4 hover:bg-frost-4 group">
               <div class="flex-shrink-0">
-                <BriefcaseIcon class="h-10 w-10 text-frost-3 group-hover:text-snow-storm-3" />
+                <BriefcaseIcon class="h-10 w-10 text-frost-3 group-hover:text-snow-storm-3"/>
               </div>
               <a
-                @click="selectWorkspace(ws.id)"
-                class="flex-grow items-center px-2 py-4 hover:bg-frost-4 group cursor-pointer">
+                  @click="selectWorkspace(ws.id)"
+                  class="flex-grow items-center px-2 py-4 hover:bg-frost-4 group cursor-pointer">
                 <div class="ml-4">
                   <p class="text-base font-medium text-snow-storm-3">
                     {{ ws.name }}
@@ -164,25 +164,25 @@ function cancelDelete() {
               <Menu as="div" class="relative inline-block text-left">
                 <div>
                   <MenuButton
-                    class="inline-flex w-full justify-center rounded-md dark:text-snow-storm-1 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm">
-                    <EllipsisVerticalIcon class="h-4 w-4" aria-hidden="true" />
+                      class="inline-flex w-full justify-center rounded-md dark:text-snow-storm-1 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm">
+                    <EllipsisVerticalIcon class="h-4 w-4" aria-hidden="true"/>
                   </MenuButton>
                 </div>
 
                 <transition
-                  enter-active-class="transition ease-out duration-100"
-                  enter-from-class="transform opacity-0 scale-95"
-                  enter-to-class="transform opacity-100 scale-100"
-                  leave-active-class="transition ease-in duration-75"
-                  leave-from-class="transform opacity-100 scale-100"
-                  leave-to-class="transform opacity-0 scale-95">
+                    enter-active-class="transition ease-out duration-100"
+                    enter-from-class="transform opacity-0 scale-95"
+                    enter-to-class="transform opacity-100 scale-100"
+                    leave-active-class="transition ease-in duration-75"
+                    leave-from-class="transform opacity-100 scale-100"
+                    leave-to-class="transform opacity-0 scale-95">
                   <MenuItems
-                    class="absolute right-0 z-10 mt-2 w-35 origin-top-right rounded-md dark:text-snow-storm-1 bg-white dark:bg-gray-700 shadow-lg">
+                      class="absolute right-0 z-10 mt-2 w-35 origin-top-right rounded-md dark:text-snow-storm-1 bg-white dark:bg-gray-700 shadow-lg">
                     <div class="py-1">
                       <MenuItem v-slot="{ active }">
                         <a
-                          @click="editWorkspace(ws.id)"
-                          :class="[
+                            @click="editWorkspace(ws.id)"
+                            :class="[
                             active
                               ? 'bg-gray-100 text-gray-900 dark:bg-gray-600 dark:text-snow-storm-1'
                               : 'text-gray-700 dark:text-snow-storm-1',
@@ -193,8 +193,8 @@ function cancelDelete() {
                       </MenuItem>
                       <MenuItem v-slot="{ active }">
                         <a
-                          @click="deleteWorkspace(ws.id)"
-                          :class="[
+                            @click="deleteWorkspace(ws.id)"
+                            :class="[
                             active
                               ? 'bg-gray-100 text-gray-900 dark:bg-gray-600 dark:text-snow-storm-1'
                               : 'text-gray-700 dark:text-snow-storm-1',
@@ -215,11 +215,11 @@ function cancelDelete() {
   </div>
 
   <ConfirmDialog
-    :show-delete="showDelete"
-    @confirm="confirmDelete"
-    @cancel="cancelDelete"
-    :confirm="`Delete`"
-    :cancel="`Cancel`"
-    :title="`Delete Workspace`"
-    :message="`Are you sure you want to delete this workspace?`" />
+      :show="showDelete"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+      :confirm="`Delete`"
+      :cancel="`Cancel`"
+      :title="`Delete Workspace`"
+      :message="`Are you sure you want to delete this workspace?`"/>
 </template>

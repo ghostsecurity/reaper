@@ -19,6 +19,7 @@ test: test-go test-js
 
 .PHONY: test-go
 test-go:
+	go clean -testcache
 	go test ./... -race
 
 .PHONY: test-js
@@ -40,3 +41,7 @@ lint-go:
 .PHONY: run
 run: clean wails
 	REAPER_LOG_LEVEL=debug wails dev
+
+.PHONY: fix
+fix:
+	cd frontend && npm install && npm run fix

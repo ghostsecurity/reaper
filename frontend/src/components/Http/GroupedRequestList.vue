@@ -40,9 +40,11 @@ const emit = defineEmits([
   'request-group-rename',
   'request-rename',
   'select',
+  'create-workflow-from-request',
 ])
 
 const requestActions = new Map<string, string>([
+  ['create-workflow-from-request', 'Create workflow...'],
   ['rename', 'Rename'],
   ['duplicate', 'Duplicate'],
   ['delete', 'Delete'],
@@ -168,6 +170,7 @@ function disableRequestDrag(evt: MouseEvent) {
   dropRequest.value = ''
   dragRequestNest.value = 0
 }
+
 function enableGroupDrag(evt: MouseEvent) {
   const li = findItem(evt, 'li', 'li-group')
   if (li === null) {
@@ -175,6 +178,7 @@ function enableGroupDrag(evt: MouseEvent) {
   }
   li.setAttribute('draggable', 'true')
 }
+
 function disableGroupDrag(evt: MouseEvent) {
   const li = findItem(evt, 'li', 'li-group')
   if (li === null) {
@@ -186,6 +190,7 @@ function disableGroupDrag(evt: MouseEvent) {
   dropRequest.value = ''
   dragRequestNest.value = 0
 }
+
 function dragGroupEnter(groupName: string) {
   if (dropGroup.value === groupName) {
     dragGroupNest.value += 1
@@ -194,6 +199,7 @@ function dragGroupEnter(groupName: string) {
   }
   dropGroup.value = groupName
 }
+
 function dragGroupLeave(groupName: string) {
   if (dropGroup.value === groupName) {
     dragGroupNest.value -= 1
@@ -203,6 +209,7 @@ function dragGroupLeave(groupName: string) {
     }
   }
 }
+
 function dragRequestEnter(id: string) {
   if (dropRequest.value === id) {
     dragRequestNest.value += 1
@@ -211,6 +218,7 @@ function dragRequestEnter(id: string) {
     dropRequest.value = id
   }
 }
+
 function dragRequestLeave(id: string) {
   if (dropRequest.value === id) {
     dragRequestNest.value -= 1
@@ -220,6 +228,7 @@ function dragRequestLeave(id: string) {
     }
   }
 }
+
 function expandGroup(group: Group, expand: boolean) {
   if (expand) {
     shrunkenGroups.delete(group.id)
@@ -227,17 +236,21 @@ function expandGroup(group: Group, expand: boolean) {
     shrunkenGroups.add(group.id)
   }
 }
+
 function deleteGroup(group: Group) {
   emit('request-group-delete', group.id)
 }
+
 function renameGroup(groupId: string, name: string) {
   emit('request-group-rename', groupId, name)
   renamingGroup.value = ''
 }
+
 function renameRequest(requestId: string, name: string) {
   emit('request-rename', requestId, name)
   renamingRequest.value = ''
 }
+
 function createGroup(name: string) {
   emit('request-group-create', name)
   creatingGroup.value = false
@@ -266,6 +279,9 @@ function actionRequest(action: string, request: Request) {
     case 'rename':
       renamingRequest.value = request.id
       break
+    case 'create-workflow-from-request':
+      emit('create-workflow-from-request', request.inner)
+      break
     default:
       break
   }
@@ -274,11 +290,12 @@ function actionRequest(action: string, request: Request) {
 
 <template>
   <InputBox v-if="creatingGroup" title="New Group" message="Enter the group name." @cancel="creatingGroup = false"
-    @confirm="createGroup($event)" />
+            @confirm="createGroup($event)"/>
   <InputBox v-if="renamingGroup" title="Rename group" message="Enter the new group name." @cancel="renamingGroup = ''"
-    @confirm="renameGroup(renamingGroup, $event)" />
+            @confirm="renameGroup(renamingGroup, $event)"/>
   <InputBox v-else-if="renamingRequest" title="Rename request" message="Enter the new request name."
-    @cancel="renamingRequest = ''" @confirm="renameRequest(renamingRequest, $event)" :initial="findCurrentName()" />
+            @cancel="renamingRequest = ''" @confirm="renameRequest(renamingRequest, $event)"
+            :initial="findCurrentName()"/>
   <div class="flex h-full flex-col">
     <div class="flex-none">
       <div class="flex h-10 max-h-10 w-full text-left">
@@ -287,13 +304,13 @@ function actionRequest(action: string, request: Request) {
         </div>
         <div class="flex-0">
           <button type="button"
-            class="inline-flex items-center rounded-md border border-transparent bg-frost-3 px-4 py-2 text-sm font-medium text-polar-night-1 shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-aurora-5 focus:ring-offset-2">
-            <DocumentArrowUpIcon class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+                  class="inline-flex items-center rounded-md border border-transparent bg-frost-3 px-4 py-2 text-sm font-medium text-polar-night-1 shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-aurora-5 focus:ring-offset-2">
+            <DocumentArrowUpIcon class="-ml-1 mr-2 h-5 w-5" aria-hidden="true"/>
             <span class="hidden sm:inline">New Request</span>
           </button>
           <button @click.stop="creatingGroup = true" type="button"
-            class="ml-1 inline-flex items-center rounded-md border border-transparent bg-frost-3 px-4 py-2 text-sm font-medium text-polar-night-1 shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-aurora-5 focus:ring-offset-2">
-            <FolderPlusIcon class="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+                  class="ml-1 inline-flex items-center rounded-md border border-transparent bg-frost-3 px-4 py-2 text-sm font-medium text-polar-night-1 shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-aurora-5 focus:ring-offset-2">
+            <FolderPlusIcon class="-ml-1 mr-2 h-5 w-5" aria-hidden="true"/>
             <span class="hidden sm:inline">New Group</span>
           </button>
         </div>
@@ -303,14 +320,14 @@ function actionRequest(action: string, request: Request) {
       <div class="max-h-full">
         <div v-if="props.groups.length === 0">
           <div class="pt-8 pl-8 text-center">
-            <component :is="props.emptyIcon" class="mx-auto h-12 w-12" />
+            <component :is="props.emptyIcon" class="mx-auto h-12 w-12"/>
             <h3 class="mt-2 text-sm font-medium">{{ props.emptyTitle }}</h3>
             <p class="mt-1 text-sm text-snow-storm-1">{{ props.emptyMessage }}</p>
           </div>
         </div>
         <div v-else-if="filterGroups(props.groups).length === 0">
           <div class="pt-8 pl-8 text-center">
-            <MagnifyingGlassCircleIcon class="mx-auto h-12 w-12" />
+            <MagnifyingGlassCircleIcon class="mx-auto h-12 w-12"/>
             <h3 class="mt-2 text-sm font-medium">No Results</h3>
             <p class="mt-1 text-sm text-snow-storm-1">No requests match your search criteria</p>
           </div>
@@ -318,19 +335,19 @@ function actionRequest(action: string, request: Request) {
         <div v-else class="h-full sm:rounded-md">
           <ul role="list" class="divide-y divide-polar-night-3">
             <li class="li-group pt-4 first:pt-0" v-for="group in props.groups" :key="group.id"
-              @drop="onDrop($event, group, null)" @dragover.prevent @dragenter.prevent="dragGroupEnter(group.id)"
-              @dragleave.prevent="dragGroupLeave(group.id)" @dragstart.stop="startGroupDrag($event, group)">
+                @drop="onDrop($event, group, null)" @dragover.prevent @dragenter.prevent="dragGroupEnter(group.id)"
+                @dragleave.prevent="dragGroupLeave(group.id)" @dragstart.stop="startGroupDrag($event, group)">
               <div :class="[!draggingRequest && group.id === dropGroup ? 'border-t-2 border-aurora-5' : '']">
                 <div :class="['flex', !shrunkenGroups.has(group.id) ? 'border-b border-polar-night-4' : '']">
                   <div :class="['drag-handle mb-1 flex-1 pb-1 text-left']" @click.prevent.stop
-                    @mousedown.stop="enableGroupDrag" @mouseup.stop="disableGroupDrag">
+                       @mousedown.stop="enableGroupDrag" @mouseup.stop="disableGroupDrag">
                     <a v-if="!shrunkenGroups.has(group.id)" @click="expandGroup(group, false)">
-                      <ChevronDownIcon class="-mt-1 inline h-5 w-5" />
-                      <FolderOpenIcon class="-mt-1 inline h-5 w-5" />
+                      <ChevronDownIcon class="-mt-1 inline h-5 w-5"/>
+                      <FolderOpenIcon class="-mt-1 inline h-5 w-5"/>
                     </a>
                     <a v-else @click="expandGroup(group, true)">
-                      <ChevronRightIcon class="-mt-1 inline h-5 w-5" />
-                      <FolderIcon class="-mt-1 inline h-5 w-5" />
+                      <ChevronRightIcon class="-mt-1 inline h-5 w-5"/>
+                      <FolderIcon class="-mt-1 inline h-5 w-5"/>
                     </a>
                     <span class="ml-1">{{ group.name ? group.name : 'Untitled' }}</span>
                     <span class="ml-1 text-sm text-gray-500">
@@ -341,10 +358,10 @@ function actionRequest(action: string, request: Request) {
                   </div>
                   <div class="flex-0">
                     <a @click.stop="renamingGroup = group.id" class="cursor-pointer text-gray-400 hover:text-frost-2">
-                      <PencilSquareIcon class="inline h-4 w-4" />
+                      <PencilSquareIcon class="inline h-4 w-4"/>
                     </a>
                     <a @click.stop="deleteGroup(group)" class="cursor-pointer text-gray-400 hover:text-aurora-1">
-                      <TrashIcon class="inline h-4 w-4" />
+                      <TrashIcon class="inline h-4 w-4"/>
                     </a>
                   </div>
                 </div>
@@ -359,28 +376,29 @@ function actionRequest(action: string, request: Request) {
                     </div>
                   </div>
                   <li class="li-request bg-snow-storm dark:bg-polar-night-1a" v-else
-                    v-for="outer in filterRequests(group.requests)" :key="outer.id"
-                    @drop.stop="onDrop($event, group, outer)" @dragover.prevent
-                    @dragenter.prevent="dragRequestEnter(outer.id)" @dragleave.prevent="dragRequestLeave(outer.id)"
-                    @dragstart.stop="startRequestDrag($event, outer)" @dragend="disableRequestDrag">
+                      v-for="outer in filterRequests(group.requests)" :key="outer.id"
+                      @drop.stop="onDrop($event, group, outer)" @dragover.prevent
+                      @dragenter.prevent="dragRequestEnter(outer.id)" @dragleave.prevent="dragRequestLeave(outer.id)"
+                      @dragstart.stop="startRequestDrag($event, outer)" @dragend="disableRequestDrag">
                     <a :class="[
                       'relative block pl-4',
                       outer.id === selected ? 'bg-polar-night-3' : 'hover:bg-gray-50 dark:hover:bg-polar-night-2',
                       draggingRequest && dropRequest === outer.id ? 'border-b-2 border-aurora-5' : '',
                     ]" @click="selectRequest(outer.inner)">
                       <div
-                        :class="['left ending truncate text-xs font-semibold text-snow-storm dark:text-polar-night', MethodClass(outer.inner)]">
-                        {{ outer.inner.Method }}</div>
+                          :class="['left ending truncate text-xs font-semibold text-snow-storm dark:text-polar-night', MethodClass(outer.inner)]">
+                        {{ outer.inner.Method }}
+                      </div>
                       <div class="py-1 px-2">
                         <div class="flex">
                           <div class="flex-0 drag-handle m-auto pl-1 pr-3" @click.prevent.stop
-                            @mousedown.stop="enableRequestDrag" @mouseup.stop="disableRequestDrag">
-                            <Bars3Icon class="h-6 w-6" />
+                               @mousedown.stop="enableRequestDrag" @mouseup.stop="disableRequestDrag">
+                            <Bars3Icon class="h-6 w-6"/>
                           </div>
                           <div class="flex-1">
                             <RequestItemSummary :request="outer.inner" :name="outer.name" :show-tags="false"
-                              @rename="renamingRequest = outer.id" :actions="requestActions"
-                              @action="actionRequest($event, outer)" :show-response="false" />
+                                                @rename="renamingRequest = outer.id" :actions="requestActions"
+                                                @action="actionRequest($event, outer)" :show-response="false"/>
                           </div>
                         </div>
                       </div>

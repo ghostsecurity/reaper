@@ -95,7 +95,7 @@ function indent() {
 
 <template>
   <div class="border border-polar-night-3 w-full h-full p-2">
-    <div :class="[
+    <div style="min-height: 100px;" :class="[
       'wrapper overflow-x-auto h-full w-full',
       busy ? 'wrapper plain text-left' : 'wrapper highlighted min-h-full text-left',
     ]">

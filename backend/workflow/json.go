@@ -38,19 +38,10 @@ type LinkM struct {
 }
 
 func (w *Workflow) Pack() (*WorkflowM, error) {
-	mOutput, err := toNodeM(w.Output)
-	if err != nil {
-		return nil, err
-	}
-
-	mError, err := toNodeM(w.Error)
-	if err != nil {
-		return nil, err
-	}
 
 	mNodes := make([]NodeM, len(w.Nodes))
 	for i, node := range w.Nodes {
-		nm, err := toNodeM(node)
+		nm, err := ToNodeM(node)
 		if err != nil {
 			return nil, err
 		}
@@ -60,10 +51,6 @@ func (w *Workflow) Pack() (*WorkflowM, error) {
 	return &WorkflowM{
 		ID:          w.ID.String(),
 		Name:        w.Name,
-		Request:     w.Request,
-		Input:       toLinkM(w.Input),
-		Output:      *mOutput,
-		Error:       *mError,
 		Nodes:       mNodes,
 		Links:       toLinkMs(w.Links),
 		Positioning: toPositioningM(w.Positioning),
@@ -105,23 +92,10 @@ func (m *WorkflowM) Unpack() (*Workflow, error) {
 	w := Workflow{
 		ID:          toUUIDOrNil(m.ID),
 		Name:        m.Name,
-		Request:     m.Request,
-		Input:       fromLinkM(m.Input),
 		Nodes:       make([]node.Node, len(m.Nodes)),
 		Links:       fromLinkMs(m.Links),
 		Positioning: fromPositioningM(m.Positioning),
 	}
-
-	mOut, err := m.Output.ToNode()
-	if err != nil {
-		return nil, err
-	}
-	w.Output = mOut
-	mErr, err := m.Error.ToNode()
-	if err != nil {
-		return nil, err
-	}
-	w.Error = mErr
 
 	for i, node := range m.Nodes {
 		n, err := node.ToNode()
@@ -147,33 +121,54 @@ func (w *Workflow) UnmarshalJSON(data []byte) error {
 }
 
 type NodeM struct {
-	Id   uuid.UUID        `json:"id"`
-	Type node.NodeType    `json:"type"`
-	Vars *node.VarStorage `json:"vars"`
+	Id       string            `json:"id"`
+	Name     string            `json:"name"`
+	Type     int               `json:"type"`
+	Vars     *node.VarStorageM `json:"vars"`
+	ReadOnly bool              `json:"readonly"`
 }
 
-func toNodeM(n node.Node) (*NodeM, error) {
+func ToNodeM(n node.Node) (*NodeM, error) {
+	packed, err := n.GetVars().Pack()
+	if err != nil {
+		return nil, err
+	}
 	return &NodeM{
-		Id:   n.ID(),
-		Type: n.Type(),
-		Vars: n.GetVars(),
+		Id:       n.ID().String(),
+		Name:     n.Name(),
+		Type:     int(n.Type()),
+		Vars:     packed,
+		ReadOnly: n.IsReadOnly(),
 	}, nil
 }
 
 func (n *NodeM) ToNode() (node.Node, error) {
 	var real node.Node
-	switch n.Type {
+	switch node.Type(n.Type) {
 	case node.TypeFuzzer:
 		real = node.NewFuzzer()
-	case node.TypeVerifier:
-		real = node.NewVerifier()
+	case node.TypeStatusFilter:
+		real = node.NewStatusFilter()
 	case node.TypeOutput:
 		real = node.NewOutput()
+	case node.TypeRequest:
+		real = node.NewRequest()
+	case node.TypeStart:
+		real = node.NewStart()
+	case node.TypeSender:
+		real = node.NewSender()
+	case node.TypeVariables:
+		real = node.NewVars()
 	default:
 		return nil, fmt.Errorf("unknown node type: %v", n.Type)
 	}
-	real.SetID(n.Id)
-	real.SetVars(n.Vars)
+	real.SetID(toUUIDOrNil(n.Id))
+	real.SetName(n.Name)
+	unpacked, err := n.Vars.Unpack()
+	if err != nil {
+		return nil, err
+	}
+	real.SetVars(unpacked)
 	return real, nil
 }
 
@@ -221,4 +216,8 @@ func fromLinkDirectionM(ld LinkDirectionM) node.LinkDirection {
 		Node:      toUUIDOrNil(ld.Node),
 		Connector: ld.Connector,
 	}
+}
+
+type VarsM struct {
+	Values map[string]interface{} `json:"static"`
 }

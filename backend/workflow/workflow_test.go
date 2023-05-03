@@ -1,21 +1,18 @@
 package workflow
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net"
 	"net/http"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/ghostsecurity/reaper/backend/packaging"
 	"github.com/ghostsecurity/reaper/backend/workflow/node"
 	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -46,20 +43,23 @@ func Test_FuzzingWorkflow(t *testing.T) {
 		"placeholder": transmission.NewString("$ID$"),
 		"list":        transmission.NewNumericRangeIterator(0, 100),
 	}))
-	verifier := node.NewVerifier()
+	verifier := node.NewStatusFilter()
 	require.NoError(t, verifier.SetStaticInputValues(map[string]transmission.Transmission{
 		"min": transmission.NewInt(200),
 		"max": transmission.NewInt(200),
 	}))
 
 	nOutput := node.NewOutput()
+	require.NoError(t, nOutput.AddStaticInputValue("template", transmission.NewString("Account: $ID$")))
 	nError := node.NewOutput()
+	require.NoError(t, nError.SetStaticInputValues(map[string]transmission.Transmission{
+		"stdout": transmission.NewBoolean(false),
+		"stderr": transmission.NewBoolean(true),
+	}))
 
-	// start workflow with input node and output node
-	workflow := &Workflow{
-		ID:   uuid.New(),
-		Name: "test",
-		Request: packaging.HttpRequest{
+	reqNode := node.NewRequest()
+	require.NoError(t, reqNode.SetStaticInputValues(map[string]transmission.Transmission{
+		"input": transmission.NewRequest(packaging.HttpRequest{
 			Method: "GET",
 			URL:    "http://localhost:8888/account?id=$ID$",
 			Headers: []packaging.KeyValue{
@@ -68,44 +68,77 @@ func Test_FuzzingWorkflow(t *testing.T) {
 					Value: "localhost:8888",
 				},
 			},
-		},
-		Input: node.Link{
+		}),
+	}))
+
+	sender := node.NewSender()
+
+	flow := NewWorkflow()
+	start := flow.Nodes[0]
+	flow.Nodes = []node.Node{
+		start,
+		reqNode,
+		fuzzer,
+		verifier,
+		nOutput,
+		nError,
+		sender,
+	}
+
+	flow.Links = []node.Link{
+		{
+			From: node.LinkDirection{
+				Node:      start.ID(),
+				Connector: "output",
+			},
 			To: node.LinkDirection{
 				Node:      fuzzer.ID(),
+				Connector: "start",
+			},
+		},
+		{
+			From: node.LinkDirection{
+				Node:      reqNode.ID(),
+				Connector: "output",
+			},
+			To: node.LinkDirection{
+				Node:      sender.ID(),
 				Connector: "request",
 			},
 		},
-		Output: nOutput,
-		Error:  nError,
-		Nodes: []node.Node{
-			fuzzer,
-			verifier,
-		},
-		Links: []node.Link{
-			{
-				From: node.LinkDirection{
-					Node:      fuzzer.ID(),
-					Connector: "output",
-				},
-				To: node.LinkDirection{
-					Node:      verifier.ID(),
-					Connector: "response",
-				},
+		{
+			From: node.LinkDirection{
+				Node:      fuzzer.ID(),
+				Connector: "output",
 			},
-			{
-				From: node.LinkDirection{
-					Node:      verifier.ID(),
-					Connector: "good",
-				},
-				To: node.LinkDirection{
-					Node:      nOutput.ID(),
-					Connector: "input",
-				},
+			To: node.LinkDirection{
+				Node:      sender.ID(),
+				Connector: "replacements",
+			},
+		},
+		{
+			From: node.LinkDirection{
+				Node:      sender.ID(),
+				Connector: "output",
+			},
+			To: node.LinkDirection{
+				Node:      verifier.ID(),
+				Connector: "response",
+			},
+		},
+		{
+			From: node.LinkDirection{
+				Node:      verifier.ID(),
+				Connector: "good",
+			},
+			To: node.LinkDirection{
+				Node:      nOutput.ID(),
+				Connector: "input",
 			},
 		},
 	}
 
-	require.NoError(t, workflow.Validate())
+	require.NoError(t, flow.Validate())
 
 	t.Run("run", func(t *testing.T) {
 
@@ -120,15 +153,16 @@ func Test_FuzzingWorkflow(t *testing.T) {
 				fmt.Printf("update: %s: %s\n", update.Node, update.Message)
 			}
 		}()
+		outs := make(chan node.Output, 100)
+		defer close(outs)
 
-		buf := bytes.NewBuffer(nil)
-		require.NoError(t, workflow.Run(ctx, updates, buf))
-		assert.True(t, strings.HasSuffix(strings.Split(buf.String(), "\n")[0], fmt.Sprintf("($ID$=%d)", secret)))
+		require.NoError(t, flow.Run(ctx, updates, outs))
+		assert.Equal(t, fmt.Sprintf("Account: %d\n", secret), (<-outs).Message)
 	})
 
 	t.Run("save to disk, reload and run", func(t *testing.T) {
 
-		data, err := json.Marshal(workflow)
+		data, err := json.Marshal(flow)
 		require.NoError(t, err)
 
 		var w Workflow
@@ -146,8 +180,10 @@ func Test_FuzzingWorkflow(t *testing.T) {
 			}
 		}()
 
-		buf := bytes.NewBuffer(nil)
-		require.NoError(t, w.Run(ctx, updates, buf))
-		assert.True(t, strings.HasSuffix(strings.Split(buf.String(), "\n")[0], fmt.Sprintf("($ID$=%d)", secret)))
+		outs := make(chan node.Output, 100)
+		defer close(outs)
+
+		require.NoError(t, w.Run(ctx, updates, outs))
+		assert.Equal(t, fmt.Sprintf("Account: %d\n", secret), (<-outs).Message)
 	})
 }

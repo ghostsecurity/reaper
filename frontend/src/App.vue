@@ -19,7 +19,7 @@ import {
   SaveSettings,
   GenerateID,
   Confirm,
-  Warn,
+  Warn, CreateWorkflowFromRequest,
 } from '../wailsjs/go/backend/App'
 import Structure from './components/TreeStructure.vue'
 import AppDashboard from './components/AppDashboard.vue'
@@ -100,6 +100,7 @@ function saveWorkspace(ws: workspace.Workspace) {
   saveTimeout = setTimeout(() => {
     SaveWorkspace(currentWorkspace)
   }, 1000) as unknown as number
+  closeWorkspaceConfig()
 }
 
 function showSettings() {
@@ -349,6 +350,16 @@ function renameRequest(requestId: string, name: string) {
   request.name = name
 }
 
+const workflowId = ref('')
+
+function createWorkflowFromRequest(request: HttpRequest) {
+  CreateWorkflowFromRequest(request).then(w => {
+    currentWorkspace.workflows.push(w)
+    saveWorkspace(currentWorkspace)
+    workflowId.value = w.id
+  })
+}
+
 function sendRequest(request: HttpRequest) {
   EventsEmit('SendRequest', request)
 }
@@ -419,7 +430,9 @@ function sendRequest(request: HttpRequest) {
                       @workspace-save="saveWorkspace"
                       @group-order-change="reorderGroup" @duplicate-request="duplicateRequest"
                       @request-group-delete="deleteRequestGroup" @request-group-rename="renameRequestGroup"
-                      @request-rename="renameRequest" @send-request="sendRequest" @update-request="updateRequest"/>
+                      @request-rename="renameRequest" @send-request="sendRequest" @update-request="updateRequest"
+                      @create-workflow-from-request="createWorkflowFromRequest" :current-workflow-id="workflowId"
+        />
       </div>
     </div>
   </div>

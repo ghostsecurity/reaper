@@ -97,30 +97,30 @@ function localParams(c: KeyValue[]): KeyValue[] {
     <div v-if="readonly && Object.keys(data).length === 0" class="w-full relative">{{ emptyMessage }}</div>
     <table class="w-full" v-else>
       <tbody class="bg-white dark:bg-reaper-bg-dark">
-        <tr v-for="(row, index) in localParams(copy)" :key="index">
-          <td class="w-1/5 min-w-200 border border-snow-storm-3 py-2 px-3 text-left text-xs dark:border-polar-night-4">
-            <AutocompleteInput
+      <tr v-for="(row, index) in localParams(copy)" :key="index">
+        <td class="w-2/5 min-w-200 border border-snow-storm-3 py-2 px-3 text-left text-xs dark:border-polar-night-4">
+          <AutocompleteInput
               @change="updateKey(index, $event)"
               :value="row.Key"
               :readonly="readonly"
               :suggestions="keySuggestions"
-              :left="true" />
-          </td>
-          <td class="border border-snow-storm-3 py-2 px-3 text-left text-xs dark:border-polar-night-4">
-            <AutocompleteInput
+              :left="true"/>
+        </td>
+        <td class="border border-snow-storm-3 py-2 px-3 text-left text-xs dark:border-polar-night-4">
+          <AutocompleteInput
               @change="updateValue(index, $event)"
               :value="row.Value"
               :readonly="readonly"
-              :suggestions="[]" />
-          </td>
-          <td
+              :suggestions="[]"/>
+        </td>
+        <td
             v-if="!readonly && index !== copy.length"
             class="w-[1%] border border-snow-storm-3 px-2 text-center text-xs dark:border-polar-night-4">
-            <a v-if="index != copy.length" @click.stop.prevent="deleteRow(index)" class="cursor-pointer text-gray-400">
-              <TrashIcon class="m-auto h-4 w-4" />
-            </a>
-          </td>
-        </tr>
+          <a v-if="index != copy.length" @click.stop.prevent="deleteRow(index)" class="cursor-pointer text-gray-400">
+            <TrashIcon class="m-auto h-4 w-4"/>
+          </a>
+        </td>
+      </tr>
       </tbody>
     </table>
   </div>

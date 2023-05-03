@@ -16,11 +16,11 @@ const props = defineProps({
   savedRequestIds: { type: Array as PropType<string[]>, required: false, default: () => [] },
 })
 
-const emit = defineEmits(['save-request', 'unsave-request', 'select'])
+const emit = defineEmits(['save-request', 'unsave-request', 'select', 'create-workflow-from-request'])
 
 function getActions(request: HttpRequest): Map<string, string> {
   const actions = new Map<string, string>([
-    ['something', 'Something'],
+    ['create-workflow-from-request', 'Create workflow...'],
   ])
   if (isSaved(request.ID)) {
     actions.set('unsave', 'Unsave')
@@ -41,9 +41,11 @@ function selectRequest(request: HttpRequest | null): void {
 function isSaved(id: string) {
   return props.savedRequestIds.includes(id)
 }
+
 function saveRequest(req: HttpRequest, groupID: string) {
   emit('save-request', req, groupID)
 }
+
 function unsaveRequest(req: HttpRequest) {
   emit('unsave-request', req)
 }
@@ -56,8 +58,11 @@ function actionRequest(action: string, r: HttpRequest) {
     case 'unsave':
       unsaveRequest(r)
       break
-    default:
+    case 'create-workflow-from-request':
+      emit('create-workflow-from-request', r)
       break
+    default:
+      throw new Error(`Unknown action: ${action}`)
   }
 }
 </script>
@@ -66,21 +71,22 @@ function actionRequest(action: string, r: HttpRequest) {
   <div class="overflow-y-auto h-full max-h-full max-w-full">
     <div v-if="requests.length === 0">
       <div class="pt-8 pl-8 text-center text-frost-3">
-        <component :is="emptyIcon" class="mx-auto h-12 w-12" />
+        <component :is="emptyIcon" class="mx-auto h-12 w-12"/>
         <h3 class="mt-2 text-sm font-medium">{{ emptyTitle }}</h3>
         <p class="mt-1 text-sm">{{ emptyMessage }}</p>
       </div>
     </div>
     <div v-else-if="filterRequests(requests).length === 0">
       <div class="pt-8 pl-8 text-center text-frost-3">
-        <MagnifyingGlassCircleIcon class="mx-auto h-12 w-12" />
+        <MagnifyingGlassCircleIcon class="mx-auto h-12 w-12"/>
         <h3 class="mt-2 text-sm font-bold">No Results</h3>
         <p class="mt-1 text-sm">No requests match your search criteria</p>
       </div>
     </div>
     <div v-else>
       <ul role="list" class="space-y-1">
-        <li class="bg-snow-storm-2 dark:bg-polar-night-1a" v-for="request in filterRequests(requests)" :key="request.ID">
+        <li class="bg-snow-storm-2 dark:bg-polar-night-1a" v-for="request in filterRequests(requests)"
+            :key="request.ID">
           <a @click="selectRequest(request)" :class="[
             'relative  block px-4 ',
             request.ID == selected
@@ -101,15 +107,15 @@ function actionRequest(action: string, r: HttpRequest) {
               <div class="flex">
                 <div class="flex-0 m-auto pl-0 pr-4">
                   <a v-if="isSaved(request.ID)" class="group cursor-pointer" @click.stop="unsaveRequest(request)">
-                    <StarIcon class="h-5 w-5 text-aurora-3 group-hover:text-gray-400" />
+                    <StarIcon class="h-5 w-5 text-aurora-3 group-hover:text-gray-400"/>
                   </a>
                   <a v-else class="group cursor-pointer" @click.stop="saveRequest(request, '')">
-                    <EmptyStarIcon class="h-5 w-5 text-gray-400 group-hover:text-aurora-3" />
+                    <EmptyStarIcon class="h-5 w-5 text-gray-400 group-hover:text-aurora-3"/>
                   </a>
                 </div>
                 <div class="flex-1">
                   <RequestItemSummary :request="request" :actions="getActions(request)"
-                    @action="actionRequest($event, request)" />
+                                      @action="actionRequest($event, request)"/>
                 </div>
               </div>
             </div>

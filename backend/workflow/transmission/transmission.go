@@ -51,10 +51,14 @@ const (
 	TypeList
 	TypeRequest
 	TypeResponse
+	TypeStart
+	TypeBoolean
+	TypeAny = 0
 )
 
 type Stringer interface{ String() string }
 type Inter interface{ Int() int }
+type Booler interface{ Bool() bool }
 type Mapper interface{ Map() map[string]string }
 type Lister interface {
 	Next() (string, bool)
@@ -65,7 +69,7 @@ type Requester interface{ Request() packaging.HttpRequest }
 type Responser interface{ Response() packaging.HttpResponse }
 
 func (t Type) Validate(transmission Transmission) error {
-	if t.Parent()&transmission.Type().Parent() == 0 {
+	if t.Parent()&transmission.Type().Parent() != t.Parent() {
 		return fmt.Errorf("invalid transmission type %q for type %q", transmission.Type(), t)
 	}
 	for _, concrete := range []ParentType{
@@ -104,6 +108,10 @@ func (t Type) Validate(transmission Transmission) error {
 			if _, ok := transmission.(Responser); !ok {
 				return fmt.Errorf("invalid transmission type %q for type %q", transmission.Type(), t)
 			}
+		case TypeBoolean:
+			if _, ok := transmission.(Booler); !ok {
+				return fmt.Errorf("invalid transmission type %q for type %q", transmission.Type(), t)
+			}
 		}
 	}
 	return nil
@@ -112,8 +120,10 @@ func (t Type) Validate(transmission Transmission) error {
 type InternalType uint32
 
 const (
-	InternalTypeNone InternalType = 1 << iota
+	InternalTypeNone InternalType = iota
+	InternalTypeUnknown
 	InternalTypeNumericRangeList
+	InternalTypeWordlist
 )
 
 func (t ParentType) Contains(other ParentType) bool {
