@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 )
 
 var _ Transmission = (*numericRangeIterator)(nil)
@@ -123,4 +124,49 @@ func (w *wordlistIterator) MarshalJSON() ([]byte, error) {
 
 func (w *wordlistIterator) UnmarshalJSON(data []byte) error {
 	return json.Unmarshal(data, &w.filename)
+}
+
+type csvIterator struct {
+	items []string
+	ptr   int
+}
+
+func NewCSVIterator(raw string) *csvIterator {
+	return &csvIterator{
+		items: strings.Split(raw, ","),
+	}
+}
+
+func (c *csvIterator) Next() (string, bool) {
+	if c.ptr < len(c.items) {
+		item := c.items[c.ptr]
+		c.ptr++
+		return item, true
+	}
+	return "", false
+}
+
+func (c *csvIterator) Count() int {
+	return len(c.items)
+}
+
+func (c *csvIterator) Complete() bool {
+	return c.ptr >= len(c.items)
+}
+
+func (c *csvIterator) Type() Type {
+	return NewType(TypeList, InternalTypeCommaSeparatedList)
+}
+
+func (c *csvIterator) MarshalJSON() ([]byte, error) {
+	return json.Marshal(strings.Join(c.items, ","))
+}
+
+func (c *csvIterator) UnmarshalJSON(data []byte) error {
+	var raw string
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	c.items = strings.Split(raw, ",")
+	return nil
 }

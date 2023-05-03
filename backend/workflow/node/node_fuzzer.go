@@ -111,12 +111,11 @@ func (n *FuzzerNode) Run(ctx context.Context, in map[string]transmission.Transmi
 			default:
 			}
 
-			data := map[string]string{
-				placeholder: word,
-			}
+			data := map[string]string{}
 			for k, v := range vars {
 				data[k] = v
 			}
+			data[placeholder] = word
 
 			output <- OutputInstance{
 				OutputName: "output",

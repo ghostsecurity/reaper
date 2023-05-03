@@ -124,6 +124,7 @@ const (
 	InternalTypeUnknown
 	InternalTypeNumericRangeList
 	InternalTypeWordlist
+	InternalTypeCommaSeparatedList
 )
 
 func (t ParentType) Contains(other ParentType) bool {
