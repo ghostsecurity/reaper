@@ -1,16 +1,16 @@
 <script lang="ts" setup>
-import {computed, PropType, ref, watch} from 'vue'
-import {XMarkIcon, FolderIcon} from '@heroicons/vue/20/solid'
-import {node, workflow} from '../../../wailsjs/go/models'
-import {NodeType, ParentType, NodeTypeName, ChildType} from '../../lib/Workflows'
+import { computed, PropType, ref, watch } from 'vue'
+import { XMarkIcon, FolderIcon } from '@heroicons/vue/20/solid'
+import { node, workflow } from '../../../wailsjs/go/models'
+import { NodeType, ParentType, NodeTypeName, ChildType } from '../../lib/Workflows'
 import IDE from '../Http/IDE.vue'
-import {HttpRequest} from '../../lib/Http'
+import { HttpRequest } from '../../lib/Http'
 import KeyValEditor from '../KeyValEditor.vue'
-import {KeyValue} from '../../lib/KeyValue'
-import {SelectFile} from '../../../wailsjs/go/backend/App'
+import { KeyValue } from '../../lib/KeyValue'
+import { SelectFile } from '../../../wailsjs/go/backend/App'
 
 const props = defineProps({
-  node: {type: Object as PropType<workflow.NodeM>, required: true},
+  node: { type: Object as PropType<workflow.NodeM>, required: true },
 })
 
 const safe = ref<workflow.NodeM>(safeCopy(props.node))
@@ -180,19 +180,19 @@ function updateWordList(field: node.Connector) {
     return
   }
   SelectFile('Select wordlist').then(
-      (path: string) => {
-        if (!path) {
-          return
-        }
-        if (!safe.value.vars) {
-          safe.value.vars = new node.VarStorageM({})
-        }
-        safe.value.vars.static[field.name].data = path
-        publish()
-      },
-      (err: Error) => {
-        throw err
-      },
+    (path: string) => {
+      if (!path) {
+        return
+      }
+      if (!safe.value.vars) {
+        safe.value.vars = new node.VarStorageM({})
+      }
+      safe.value.vars.static[field.name].data = path
+      publish()
+    },
+    (err: Error) => {
+      throw err
+    },
   )
 }
 
