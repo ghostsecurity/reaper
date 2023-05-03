@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import {onMounted, onUpdated, PropType, ref, watch} from "vue";
+import { onMounted, onUpdated, PropType, ref } from 'vue'
 
-const props = defineProps({
-  lines: {type: Array as PropType<string[]>, required: true},
+defineProps({
+  lines: { type: Array as PropType<string[]>, required: true },
 })
 
 const terminal = ref(null)
@@ -11,7 +11,7 @@ function scrollToBottom() {
   if (!terminal.value) {
     return
   }
-  let el = terminal.value as HTMLElement
+  const el = terminal.value as HTMLElement
   el.scrollTop = el.scrollHeight
 }
 

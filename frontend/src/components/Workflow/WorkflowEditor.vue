@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {onActivated, onBeforeUpdate, onMounted, onUpdated, PropType, ref, watch} from 'vue'
+import { onActivated, onBeforeUpdate, onMounted, onUpdated, PropType, ref, watch } from 'vue'
 import {
   BeakerIcon,
   PlayIcon,
@@ -12,21 +12,21 @@ import {
   ExclamationCircleIcon, BarsArrowDownIcon, BoltIcon, EyeSlashIcon,
   XCircleIcon,
 } from '@heroicons/vue/20/solid'
-import {uuid} from 'vue-uuid'
-import {workflow} from '../../../wailsjs/go/models'
-import {CreateNode} from '../../../wailsjs/go/backend/App'
+import { uuid } from 'vue-uuid'
+import { workflow } from '../../../wailsjs/go/models'
+import { CreateNode } from '../../../wailsjs/go/backend/App'
 import NodeEditor from './NodeEditor.vue'
-import {NodeType, NodeTypeName} from '../../lib/Workflows'
+import { NodeType, NodeTypeName } from '../../lib/Workflows'
 import Spinner from '../Shared/LoadingSpinner.vue'
-import ScrollingOutput from "../Shared/ScrollingOutput.vue";
+import ScrollingOutput from '../Shared/ScrollingOutput.vue'
 
 const props = defineProps({
-  flow: {type: Object as PropType<workflow.WorkflowM>, required: true},
-  running: {type: Boolean, required: false, default: false},
-  statuses: {type: Object as PropType<Map<string, string>>, required: true},
-  stdoutLines: {type: Array as PropType<string[]>, required: true},
-  stderrLines: {type: Array as PropType<string[]>, required: true},
-  activityLines: {type: Array as PropType<string[]>, required: true},
+  flow: { type: Object as PropType<workflow.WorkflowM>, required: true },
+  running: { type: Boolean, required: false, default: false },
+  statuses: { type: Object as PropType<Map<string, string>>, required: true },
+  stdoutLines: { type: Array as PropType<string[]>, required: true },
+  stderrLines: { type: Array as PropType<string[]>, required: true },
+  activityLines: { type: Array as PropType<string[]>, required: true },
 })
 
 const availableNodeTypes = ref(<NodeType[]>[
@@ -76,9 +76,9 @@ function saveWorkflow(f: workflow.WorkflowM) {
 }
 
 const tabs = ref([
-  {name: 'Stdout', id: 'stdout', icon: BarsArrowDownIcon, current: true},
-  {name: 'Stderr', id: 'stderr', icon: BarsArrowDownIcon, current: false},
-  {name: 'Activity', id: 'activity', icon: BoltIcon, current: false},
+  { name: 'Stdout', id: 'stdout', icon: BarsArrowDownIcon, current: true },
+  { name: 'Stderr', id: 'stderr', icon: BarsArrowDownIcon, current: false },
+  { name: 'Activity', id: 'activity', icon: BoltIcon, current: false },
 ])
 
 function selectedTab(): string {
@@ -138,11 +138,11 @@ function redraw() {
       y: (toConn.offsetTop + toConn.offsetHeight / 2) + toNode.offsetTop,
     }
     const path = `M${
-            posA.x},${posA.y} `
+      posA.x},${posA.y} `
         + `C${
-            posA.x + curveOffset.value},${posA.y} ${
-            posB.x - curveOffset.value},${posB.y} ${
-            posB.x},${posB.y}`
+          posA.x + curveOffset.value},${posA.y} ${
+          posB.x - curveOffset.value},${posB.y} ${
+          posB.x},${posB.y}`
     newPaths.push(path)
   })
   if (!ok) {
@@ -453,11 +453,11 @@ function moveLink(ev: MouseEvent) {
   }
 
   const dStr = `M${
-          posA.x},${posA.y} `
+    posA.x},${posA.y} `
       + `C${
-          posA.x + curveOffset.value},${posA.y} ${
-          posB.x - curveOffset.value},${posB.y} ${
-          posB.x},${posB.y}`
+        posA.x + curveOffset.value},${posA.y} ${
+        posB.x - curveOffset.value},${posB.y} ${
+        posB.x},${posB.y}`
   connector.value.setAttribute('d', dStr)
   if (!connectorB) {
     connector.value.setAttribute('stroke', 'blue')
@@ -774,7 +774,6 @@ function trackMover(id: string, el: any) {
           <ScrollingOutput v-else-if="selectedTab() === 'stderr'" :lines="stderrLines"/>
           <ScrollingOutput v-else-if="selectedTab() === 'activity'" :lines="activityLines"/>
         </div>
-
 
       </div>
     </div>
