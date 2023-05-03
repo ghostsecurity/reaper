@@ -103,31 +103,27 @@ function redraw() {
   if (!safe.value) {
     return
   }
-
-  if (!canvas.value || !svg.value) {
-    return
-  }
-  if (svg.value) {
+  if (canvas.value && svg.value) {
     svg.value.style.height = `${canvas.value.clientHeight + canvas.value.scrollTop}px`
     svg.value.style.width = `${canvas.value.clientWidth + canvas.value.scrollLeft}px`
   }
 
   const newPaths: string[] = []
-  let ok = true
+  let ok = false
   safe.value.links.forEach(link => {
     const fromNode = movers.value.get(link.from.node) as HTMLElement
     const toNode = movers.value.get(link.to.node) as HTMLElement
     if (!fromNode || !toNode) {
-      ok = false
       return
     }
 
     const fromConn = fromNode.querySelector(`.connector.output[data-connector="${link.from.connector}"]`) as HTMLElement
     const toConn = toNode.querySelector(`.connector.input[data-connector="${link.to.connector}"]`) as HTMLElement
     if (!fromConn || !toConn) {
-      ok = false
       return
     }
+
+    ok = true
 
     const posA = {
       x: (fromConn.offsetLeft + fromConn.offsetWidth) + fromNode.offsetLeft,
@@ -674,7 +670,7 @@ function trackMover(id: string, el: any) {
                                            class="w-4 h-4 mr-2 text-gray-400"/>
                   </div>
                 </div>
-                <div v-if="!node.readonly" @mousedown.prevent.stop
+                <div v-if="!node.readonly && !dragId" @mousedown.prevent.stop
                      class="absolute top-0 right-0 invisible hover:visible group-hover:visible text-snow-storm-1">
                   <button @click.prevent.stop="duplicateNode(node.id)" class="group/btn px-0.5">
                     <Square2StackIcon class="h-4 w-4 group-hover/btn:text-frost-1"/>

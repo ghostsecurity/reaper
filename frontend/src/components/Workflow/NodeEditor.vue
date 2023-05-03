@@ -272,6 +272,10 @@ function updateWordList(field: node.Connector) {
                         :value="ChildType.WORD_LIST">
                   Wordlist
                 </option>
+                <option :selected="isFieldChildType(field, ChildType.COMMA_SEP_LIST)"
+                        :value="ChildType.COMMA_SEP_LIST">
+                  Comma Separated Values
+                </option>
               </select>
             </div>
           </div>
@@ -321,7 +325,20 @@ function updateWordList(field: node.Connector) {
               </div>
 
             </div>
-
+            <div v-else-if="isFieldChildType(field, ChildType.COMMA_SEP_LIST)"
+                 class="text-snow-storm-1/80 mt-2">
+              <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">Comma Separated
+                Values</label>
+              <div class="mt-1">
+                <div
+                    class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
+                  <input type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+                         :value="safe.vars?.static[field.name].data"
+                         @input="updateStringField(field, $event)"
+                         class="flex-1 border-0 bg-transparent py-1.5 px-2 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6"/>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div v-else-if="field.type === ParentType.BOOLEAN" class="sm:col-span-4">

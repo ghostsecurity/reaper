@@ -25,6 +25,7 @@ export const enum ChildType {
     UNKNOWN = 1,
     NUMERIC_RANGE_LIST = 2,
     WORD_LIST = 3,
+    COMMA_SEP_LIST = 4,
 }
 
 export function NodeTypeName(t: NodeType): string {
