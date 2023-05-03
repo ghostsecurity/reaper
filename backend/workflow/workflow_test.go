@@ -1,15 +1,12 @@
 package workflow
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"math/rand"
 	"net"
 	"net/http"
-	"strings"
 	"testing"
 	"time"
 
@@ -53,14 +50,15 @@ func Test_FuzzingWorkflow(t *testing.T) {
 	}))
 
 	nOutput := node.NewOutput()
+	require.NoError(t, nOutput.AddStaticInputValue("template", transmission.NewString("Account: $ID$")))
 	nError := node.NewOutput()
-	nError.SetStaticInputValues(map[string]transmission.Transmission{
+	require.NoError(t, nError.SetStaticInputValues(map[string]transmission.Transmission{
 		"stdout": transmission.NewBoolean(false),
 		"stderr": transmission.NewBoolean(true),
-	})
+	}))
 
 	reqNode := node.NewRequest()
-	reqNode.SetStaticInputValues(map[string]transmission.Transmission{
+	require.NoError(t, reqNode.SetStaticInputValues(map[string]transmission.Transmission{
 		"input": transmission.NewRequest(packaging.HttpRequest{
 			Method: "GET",
 			URL:    "http://localhost:8888/account?id=$ID$",
@@ -71,7 +69,7 @@ func Test_FuzzingWorkflow(t *testing.T) {
 				},
 			},
 		}),
-	})
+	}))
 
 	sender := node.NewSender()
 
@@ -155,11 +153,18 @@ func Test_FuzzingWorkflow(t *testing.T) {
 				fmt.Printf("update: %s: %s\n", update.Node, update.Message)
 			}
 		}()
+		var output string
+		outs := make(chan node.Output)
+		defer close(outs)
 
-		stdout := bytes.NewBuffer(nil)
-		stderr := bytes.NewBuffer(nil)
-		require.NoError(t, flow.Run(ctx, updates, stdout, stderr))
-		assert.True(t, strings.HasSuffix(strings.Split(stdout.String(), "\n")[0], fmt.Sprintf("[$ID$=%d]", secret)))
+		go func() {
+			for out := range outs {
+				output += out.Message
+			}
+		}()
+
+		require.NoError(t, flow.Run(ctx, updates, outs))
+		assert.Equal(t, fmt.Sprintf("Account: %d\n", secret), output)
 	})
 
 	t.Run("save to disk, reload and run", func(t *testing.T) {
@@ -182,9 +187,17 @@ func Test_FuzzingWorkflow(t *testing.T) {
 			}
 		}()
 
-		stdout := bytes.NewBuffer(nil)
-		stderr := io.Discard
-		require.NoError(t, w.Run(ctx, updates, stdout, stderr))
-		assert.True(t, strings.HasSuffix(strings.Split(stdout.String(), "\n")[0], fmt.Sprintf("[$ID$=%d]", secret)))
+		var output string
+		outs := make(chan node.Output)
+		defer close(outs)
+
+		go func() {
+			for out := range outs {
+				output += out.Message
+			}
+		}()
+
+		require.NoError(t, w.Run(ctx, updates, outs))
+		assert.Equal(t, fmt.Sprintf("Account: %d\n", secret), output)
 	})
 }

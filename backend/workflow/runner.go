@@ -57,8 +57,6 @@ const (
 
 func (r *runner) Run(updateChan chan<- Update, output chan<- node.Output) error {
 
-	defer fmt.Println("RUN COMPLETE")
-
 	if r.workflow == nil {
 		return fmt.Errorf("workflow is nil")
 	}

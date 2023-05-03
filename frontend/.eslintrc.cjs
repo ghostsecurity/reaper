@@ -26,7 +26,7 @@ module.exports = {
         'linebreak-style': ['error', 'unix'],
         quotes: ['error', 'single'],
         semi: ['error', 'never'],
-        'max-len': ['error', {code: 120, ignorePattern: '(\\s|:|-)?class=.*'}],
+        'max-len': ['error', {code: 120, ignorePattern: '(\\s|:|-)?(class|d)=.*'}],
         'import/extensions': [
             'error',
             'ignorePackages',
@@ -43,6 +43,7 @@ module.exports = {
         'no-continue': 'off',
         'no-shadow': 'off',
         'no-bitwise': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-shadow': ['error'],
         'no-unused-vars': 'off',
         '@typescript-eslint/no-unused-vars': 'error',

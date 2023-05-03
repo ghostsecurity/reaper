@@ -40,3 +40,7 @@ lint-go:
 .PHONY: run
 run: clean wails
 	REAPER_LOG_LEVEL=debug wails dev
+
+.PHONY: fix
+fix:
+	cd frontend && npm install && npm run fix
