@@ -208,11 +208,6 @@ export namespace workflow {
 	export class WorkflowM {
 	    id: string;
 	    name: string;
-	    // Go type: packaging
-	    request: any;
-	    input: LinkM;
-	    output: NodeM;
-	    error: NodeM;
 	    nodes: NodeM[];
 	    links: LinkM[];
 	    positioning: {[key: string]: Position};
@@ -225,10 +220,6 @@ export namespace workflow {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
 	        this.name = source["name"];
-	        this.request = this.convertValues(source["request"], null);
-	        this.input = this.convertValues(source["input"], LinkM);
-	        this.output = this.convertValues(source["output"], NodeM);
-	        this.error = this.convertValues(source["error"], NodeM);
 	        this.nodes = this.convertValues(source["nodes"], NodeM);
 	        this.links = this.convertValues(source["links"], LinkM);
 	        this.positioning = this.convertValues(source["positioning"], Position, true);

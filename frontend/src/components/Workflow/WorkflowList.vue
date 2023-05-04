@@ -48,13 +48,13 @@ function renameWorkflow(name: string) {
         <a @click="emit('select', flow.id)"
            class="block my-1 pl-2 cursor-pointer flex-grow">
           {{ flow.name }}
-          <p class="text-polar-night-4">Something</p>
+          <p class="text-polar-night-4">{{ flow.id.substring(0, 18) }}</p>
         </a>
         <button class="flex-shrink pr-2" @click="renaming = flow.id">
-          <PencilSquareIcon class="h-5 w-5 text-polar-night-4" aria-hidden="true"/>
+          <PencilSquareIcon class="h-5 w-5 text-polar-night-4 hover:text-frost-1" aria-hidden="true"/>
         </button>
         <button class="flex-shrink pr-2" @click="deleting = flow.id">
-          <TrashIcon class="h-5 w-5 text-polar-night-4" aria-hidden="true"/>
+          <TrashIcon class="h-5 w-5 text-polar-night-4 hover:text-aurora-1" aria-hidden="true"/>
         </button>
       </li>
     </ul>

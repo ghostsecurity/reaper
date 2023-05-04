@@ -18,6 +18,8 @@ export function DeleteWorkspace(arg1:string):Promise<void>;
 
 export function Error(arg1:string,arg2:string):Promise<void>;
 
+export function ExportWorkflow(arg1:any):Promise<void>;
+
 export function GenerateID():Promise<string>;
 
 export function GetSettings():Promise<settings.Settings>;
@@ -29,6 +31,8 @@ export function HighlightBody(arg1:string,arg2:string):Promise<string>;
 export function HighlightHTTP(arg1:string):Promise<string>;
 
 export function IgnoreThisUsedBindings(arg1:node.OutputM):Promise<workflow.UpdateM>;
+
+export function ImportWorkflow():Promise<any>;
 
 export function LoadWorkspace(arg1:string):Promise<any>;
 

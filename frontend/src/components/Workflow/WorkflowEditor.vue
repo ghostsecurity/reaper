@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { onActivated, onBeforeUpdate, onMounted, onUpdated, PropType, ref, watch } from 'vue'
 import {
-  BeakerIcon,
   PlayIcon,
   PlusIcon,
   Square2StackIcon,
@@ -11,6 +10,7 @@ import {
   PauseCircleIcon,
   ExclamationCircleIcon, BarsArrowDownIcon, BoltIcon, EyeSlashIcon,
   XCircleIcon,
+  ArrowUpOnSquareIcon,
 } from '@heroicons/vue/20/solid'
 import { uuid } from 'vue-uuid'
 import { workflow } from '../../../wailsjs/go/models'
@@ -68,7 +68,7 @@ const svg = ref(<HTMLElement | null>null)
 const connector = ref(<HTMLElement | null>null)
 const paths = ref(<string[]>[])
 
-const emit = defineEmits(['save', 'run', 'stop', 'clean'])
+const emit = defineEmits(['save', 'run', 'stop', 'clean', 'export'])
 
 function saveWorkflow(f: workflow.WorkflowM) {
   emit('save', f)
@@ -607,12 +607,7 @@ function trackMover(id: string, el: any) {
 
 <template>
   <div class="w-full h-full box-border relative">
-    <div v-if="!safe" class="flex flex-col items-center mt-16">
-      <BeakerIcon class="h-12 w-12"/>
-      <h3 class="mt-2 text-sm font-bold">No Workflow Selected</h3>
-      <p class="mt-1 text-sm">Select or create a workflow from the list.</p>
-    </div>
-    <div v-else class="w-full h-full flex flex-col overflow-hidden">
+    <div class="w-full h-full flex flex-col overflow-hidden">
       <div class="canvas border border-polar-night-4 stripy grow-[3] relative w-full h-full overflow-auto"
            @mousemove="drag" @mouseup="dragEnd"
            @scroll="redraw"
@@ -734,6 +729,10 @@ function trackMover(id: string, el: any) {
                   :class="['bg-polar-night-4 rounded-md p-2 mx-0.5', !running ? 'text-snow-storm-1 hover:text-frost-1' : 'text-snow-storm-1/20']"
                   @click="emit('clean', safe.id)">
             <EyeSlashIcon class="h-5 w-5" aria-hidden="true"/>
+          </button>
+          <button class="bg-polar-night-4 rounded-md p-2 mx-0.5 text-snow-storm-1 hover:text-frost-1"
+                  @click="emit('export', safe.id)">
+            <ArrowUpOnSquareIcon class="h-5 w-5" aria-hidden="true"/>
           </button>
         </div>
 
