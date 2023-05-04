@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/ghostsecurity/reaper/backend/packaging"
 	"github.com/ghostsecurity/reaper/backend/workflow/node"
 	"github.com/google/uuid"
 )
@@ -15,15 +14,11 @@ import (
 */
 
 type WorkflowM struct {
-	ID          string                `json:"id"`
-	Name        string                `json:"name"`
-	Request     packaging.HttpRequest `json:"request"`
-	Input       LinkM                 `json:"input"`
-	Output      NodeM                 `json:"output"`
-	Error       NodeM                 `json:"error"`
-	Nodes       []NodeM               `json:"nodes"`
-	Links       []LinkM               `json:"links"`
-	Positioning map[string]Position   `json:"positioning"`
+	ID          string              `json:"id"`
+	Name        string              `json:"name"`
+	Nodes       []NodeM             `json:"nodes"`
+	Links       []LinkM             `json:"links"`
+	Positioning map[string]Position `json:"positioning"`
 }
 
 type LinkDirectionM struct {

@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import { ref, PropType } from 'vue'
-import { BeakerIcon, TrashIcon, PencilSquareIcon } from '@heroicons/vue/20/solid'
-import { workflow } from '../../../wailsjs/go/models'
+import {ref, PropType} from 'vue'
+import {BeakerIcon, TrashIcon, PencilSquareIcon} from '@heroicons/vue/20/solid'
+import {workflow} from '../../../wailsjs/go/models'
 import ConfirmDialog from '../ConfirmDialog.vue'
 import InputBox from '../InputBox.vue'
 
 const props = defineProps({
-  flows: { type: Array as PropType<workflow.WorkflowM[]>, required: true },
-  selected: { type: String, required: true },
+  flows: {type: Array as PropType<workflow.WorkflowM[]>, required: true},
+  selected: {type: String, required: true},
 })
 
 const deleting = ref('')
@@ -48,13 +48,13 @@ function renameWorkflow(name: string) {
         <a @click="emit('select', flow.id)"
            class="block my-1 pl-2 cursor-pointer flex-grow">
           {{ flow.name }}
-          <p class="text-polar-night-4">Something</p>
+          <p class="text-polar-night-4">{{ flow.id.substring(0, 18) }}</p>
         </a>
         <button class="flex-shrink pr-2" @click="renaming = flow.id">
-          <PencilSquareIcon class="h-5 w-5 text-polar-night-4" aria-hidden="true"/>
+          <PencilSquareIcon class="h-5 w-5 text-polar-night-4 hover:text-frost-1" aria-hidden="true"/>
         </button>
         <button class="flex-shrink pr-2" @click="deleting = flow.id">
-          <TrashIcon class="h-5 w-5 text-polar-night-4" aria-hidden="true"/>
+          <TrashIcon class="h-5 w-5 text-polar-night-4 hover:text-aurora-1" aria-hidden="true"/>
         </button>
       </li>
     </ul>

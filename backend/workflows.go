@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
 
@@ -20,6 +21,64 @@ import (
 
 func (a *App) IgnoreThisUsedBindings(_ node.OutputM) workflow.UpdateM {
 	return workflow.UpdateM{}
+}
+
+func (a *App) ExportWorkflow(w *workflow.WorkflowM) {
+	filename, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
+		DefaultFilename:      w.ID + ".atk",
+		Title:                "Export Attack Workflow",
+		CanCreateDirectories: true,
+	})
+	if err != nil {
+		a.Error("Error exporting workflow", err.Error())
+		return
+	}
+	if filename == "" {
+		return
+	}
+	data, err := json.Marshal(w)
+	if err != nil {
+		a.Error("Error exporting workflow", err.Error())
+		return
+	}
+	f, err := os.Create(filename)
+	if err != nil {
+		a.Error("Error exporting workflow", err.Error())
+		return
+	}
+	defer f.Close()
+
+	if _, err := f.Write(data); err != nil {
+		a.Error("Error exporting workflow", err.Error())
+		return
+	}
+}
+
+func (a *App) ImportWorkflow() (*workflow.WorkflowM, error) {
+	filename, err := runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
+		Title: "Import Workflow",
+		Filters: []runtime.FileFilter{
+			{
+				DisplayName: "Attack Workflow Files",
+				Pattern:     "*.atk",
+			},
+		},
+	})
+	if err != nil {
+		a.Error("Error importing workflow", err.Error())
+		return nil, err
+	}
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		a.Error("Error importing workflow", err.Error())
+		return nil, err
+	}
+	var w workflow.WorkflowM
+	if err := json.Unmarshal(data, &w); err != nil {
+		a.Error("Error importing workflow", err.Error())
+		return nil, err
+	}
+	return &w, nil
 }
 
 func (a *App) SelectFile(title string) (string, error) {

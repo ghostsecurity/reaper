@@ -30,6 +30,10 @@ export function Error(arg1, arg2) {
   return window['go']['backend']['App']['Error'](arg1, arg2);
 }
 
+export function ExportWorkflow(arg1) {
+  return window['go']['backend']['App']['ExportWorkflow'](arg1);
+}
+
 export function GenerateID() {
   return window['go']['backend']['App']['GenerateID']();
 }
@@ -52,6 +56,10 @@ export function HighlightHTTP(arg1) {
 
 export function IgnoreThisUsedBindings(arg1) {
   return window['go']['backend']['App']['IgnoreThisUsedBindings'](arg1);
+}
+
+export function ImportWorkflow() {
+  return window['go']['backend']['App']['ImportWorkflow']();
 }
 
 export function LoadWorkspace(arg1) {
