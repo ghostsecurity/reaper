@@ -1,21 +1,21 @@
 <script lang="ts" setup>
-import {PropType, ref, watch} from 'vue'
-import {PlusIcon, FolderIcon, BeakerIcon} from '@heroicons/vue/20/solid'
-import {workflow, workspace} from '../../../wailsjs/go/models'
+import { PropType, ref, watch } from 'vue'
+import { PlusIcon, FolderIcon, BeakerIcon } from '@heroicons/vue/20/solid'
+import { workflow, workspace } from '../../../wailsjs/go/models'
 import List from './WorkflowList.vue'
 import InputBox from '../InputBox.vue'
 import Editor from './WorkflowEditor.vue'
-import {CreateWorkflow, ExportWorkflow, ImportWorkflow} from '../../../wailsjs/go/backend/App'
+import { CreateWorkflow, ExportWorkflow, ImportWorkflow } from '../../../wailsjs/go/backend/App'
 import WorkflowM = workflow.WorkflowM;
 
 const props = defineProps({
-  ws: {type: Object as PropType<workspace.Workspace>, required: true},
-  selectedWorkflowId: {type: String, required: false, default: ''},
-  runningWorkflowId: {type: String, required: false, default: ''},
-  statuses: {type: Object as PropType<Map<string, string>>, required: true},
-  stdoutLines: {type: Array as PropType<string[]>, required: true},
-  stderrLines: {type: Array as PropType<string[]>, required: true},
-  activityLines: {type: Array as PropType<string[]>, required: true},
+  ws: { type: Object as PropType<workspace.Workspace>, required: true },
+  selectedWorkflowId: { type: String, required: false, default: '' },
+  runningWorkflowId: { type: String, required: false, default: '' },
+  statuses: { type: Object as PropType<Map<string, string>>, required: true },
+  stdoutLines: { type: Array as PropType<string[]>, required: true },
+  stderrLines: { type: Array as PropType<string[]>, required: true },
+  activityLines: { type: Array as PropType<string[]>, required: true },
 })
 
 const safe = ref<workspace.Workspace>(JSON.parse(JSON.stringify(props.ws)))
@@ -43,7 +43,7 @@ const rightPanel = ref()
 
 const creating = ref(false)
 const currentFlow = ref<workflow.WorkflowM | null>(safe.value.workflows.find(
-    wf => wf.id === props.selectedWorkflowId,
+  wf => wf.id === props.selectedWorkflowId,
 ) ?? null)
 
 const emit = defineEmits(['select', 'save', 'run', 'stop', 'clean'])
@@ -106,7 +106,7 @@ function importWorkflow() {
 }
 
 function exportWorkflow(id: string) {
-  let wf = safe.value.workflows.find(wf => wf.id === id)
+  const wf = safe.value.workflows.find(mwf => mwf.id === id)
   if (!wf) {
     return
   }

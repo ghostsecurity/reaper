@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import {ref, PropType} from 'vue'
-import {BeakerIcon, TrashIcon, PencilSquareIcon} from '@heroicons/vue/20/solid'
-import {workflow} from '../../../wailsjs/go/models'
+import { ref, PropType } from 'vue'
+import { BeakerIcon, TrashIcon, PencilSquareIcon } from '@heroicons/vue/20/solid'
+import { workflow } from '../../../wailsjs/go/models'
 import ConfirmDialog from '../ConfirmDialog.vue'
 import InputBox from '../InputBox.vue'
 
 const props = defineProps({
-  flows: {type: Array as PropType<workflow.WorkflowM[]>, required: true},
-  selected: {type: String, required: true},
+  flows: { type: Array as PropType<workflow.WorkflowM[]>, required: true },
+  selected: { type: String, required: true },
 })
 
 const deleting = ref('')
