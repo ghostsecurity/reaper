@@ -698,7 +698,7 @@ function trackMover(id: string, el: any) {
           </div>
         </div>
       </div>
-      <div class="absolute right-5 top-5 text-right w-96 h-full pointer-events-none">
+      <div class="absolute right-5 top-5 text-right pointer-events-none">
         <div class="pointer-events-auto">
           <button type="button" @click="setMenu('add')"
                   :class="[menuMode==='add'?'bg-frost-1':'bg-frost-4', 'mb-1 rounded-full  p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mx-0.5']">
