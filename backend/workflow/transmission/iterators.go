@@ -27,6 +27,18 @@ func NewNumericRangeIterator(min, max int) *numericRangeIterator {
 	}
 }
 
+func (n *numericRangeIterator) Reset() {
+	n.current = n.min - 1
+}
+
+func (n *numericRangeIterator) Clone() Lister {
+	return &numericRangeIterator{
+		min:     n.min,
+		max:     n.max,
+		current: n.current,
+	}
+}
+
 func (n *numericRangeIterator) Next() (string, bool) {
 	if n.current >= n.max {
 		return "", false
@@ -76,6 +88,18 @@ func NewWordlistIterator(filename string) *wordlistIterator {
 	return &wordlistIterator{
 		filename: filename,
 	}
+}
+
+func (w *wordlistIterator) Clone() Lister {
+	return &wordlistIterator{
+		filename: w.filename,
+	}
+}
+
+func (w *wordlistIterator) Reset() {
+	w.complete = false
+	w.scanner = nil
+	w.f = nil
 }
 
 func (w *wordlistIterator) Next() (string, bool) {
@@ -131,10 +155,21 @@ type csvIterator struct {
 	ptr   int
 }
 
+func (c *csvIterator) Clone() Lister {
+	return &csvIterator{
+		items: c.items,
+		ptr:   0,
+	}
+}
+
 func NewCSVIterator(raw string) *csvIterator {
 	return &csvIterator{
 		items: strings.Split(raw, ","),
 	}
+}
+
+func (c *csvIterator) Reset() {
+	c.ptr = 0
 }
 
 func (c *csvIterator) Next() (string, bool) {

@@ -61,6 +61,8 @@ type Inter interface{ Int() int }
 type Booler interface{ Bool() bool }
 type Mapper interface{ Map() map[string]string }
 type Lister interface {
+	Reset()
+	Clone() Lister
 	Next() (string, bool)
 	Count() int
 	Complete() bool
