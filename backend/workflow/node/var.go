@@ -215,7 +215,7 @@ func (s *VarStorage) ReadInputList(name string, dynamicInputs map[string]transmi
 		return nil, err
 	}
 	if v, ok := val.(transmission.Lister); ok {
-		return v, nil
+		return v.Clone(), nil
 	}
 	return nil, fmt.Errorf("input '%s' is not a list", name)
 }
