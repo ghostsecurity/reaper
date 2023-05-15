@@ -58,9 +58,6 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.arch == 'arm64'
         run: |
           echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
-      - name: set arch
-        if: matrix.os == 'ubuntu-latest'
-        run: echo "GOARCH=${{ matrix.arch }}" >> $GITHUB_ENV
 
       - name: prep vars
         if: matrix.os == 'windows-latest'
