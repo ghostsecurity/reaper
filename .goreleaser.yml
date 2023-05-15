@@ -2,7 +2,7 @@ builds:
   - binary: reaper
     hooks:
       pre:
-        - mkdir -p frontend/disttouch
+        - mkdir -p frontend/dist
         - touch frontend/dist/nothing.txt
       post:
         - wails build --ldflags "-X github.com/ghostsecurity/reaper/version.Version={{.Tag}} -s -w" -o "{{ .Path }}"
