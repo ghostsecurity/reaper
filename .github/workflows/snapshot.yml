@@ -41,6 +41,8 @@ jobs:
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
         run: |
+          # switch mirror as the default azure one is always 503ing :'(
+          sudo sed -i "s/azure.archive.ubuntu.com|us.archive.ubuntu.com/g" /etc/apt/sources.list
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev gcc-aarch64-linux-gnu libc6-dev-arm64-cross
 
