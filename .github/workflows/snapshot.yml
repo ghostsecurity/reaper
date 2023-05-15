@@ -46,10 +46,12 @@ jobs:
       - name: dist
         run: mkdir -p dist
 
+      - name: Set up MinGW
+        uses: egor-tensin/setup-mingw@v2
+        if: matrix.os == 'windows-latest'
       - name: prep compiler (windows)
         if: matrix.os == 'windows-latest'
         run: |
-          brew install mingw-w64
           echo 'CC="x86_64-w64-mingw32-gcc"' >> $env:GITHUB_ENV
       - name: prep compiler (linux)
         if: matrix.os == 'ubuntu-latest' && matrix.arch == 'arm64'
@@ -74,7 +76,7 @@ jobs:
           echo "W_PLATFORM=${OS}/${{ matrix.arch }}" >> $GITHUB_ENV
 
       - name: build
-        run: wails build --platform "${W_PLATFORM}" --ldflags "-X github.com/ghostsecurity/reaper/version.Version=${GITHUB_REF#refs/*/} -s -w" -o "dist/reaper-${W_OS}-${W_ARCH}" --debug 
+        run: wails build --platform "${W_PLATFORM}" --ldflags "-X github.com/ghostsecurity/reaper/version.Version=${GITHUB_REF#refs/*/} -s -w" -o "reaper-${W_OS}-${W_ARCH}" 
 
       - name: publish
         run: ls -la dist/
