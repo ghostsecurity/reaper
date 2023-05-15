@@ -45,11 +45,17 @@ jobs:
         run: mkdir -p dist
 
       - name: prep vars
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo "W_OS=windows" >> $env:GITHUB_ENV
+          echo "W_ARCH=${{ matrix.arch }}" >> $env:GITHUB_ENV
+          echo "W_PLATFORM=windows/${{ matrix.arch }}" >> $env:GITHUB_ENV
+      - name: prep vars
+        if: matrix.os != 'windows-latest'
         run: |
           OS=${{ matrix.os }}
-          OS=${OS//-latest}
-          [[ "$OS" = "macos" ]] && OS=darwin
-          [[ "$OS" = "ubuntu" ]] && OS=linux
+          [[ "$OS" = "macos-latest" ]] && OS=darwin
+          [[ "$OS" = "ubuntu-latest" ]] && OS=linux
           echo W_OS=${OS} >> $GITHUB_ENV
           echo W_ARCH=${{ matrix.arch }} >> $GITHUB_ENV
           echo "W_PLATFORM=${OS}/${{ matrix.arch }}" >> $GITHUB_ENV
