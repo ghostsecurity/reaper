@@ -39,8 +39,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev gcc-aarch64-linux-gnu libc6-dev-arm64-cross
       - name: build
-        run: wails build 
-
+        run: wails build -compiler=echo
+      - uses: actions/upload-artifact@v2
+        with:
+          name: frontend
+          path: frontend
   build:
     needs: frontend
     name: snapshot
@@ -69,6 +72,9 @@ jobs:
             #          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
             #          passphrase: ${{ secrets.GPG_PASSPHRASE }}
   
+      - uses: actions/download-artifact@v2
+        with:
+          name: frontend
             
       - name: Install wails
         run: make wails && wails doctor
@@ -118,7 +124,7 @@ jobs:
           echo "W_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
       - name: build
-        run: wails build -s -platform="${{ env.W_PLATFORM }}" -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${W_VERSION}' -s -w" 
+        run: wails build -skipbindings -platform="${{ env.W_PLATFORM }}" -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${W_VERSION}' -s -w" 
 
       - name: publish
         run: ls build/bin
