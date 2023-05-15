@@ -90,7 +90,9 @@ jobs:
         run: sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libc6-dev-i386
       - name: Install arm64 deps
         if: matrix.os == 'ubuntu-latest' && matrix.arch == 'arm64'
-        run: sudo apt-get install -y libgtk-3-dev:arm64 libwebkit2gtk-4.0-dev:arm64 libc6-dev-i386:arm64 gcc-aarch64-linux-gnu libc6-dev-arm64-cross libc6-dev-i386
+        run: |
+          sudo dpkg --add-architecture arm64
+          sudo apt-get install -y libgtk-3-dev:arm64 libwebkit2gtk-4.0-dev:arm64 libc6-dev-i386:arm64 gcc-aarch64-linux-gnu libc6-dev-arm64-cross libc6-dev-i386
 
       - name: dist
         run: mkdir -p dist
