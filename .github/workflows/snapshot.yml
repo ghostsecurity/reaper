@@ -10,8 +10,9 @@ jobs:
   build:
     name: snapshot
     strategy:
+      fail-fast: false
       matrix:
-        os: [ macos-latest, windows-latest] #, ubuntu-latest ]
+        os: [ macos-latest, windows-latest, ubuntu-latest ]
         arch: [ amd64, arm64 ]
     runs-on: ${{ matrix.os }}
 
