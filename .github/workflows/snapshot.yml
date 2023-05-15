@@ -10,8 +10,6 @@ jobs:
   frontend:
     runs-on: ubuntu-latest
     steps:
-      - name: build
-        run: wails build 
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -40,6 +38,8 @@ jobs:
           sudo sed -i "s/azure.archive.ubuntu.com/us.archive.ubuntu.com/g" /etc/apt/sources.list
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev gcc-aarch64-linux-gnu libc6-dev-arm64-cross
+      - name: build
+        run: wails build 
 
   build:
     needs: frontend
