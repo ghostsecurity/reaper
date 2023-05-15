@@ -56,6 +56,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.arch == 'arm64'
         run: |
           echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+          echo "GOGCCFLAGS=$GOGCCFLAGS" | sed s/-m64/-march=armv8-a/g >> $GITHUB_ENV
 
 
       - name: prep vars
@@ -75,7 +76,7 @@ jobs:
           echo "W_PLATFORM=${OS}/${{ matrix.arch }}" >> $GITHUB_ENV
 
       - name: build
-        run: wails build -platform "${W_PLATFORM}" -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${GITHUB_REF#refs/*/}' -s -w" 
+        run: wails build -platform="${W_PLATFORM}" -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${GITHUB_REF#refs/*/}' -s -w" 
 
       - name: publish
         run: ls -laR build/bin
