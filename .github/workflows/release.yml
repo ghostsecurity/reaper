@@ -28,6 +28,14 @@ jobs:
             #        with:
             #          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
             #          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+  
+            
+      - name: Install wails
+        run: make wails
+
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
 
       - name: Release
         uses: goreleaser/goreleaser-action@v4
