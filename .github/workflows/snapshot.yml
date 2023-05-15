@@ -37,13 +37,13 @@ jobs:
           # switch mirror as the default azure one is always 503ing :'(
           sudo sed -i "s/azure.archive.ubuntu.com/us.archive.ubuntu.com/g" /etc/apt/sources.list
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev gcc-aarch64-linux-gnu libc6-dev-arm64-cross
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev gcc-aarch64-linux-gnu libc6-dev-arm64-cross libc6-dev-i386
       - name: build
         run: wails build -compiler=echo
-      - uses: actions/upload-artifact@v2
-        with:
-          name: frontend
-          path: frontend
+          # - uses: actions/upload-artifact@v2
+          #with:
+          #name: frontend
+          #path: frontend
   build:
     needs: frontend
     name: snapshot
@@ -72,9 +72,9 @@ jobs:
             #          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
             #          passphrase: ${{ secrets.GPG_PASSPHRASE }}
   
-      - uses: actions/download-artifact@v2
-        with:
-          name: frontend
+            #- uses: actions/download-artifact@v2
+            #with:
+            #name: frontend
             
       - name: Install wails
         run: make wails && wails doctor
