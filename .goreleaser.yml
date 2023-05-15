@@ -5,13 +5,13 @@ builds:
         - mkdir -p frontend/dist
         - touch frontend/dist/nothing.txt
       post:
-        - wails build --ldflags "-X github.com/ghostsecurity/reaper/version.Version={{.Tag}} -s -w" -o "{{ .Path }}" --debug 
+        - wails build --platform "{{ .Os }}/{{ .Arch }}" --ldflags "-X github.com/ghostsecurity/reaper/version.Version={{.Tag}} -s -w" -o "{{ .Path }}" --debug 
     goos:
-      #- linux
-      #- windows
+      - linux
+      - windows
       - darwin
     goarch:
-      #- amd64
+      - amd64
       - arm64
 
 changelog:
