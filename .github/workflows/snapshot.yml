@@ -65,6 +65,7 @@ jobs:
           echo "W_OS=windows" >> $env:GITHUB_ENV
           echo "W_ARCH=${{ matrix.arch }}" >> $env:GITHUB_ENV
           echo "W_PLATFORM=windows/${{ matrix.arch }}" >> $env:GITHUB_ENV
+          echo "W_VERSION=${env:GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: prep vars
         if: matrix.os != 'windows-latest'
         run: |
@@ -74,9 +75,10 @@ jobs:
           echo W_OS=${OS} >> $GITHUB_ENV
           echo W_ARCH=${{ matrix.arch }} >> $GITHUB_ENV
           echo "W_PLATFORM=${OS}/${{ matrix.arch }}" >> $GITHUB_ENV
+          echo "W_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
       - name: build
-        run: wails build -platform="${W_PLATFORM}" -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${GITHUB_REF#refs/*/}' -s -w" 
+        run: wails build -platform="${{ env.W_PLATFORM }}" -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${W_VERSION}' -s -w" 
 
       - name: publish
-        run: ls -laR build/bin
+        run: ls build/bin
