@@ -57,7 +57,12 @@ jobs:
         run: |
           echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
           go env | grep GOGCCFLAGS | sed s/-m64/-march=armv8-a/g | sed s/GOGCCFLAGS/CGO_CFLAGS/g >> $GITHUB_ENV
-
+      - name: set arch
+        if: matrix.os == 'windows-latest'
+        run: echo "GOARCH=${ matrix.arch }" >> $env:GITHUB_ENV
+      - name: set arch
+        if: matrix.os != 'windows-latest'
+        run: echo "GOARCH=${ matrix.arch }" >> $GITHUB_ENV
 
       - name: prep vars
         if: matrix.os == 'windows-latest'
