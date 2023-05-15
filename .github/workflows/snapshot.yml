@@ -12,6 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [ macos-latest, windows-latest, ubuntu-latest ]
+        arch: [ amd64, arm64 ]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -43,11 +44,16 @@ jobs:
       - name: dist
         run: mkdir -p dist
 
-      - name: build amd64
-        run: wails build --platform "$(${{ matrix.os }})//-latest/)/amd64" --ldflags "-X github.com/ghostsecurity/reaper/version.Version=${GITHUB_REF#refs/*/} -s -w" -o "dist/reaper-$(${{ matrix.os }})//-latest/)-amd64" --debug 
+      - name: prep vars
+        run: |
+          OS=${{ matrix.os }}
+          OS=${OS//-latest}
+          echo W_OS=${OS} >> $GITHUB_ENV
+          echo W_ARCH=${{ matrix.arch }} >> $GITHUB_ENV
+          echo "W_PLATFORM=${OS}/${{ matrix.arch }}" >> $GITHUB_ENV
 
-      - name: build arm64
-        run: wails build --platform "$(${{ matrix.os }})//-latest/)/arm64" --ldflags "-X github.com/ghostsecurity/reaper/version.Version=${GITHUB_REF#refs/*/} -s -w" -o "dist/reaper-$(${{ matrix.os }})//-latest/)-arm64" --debug 
+      - name: build
+        run: wails build --platform "${W_PLATFORM}" --ldflags "-X github.com/ghostsecurity/reaper/version.Version=${GITHUB_REF#refs/*/} -s -w" -o "dist/reaper-${W_OS}-${W_ARCH}" --debug 
 
       - name: publish
         run: ls -la dist/
