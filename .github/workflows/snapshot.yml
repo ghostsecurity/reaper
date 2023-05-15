@@ -42,13 +42,13 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev gcc-aarch64-linux-gnu
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev gcc-aarch64-linux-gnu libc6-dev-arm64-cross
 
       - name: dist
         run: mkdir -p dist
 
       - name: prep compiler (windows)
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-latest' && matrix.arch == 'arm64'
         run: |
           choco install mingw
           echo 'CC="x86_64-w64-mingw32-gcc"' >> $env:GITHUB_ENV
