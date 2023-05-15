@@ -52,7 +52,7 @@ jobs:
           brew install mingw-w64
           echo 'CC="x86_64-w64-mingw32-gcc"' >> $env:GITHUB_ENV
       - name: prep compiler (linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.arch == 'arm64'
         run: |
           echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
 
