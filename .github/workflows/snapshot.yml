@@ -52,6 +52,9 @@ jobs:
       matrix:
         os: [ macos-latest, windows-latest, ubuntu-latest ]
         arch: [ amd64, arm64 ]
+        exclude:
+          - os: ubuntu-latest
+            arch: arm64
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -127,7 +130,18 @@ jobs:
           echo "W_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
       - name: build
-        run: wails build -skipbindings -platform="${{ env.W_PLATFORM }}" -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${W_VERSION}' -s -w" 
+        run: |
+          wails build -skipbindings -platform="${{ env.W_PLATFORM }}" -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${W_VERSION}' -s -w" | tee -a build.log
+
+      - name: grab filename
+        if: matrix.os != 'windows-latest'
+        run: echo $(grep '^Built ''' build.log | tail -n1 | sed "s/^Built '\(.*\)'.*$/RFILE=\1/g") >> $GITHUB_ENV
+      - name: grab filename
+        if: matrix.os == 'windows-latest'
+        run: echo $(grep '^Built ''' build.log | tail -n1 | sed "s/^Built '\(.*\)'.*$/RFILE=\1/g") >> $env:GITHUB_ENV
 
       - name: publish
-        run: ls build/bin
+        run: |
+          mkdir -p release
+          cp ${{ env.RFILE }} release/
+          ls release/
