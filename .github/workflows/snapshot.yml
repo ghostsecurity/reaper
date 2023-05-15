@@ -56,7 +56,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.arch == 'arm64'
         run: |
           echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
-          go env | grep GOGCCFLAGS | sed s/-m64/-march=armv8-a/g >> $GITHUB_ENV
+          go env | grep GOGCCFLAGS | sed s/-m64/-march=armv8-a/g | sed s/GOGCCFLAGS/CGO_CFLAGS/g >> $GITHUB_ENV
 
 
       - name: prep vars
