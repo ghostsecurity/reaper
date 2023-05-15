@@ -47,12 +47,10 @@ jobs:
       - name: dist
         run: mkdir -p dist
 
-      - name: Set up MinGW
-        uses: egor-tensin/setup-mingw@v2
-        if: matrix.os == 'windows-latest'
       - name: prep compiler (windows)
         if: matrix.os == 'windows-latest'
         run: |
+          choco install mingw
           echo 'CC="x86_64-w64-mingw32-gcc"' >> $env:GITHUB_ENV
       - name: prep compiler (linux)
         if: matrix.os == 'ubuntu-latest' && matrix.arch == 'arm64'
