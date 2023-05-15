@@ -75,7 +75,7 @@ jobs:
           echo "W_PLATFORM=${OS}/${{ matrix.arch }}" >> $GITHUB_ENV
 
       - name: build
-        run: wails build -platform "${W_PLATFORM}" -ldflags "-X 'github.com/ghostsecurity/reaper/version.Version=${GITHUB_REF#refs/*/}' -s -w" 
+        run: wails build -platform "${W_PLATFORM}" -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${GITHUB_REF#refs/*/}' -s -w" 
 
       - name: publish
         run: ls -laR build/bin
