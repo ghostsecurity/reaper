@@ -8,8 +8,7 @@ on:
 
 jobs:
   build:
-    needs: frontend
-    name: snapshot
+    name: build
     strategy:
       fail-fast: false
       matrix:
