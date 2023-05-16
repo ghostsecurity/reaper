@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import {PropType} from 'vue'
-import {TransitionChild, TransitionRoot, Dialog, DialogPanel} from '@headlessui/vue'
+import { PropType } from 'vue'
+import { TransitionChild, TransitionRoot, Dialog, DialogPanel } from '@headlessui/vue'
 import SettingsComponent from './SettingsEditor.vue'
 import Settings from '../lib/Settings'
-import {backend} from "../../wailsjs/go/models";
+import { backend } from '../../wailsjs/go/models'
 import VersionInfo = backend.VersionInfo;
 
 const props = defineProps({
@@ -11,8 +11,8 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
-  settings: {type: Object as PropType<Settings>, required: true},
-  version: {type: Object as PropType<VersionInfo | null>, required: true},
+  settings: { type: Object as PropType<Settings>, required: true },
+  version: { type: Object as PropType<VersionInfo | null>, required: true },
 })
 
 const emit = defineEmits(['save', 'close'])

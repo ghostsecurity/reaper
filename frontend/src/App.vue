@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import {onBeforeMount, reactive, ref} from 'vue'
-import {FunnelIcon, FolderIcon, CogIcon, BriefcaseIcon} from '@heroicons/vue/24/outline'
-import {EventsEmit, EventsOn} from '../wailsjs/runtime'
+import { onBeforeMount, reactive, ref } from 'vue'
+import { FunnelIcon, FolderIcon, CogIcon, BriefcaseIcon } from '@heroicons/vue/24/outline'
+import { EventsEmit, EventsOn } from '../wailsjs/runtime'
 import Settings from './lib/Settings'
 import setDarkMode from './lib/theme'
-import {Criteria} from './lib/Criteria/Criteria'
-import {backend, workspace} from '../wailsjs/go/models'
+import { Criteria } from './lib/Criteria/Criteria'
+import { backend, workspace } from '../wailsjs/go/models'
 import {
   CreateWorkspace,
   GetSettings,
@@ -27,7 +27,7 @@ import AppDashboard from './components/AppDashboard.vue'
 import SettingsModal from './components/SettingsModal.vue'
 import WorkspaceModal from './components/WorkspaceModal.vue'
 import WorkspaceSelection from './components/WorkspaceSelection.vue'
-import {HttpRequest} from './lib/Http'
+import { HttpRequest } from './lib/Http'
 import VersionInfo = backend.VersionInfo;
 
 const settings = reactive(new Settings())
@@ -145,11 +145,11 @@ function prepareWorkspace(ws: workspace.Workspace) {
   if (ws.collection.groups.length === 0) {
     GenerateID().then(id => {
       ws.collection.groups.push(
-          new workspace.Group({
-            id,
-            name: 'Default',
-            requests: [],
-          }),
+        new workspace.Group({
+          id,
+          name: 'Default',
+          requests: [],
+        }),
       )
       resetSavedIDs()
     })
@@ -210,8 +210,8 @@ function deleteWorkspace(id: string) {
 
 function setRequestGroup(request: workspace.Request, groupID: string, nextID: string) {
   const oldGroup = currentWorkspace.collection.groups.find(
-      // TODO: maybe this can be cleaned up?
-      // eslint-disable-next-line
+    // TODO: maybe this can be cleaned up?
+    // eslint-disable-next-line
       g => (g.requests.find((r: workspace.Request) => r.id === request.id) as workspace.Request | undefined) !== undefined,
   )
   if (oldGroup !== undefined) {
@@ -234,13 +234,13 @@ function setRequestGroup(request: workspace.Request, groupID: string, nextID: st
 function createRequestGroup(name: string) {
   GenerateID().then(id => {
     currentWorkspace.collection.groups.splice(
-        0,
-        0,
-        new workspace.Group({
-          id,
-          name,
-          requests: [],
-        }),
+      0,
+      0,
+      new workspace.Group({
+        id,
+        name,
+        requests: [],
+      }),
     )
   })
 }
@@ -252,7 +252,7 @@ function saveRequest(request: HttpRequest, groupID: string) {
     ;[group] = currentWorkspace.collection.groups // eslint-disable-line
   }
   GenerateID().then(id => {
-    const wrapped = new workspace.Request({id, name: ''})
+    const wrapped = new workspace.Request({ id, name: '' })
     wrapped.inner = JSON.parse(JSON.stringify(request))
     wrapped.inner.Response = null
     if (group) {
@@ -269,7 +269,7 @@ function saveRequest(request: HttpRequest, groupID: string) {
 function unsaveRequest(request: HttpRequest | workspace.Request) {
   const id = 'inner' in request ? request.inner.ID : (request as unknown as HttpRequest).ID
   const group = currentWorkspace.collection.groups.find(
-      g => (g.requests.find((r: workspace.Request) => r.inner.ID === id) as workspace.Request | undefined) !== undefined,
+    g => (g.requests.find((r: workspace.Request) => r.inner.ID === id) as workspace.Request | undefined) !== undefined,
   )
   if (group) {
     group.requests = group.requests.filter(item => item.inner.ID !== id)
@@ -310,9 +310,9 @@ function reorderGroup(fromID: string, toID: string) {
 
 function duplicateRequest(request: workspace.Request) {
   const group = currentWorkspace.collection.groups.find(
-      g =>
-          // TODO: maybe this can be cleaned up?
-          // eslint-disable-next-line
+    g =>
+    // TODO: maybe this can be cleaned up?
+    // eslint-disable-next-line
           (g.requests.find((r: workspace.Request) => r.id === request.id) as workspace.Request | undefined) !== undefined,
   )
   if (group === undefined) {
@@ -324,7 +324,7 @@ function duplicateRequest(request: workspace.Request) {
       id,
       name: dupName,
     })
-    wrapped.inner = {...request.inner}
+    wrapped.inner = { ...request.inner }
     wrapped.inner.ID = id // unlink this from the original request
     group.requests.push(wrapped)
     saveWorkspace(currentWorkspace)
@@ -342,8 +342,8 @@ function deleteRequestGroup(groupId: string) {
   }
   if (group.requests.length > 0) {
     Confirm(
-        'Confirm deletion',
-        `The group '${group.name}' contains ${group.requests.length}. Are you sure you want to delete it?`,
+      'Confirm deletion',
+      `The group '${group.name}' contains ${group.requests.length}. Are you sure you want to delete it?`,
     ).then(confirmed => {
       if (confirmed) {
         currentWorkspace.collection.groups = currentWorkspace.collection.groups.filter(g => g.id !== groupId)

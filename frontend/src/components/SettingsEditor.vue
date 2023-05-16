@@ -1,27 +1,27 @@
 <script lang="ts" setup>
-import {InformationCircleIcon, PaintBrushIcon, ServerStackIcon, ShieldCheckIcon} from '@heroicons/vue/20/solid'
-import {Switch, SwitchDescription, SwitchGroup, SwitchLabel} from '@headlessui/vue'
-import {PropType, reactive, ref} from 'vue'
+import { InformationCircleIcon, PaintBrushIcon, ServerStackIcon, ShieldCheckIcon } from '@heroicons/vue/20/solid'
+import { Switch, SwitchDescription, SwitchGroup, SwitchLabel } from '@headlessui/vue'
+import { PropType, reactive, ref } from 'vue'
 
-import {BrowserOpenURL, EventsEmit} from '../../wailsjs/runtime' // eslint-disable-line import/no-unresolved
+import { BrowserOpenURL, EventsEmit } from '../../wailsjs/runtime' // eslint-disable-line import/no-unresolved
 import Settings from '../lib/Settings'
 
 import ButtonConfirm from './Shared/ButtonConfirm.vue'
 import ButtonCancel from './Shared/ButtonCancel.vue'
 import ButtonNetrual from './Shared/ButtonNeutral.vue'
-import {backend} from "../../wailsjs/go/models";
+import { backend } from '../../wailsjs/go/models'
 import VersionInfo = backend.VersionInfo;
 
 const props = defineProps({
-  settings: {type: Settings, required: true},
-  version: {type: Object as PropType<VersionInfo | null>, required: true},
+  settings: { type: Settings, required: true },
+  version: { type: Object as PropType<VersionInfo | null>, required: true },
 })
 
 const tabs = [
-  {name: 'Display', icon: PaintBrushIcon, id: 'display'},
-  {name: 'Certificates', icon: ShieldCheckIcon, id: 'certs'},
-  {name: 'Proxy', icon: ServerStackIcon, id: 'proxy'},
-  {name: 'About', icon: InformationCircleIcon, id: 'about'},
+  { name: 'Display', icon: PaintBrushIcon, id: 'display' },
+  { name: 'Certificates', icon: ShieldCheckIcon, id: 'certs' },
+  { name: 'Proxy', icon: ServerStackIcon, id: 'proxy' },
+  { name: 'About', icon: InformationCircleIcon, id: 'about' },
 ]
 const openTab = ref('display')
 const modifiedSettings = reactive(props.settings)
@@ -178,7 +178,9 @@ function setProxyPort(event: Event) {
                   <div>
                     <h2 class="text-lg font-bold leading-6">About</h2>
                     <p class="mt-1 text-sm">See <a class="cursor-pointer text-frost-1 text-decoration-underline"
-                                                   @click="BrowserOpenURL('https://github.com/ghostsecurity/reaper')">https://github.com/ghostsecurity/reaper</a>
+                                                   @click="BrowserOpenURL('https://github.com/ghostsecurity/reaper')">
+                      https://github.com/ghostsecurity/reaper
+                    </a>
                       for more information about Reaper.</p>
                   </div>
 
