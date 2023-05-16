@@ -123,7 +123,7 @@ jobs:
       - name: create changelog
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          git log $(git describe --abbrev=0 --tags `git rev-list --tags --skip=1 --max-count=1` || git rev-list --max-parents=0 HEAD)..HEAD --oneline --no-color 2>&1 | sed 's/^[^ ]* /- /' | grep -v '^test:' | grep -v '^docs:' | grep -v '^build:' | tee changelog.md
+          git log $(git describe --abbrev=0 --tags `git rev-list --tags --skip=1 --max-count=1` || git rev-list --max-parents=0 HEAD)..HEAD --oneline --no-color 2>&1 | sed 's/^[^ ]* /- /' | grep -v '^- test:' | grep -v '^- docs:' | grep -v '^- build:' | tee changelog.md
       - name: github release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
