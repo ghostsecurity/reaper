@@ -42,6 +42,10 @@ export function GetSettings() {
   return window['go']['backend']['App']['GetSettings']();
 }
 
+export function GetVersionInfo() {
+  return window['go']['backend']['App']['GetVersionInfo']();
+}
+
 export function GetWorkspaces() {
   return window['go']['backend']['App']['GetWorkspaces']();
 }

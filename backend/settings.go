@@ -5,11 +5,26 @@ import (
 	"fmt"
 
 	"github.com/ghostsecurity/reaper/backend/settings"
+	"github.com/ghostsecurity/reaper/version"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 func (a *App) GetSettings() settings.Settings {
 	return a.userSettings.Get()
+}
+
+type VersionInfo struct {
+	Version string `json:"version"`
+	Date    string `json:"date"`
+	URL     string `json:"url"`
+}
+
+func (a *App) GetVersionInfo() VersionInfo {
+	return VersionInfo{
+		Version: version.Version,
+		Date:    version.Date,
+		URL:     version.URL(),
+	}
 }
 
 func (a *App) SaveSettings(newSettings *settings.Settings) {

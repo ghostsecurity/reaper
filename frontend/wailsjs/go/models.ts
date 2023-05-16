@@ -1,3 +1,24 @@
+export namespace backend {
+	
+	export class VersionInfo {
+	    version: string;
+	    date: string;
+	    url: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new VersionInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.version = source["version"];
+	        this.date = source["date"];
+	        this.url = source["url"];
+	    }
+	}
+
+}
+
 export namespace node {
 	
 	export class Connector {
