@@ -127,6 +127,6 @@ jobs:
         with:
           body_path: changelog.md
           files: |
-            release/*
+            release/*/*
 
 
