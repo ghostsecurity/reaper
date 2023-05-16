@@ -101,7 +101,7 @@ jobs:
       - name: grab filename
         if: matrix.os == 'windows-latest'
         run: echo $(grep '^Built ''' build.log | tail -n1 | sed "s/^Built '\(.*\)'.*$/RFILE=\1/g") >> $env:GITHUB_ENV
-      - name: publish
+      - name: move artifact
         run: |
           mkdir -p release
           cp '${{ env.RFILE }}' release/$(basename '${{ env.RFILE }}' | sed s/reaper/reaper-${{ env.W_OS }}-${{ env.W_ARCH }}/g)
