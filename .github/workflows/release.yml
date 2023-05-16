@@ -1,0 +1,163 @@
+name: release
+
+on:
+  pull_request:
+  push:
+    tags:
+      - v*
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+
+            #      - name: Import GPG key
+            #        id: import_gpg
+            #        uses: crazy-max/ghaction-import-gpg@v5.2.0
+            #        with:
+            #          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+            #          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+  
+            
+      - name: Install wails
+        run: make wails && wails doctor
+
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          # switch mirror as the default azure one is always 503ing :'(
+          #sudo sed -i "s/azure.archive.ubuntu.com/us.archive.ubuntu.com/g" /etc/apt/sources.list
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev gcc-aarch64-linux-gnu libc6-dev-arm64-cross libc6-dev-i386
+      - name: build
+        run: wails build -compiler=echo
+          # - uses: actions/upload-artifact@v2
+          #with:
+          #name: frontend
+          #path: frontend
+  build:
+    needs: frontend
+    name: snapshot
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ macos-latest, windows-latest, ubuntu-latest ]
+        arch: [ amd64, arm64 ]
+        exclude:
+          - os: ubuntu-latest
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+
+            #      - name: Import GPG key
+            #        id: import_gpg
+            #        uses: crazy-max/ghaction-import-gpg@v5.2.0
+            #        with:
+            #          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+            #          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+  
+            #- uses: actions/download-artifact@v2
+            #with:
+            #name: frontend
+            
+      - name: Install wails
+        run: make wails && wails doctor
+
+      - name: Install amd64 deps
+        if: matrix.os == 'ubuntu-latest' && matrix.arch == 'amd64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libc6-dev-i386
+      - name: Install arm64 deps
+        if: matrix.os == 'ubuntu-latest' && matrix.arch == 'arm64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libc6-dev-i386 gcc-aarch64-linux-gnu libc6-dev-arm64-cross libc6-dev-i386
+
+      - name: dist
+        run: mkdir -p dist
+
+      - name: prep compiler (windows)
+        if: matrix.os == 'windows-latest' && matrix.arch == 'arm64'
+        run: |
+          choco install mingw
+          echo 'CC="x86_64-w64-mingw32-gcc"' >> $env:GITHUB_ENV
+      - name: prep compiler (linux)
+        if: matrix.os == 'ubuntu-latest' && matrix.arch == 'arm64'
+        run: |
+          echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+      - name: set arch
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "GOARCH=${{ matrix.arch }}" >> $GITHUB_ENV
+          echo "GOHOSTARCH=amd64" >> $GITHUB_ENV
+
+      - name: prep vars
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo "W_OS=windows" >> $env:GITHUB_ENV
+          echo "W_ARCH=${{ matrix.arch }}" >> $env:GITHUB_ENV
+          echo "W_PLATFORM=windows/${{ matrix.arch }}" >> $env:GITHUB_ENV
+          echo "W_VERSION=${env:GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: prep vars
+        if: matrix.os != 'windows-latest'
+        run: |
+          OS=${{ matrix.os }}
+          [[ "$OS" = "macos-latest" ]] && OS=darwin
+          [[ "$OS" = "ubuntu-latest" ]] && OS=linux
+          echo W_OS=${OS} >> $GITHUB_ENV
+          echo W_ARCH=${{ matrix.arch }} >> $GITHUB_ENV
+          echo "W_PLATFORM=${OS}/${{ matrix.arch }}" >> $GITHUB_ENV
+          echo "W_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      - name: build
+        run: |
+          wails build -skipbindings -platform="${{ env.W_PLATFORM }}" -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${W_VERSION}' -s -w" | tee build.log
+
+      - name: grab filename
+        if: matrix.os != 'windows-latest'
+        run: echo $(grep '^Built ''' build.log | tail -n1 | sed "s/^Built '\(.*\)'.*$/RFILE=\1/g") >> $GITHUB_ENV
+      - name: grab filename
+        if: matrix.os == 'windows-latest'
+        run: echo $(grep '^Built ''' build.log | tail -n1 | sed "s/^Built '\(.*\)'.*$/RFILE=\1/g") >> $env:GITHUB_ENV
+      - name: publish
+        run: |
+          mkdir -p release
+          cp '${{ env.RFILE }}' release/$(basename '${{ env.RFILE }}' | sed s/reaper/reaper-${{ env.W_OS }}-${{ env.W_ARCH }}/g)
+          ls release/
+  publish:
+    needs: build
+    name: publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: create changelog
+        run: |
+          git log --oneline --no-color 2>&1 | sed 's/^[^ ]* /- /' | grep -v '^test:' | grep -v '^docs:' | grep -v '^build:' | tee changelog.md
+      - name: github release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          body_path: changelog.md
+          files: |
+            release/*
+
+
