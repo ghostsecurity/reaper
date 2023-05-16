@@ -91,7 +91,7 @@ jobs:
       - name: build
         run: |
           # create universal bindings
-          wails build -compiler='echo --' -noPackage
+          wails build -compiler=echo -noPackage
           # create platform-specific build
           wails build -skipbindings -platform="${{ env.W_PLATFORM }}" -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${W_VERSION}' -X 'github.com/ghostsecurity/reaper/version.Date=$(date)' -s -w" | tee build.log
 
