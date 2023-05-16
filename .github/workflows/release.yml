@@ -107,6 +107,8 @@ jobs:
     needs: build
     name: publish
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v3
         with:
@@ -119,14 +121,15 @@ jobs:
           ls release/
           find ./release -name 'reaper-*' -exec chmod +x {} \;
       - name: create changelog
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
-          git log $(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD --oneline --no-color 2>&1 | sed 's/^[^ ]* /- /' | grep -v '^test:' | grep -v '^docs:' | grep -v '^build:' | tee changelog.md
+          git log $(git describe --abbrev=0 --tags `git rev-list --tags --skip=1 --max-count=1` || git rev-list --max-parents=0 HEAD)..HEAD --oneline --no-color 2>&1 | sed 's/^[^ ]* /- /' | grep -v '^test:' | grep -v '^docs:' | grep -v '^build:' | tee changelog.md
       - name: github release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           body_path: changelog.md
           files: |
-            release/*
+            release/*/*
 
 
