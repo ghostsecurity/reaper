@@ -143,5 +143,5 @@ jobs:
       - name: publish
         run: |
           mkdir -p release
-          cp $(echo ${{ env.RFILE }} | sed s/reaper/reaper-${{ matrix.os }}-${{ matrix.arch }}/g) release/
+          cp '${{ env.RFILE }}' release/$(basename '${{ env.RFILE }}' | sed s/reaper/reaper-${{ matrix.os }}-${{ matrix.arch }}/g)
           ls release/
