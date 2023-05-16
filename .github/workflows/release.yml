@@ -121,7 +121,9 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           path: release/
-      - run: ls release/
+      - run: |
+          ls release/
+          find ./release -name 'reaper-*' -exec chmod +x {} \;
       - name: create changelog
         run: |
           git log $(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD --oneline --no-color 2>&1 | sed 's/^[^ ]* /- /' | grep -v '^test:' | grep -v '^docs:' | grep -v '^build:' | tee changelog.md
