@@ -9,7 +9,7 @@ require (
 	github.com/kirsle/configdir v0.0.0-20170128060238-e45d2f54772f
 	github.com/liamg/tml v0.6.0
 	github.com/stretchr/testify v1.8.0
-	github.com/wailsapp/wails/v2 v2.5.0
+	github.com/wailsapp/wails/v2 v2.5.1
 	golang.org/x/net v0.7.0
 )
 

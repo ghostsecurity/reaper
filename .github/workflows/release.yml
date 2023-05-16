@@ -117,7 +117,7 @@ jobs:
           echo "W_OS=windows" >> $env:GITHUB_ENV
           echo "W_ARCH=${{ matrix.arch }}" >> $env:GITHUB_ENV
           echo "W_PLATFORM=windows/${{ matrix.arch }}" >> $env:GITHUB_ENV
-          echo "W_VERSION=${env:GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+          echo "W_VERSION=$(git describe --always --tags)" >> $env:GITHUB_ENV
       - name: prep vars
         if: matrix.os != 'windows-latest'
         run: |
@@ -127,11 +127,11 @@ jobs:
           echo W_OS=${OS} >> $GITHUB_ENV
           echo W_ARCH=${{ matrix.arch }} >> $GITHUB_ENV
           echo "W_PLATFORM=${OS}/${{ matrix.arch }}" >> $GITHUB_ENV
-          echo "W_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+          echo "W_VERSION=$(git describe --always --tags)" >> $GITHUB_ENV
 
       - name: build
         run: |
-          wails build -skipbindings -platform="${{ env.W_PLATFORM }}" -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${W_VERSION}' -s -w" | tee build.log
+          wails build -skipbindings -platform="${{ env.W_PLATFORM }}" -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${W_VERSION}' -X 'github.com/ghostsecurity/reaper/version.Date=$(date)' -s -w" | tee build.log
 
       - name: grab filename
         if: matrix.os != 'windows-latest'

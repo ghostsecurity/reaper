@@ -40,7 +40,7 @@ lint-go:
 
 .PHONY: run
 run: clean wails
-	REAPER_LOG_LEVEL=debug wails dev
+	REAPER_LOG_LEVEL=debug wails dev -ldflags="-X 'github.com/ghostsecurity/reaper/version.Date=$$(date)'"
 
 .PHONY: fix
 fix:

@@ -1,15 +1,16 @@
 <script lang="ts" setup>
-import { onBeforeMount, reactive, ref } from 'vue'
-import { FunnelIcon, FolderIcon, CogIcon, BriefcaseIcon } from '@heroicons/vue/24/outline'
-import { EventsEmit, EventsOn } from '../wailsjs/runtime'
+import {onBeforeMount, reactive, ref} from 'vue'
+import {FunnelIcon, FolderIcon, CogIcon, BriefcaseIcon} from '@heroicons/vue/24/outline'
+import {EventsEmit, EventsOn} from '../wailsjs/runtime'
 import Settings from './lib/Settings'
 import setDarkMode from './lib/theme'
-import { Criteria } from './lib/Criteria/Criteria'
-import { workspace } from '../wailsjs/go/models'
+import {Criteria} from './lib/Criteria/Criteria'
+import {backend, workspace} from '../wailsjs/go/models'
 import {
   CreateWorkspace,
   GetSettings,
   GetWorkspaces,
+  GetVersionInfo,
   StartProxy,
   StopProxy,
   SetWorkspace,
@@ -26,12 +27,14 @@ import AppDashboard from './components/AppDashboard.vue'
 import SettingsModal from './components/SettingsModal.vue'
 import WorkspaceModal from './components/WorkspaceModal.vue'
 import WorkspaceSelection from './components/WorkspaceSelection.vue'
-import { HttpRequest } from './lib/Http'
+import {HttpRequest} from './lib/Http'
+import VersionInfo = backend.VersionInfo;
 
 const settings = reactive(new Settings())
 const currentWorkspace = reactive(new workspace.Workspace({}))
 const workspaces = ref([] as workspace.Workspace[])
 const loadedSettings = ref(false)
+const loadedVersion = ref(false)
 const loadedWorkspaces = ref(false)
 const hasWorkspace = ref(false)
 const settingsVisible = ref(false)
@@ -42,6 +45,7 @@ const criteria = reactive(new Criteria(''))
 const proxyStatus = ref(false)
 const proxyAddress = ref('')
 const proxyMessage = ref('Starting...')
+const versionInfo = ref(<VersionInfo | null>null)
 
 const savedRequestIds = ref([] as string[])
 
@@ -63,6 +67,10 @@ onBeforeMount(() => {
     GetWorkspaces().then(spaces => {
       workspaces.value = spaces
       loadedWorkspaces.value = true
+      GetVersionInfo().then((info: VersionInfo) => {
+        versionInfo.value = info
+        loadedVersion.value = true
+      })
     })
   })
   EventsOn('TreeUpdate', (n: Array<workspace.StructureNode>) => {
@@ -76,7 +84,7 @@ onBeforeMount(() => {
 })
 
 function isLoaded(): boolean {
-  return loadedSettings.value
+  return loadedSettings.value && loadedVersion.value && loadedWorkspaces.value
 }
 
 function closeSettings() {
@@ -137,11 +145,11 @@ function prepareWorkspace(ws: workspace.Workspace) {
   if (ws.collection.groups.length === 0) {
     GenerateID().then(id => {
       ws.collection.groups.push(
-        new workspace.Group({
-          id,
-          name: 'Default',
-          requests: [],
-        }),
+          new workspace.Group({
+            id,
+            name: 'Default',
+            requests: [],
+          }),
       )
       resetSavedIDs()
     })
@@ -202,9 +210,9 @@ function deleteWorkspace(id: string) {
 
 function setRequestGroup(request: workspace.Request, groupID: string, nextID: string) {
   const oldGroup = currentWorkspace.collection.groups.find(
-    // TODO: maybe this can be cleaned up?
-    // eslint-disable-next-line
-    g => (g.requests.find((r: workspace.Request) => r.id === request.id) as workspace.Request | undefined) !== undefined,
+      // TODO: maybe this can be cleaned up?
+      // eslint-disable-next-line
+      g => (g.requests.find((r: workspace.Request) => r.id === request.id) as workspace.Request | undefined) !== undefined,
   )
   if (oldGroup !== undefined) {
     oldGroup.requests = oldGroup.requests.filter(item => item.id !== request.id)
@@ -226,13 +234,13 @@ function setRequestGroup(request: workspace.Request, groupID: string, nextID: st
 function createRequestGroup(name: string) {
   GenerateID().then(id => {
     currentWorkspace.collection.groups.splice(
-      0,
-      0,
-      new workspace.Group({
-        id,
-        name,
-        requests: [],
-      }),
+        0,
+        0,
+        new workspace.Group({
+          id,
+          name,
+          requests: [],
+        }),
     )
   })
 }
@@ -244,7 +252,7 @@ function saveRequest(request: HttpRequest, groupID: string) {
     ;[group] = currentWorkspace.collection.groups // eslint-disable-line
   }
   GenerateID().then(id => {
-    const wrapped = new workspace.Request({ id, name: '' })
+    const wrapped = new workspace.Request({id, name: ''})
     wrapped.inner = JSON.parse(JSON.stringify(request))
     wrapped.inner.Response = null
     if (group) {
@@ -261,7 +269,7 @@ function saveRequest(request: HttpRequest, groupID: string) {
 function unsaveRequest(request: HttpRequest | workspace.Request) {
   const id = 'inner' in request ? request.inner.ID : (request as unknown as HttpRequest).ID
   const group = currentWorkspace.collection.groups.find(
-    g => (g.requests.find((r: workspace.Request) => r.inner.ID === id) as workspace.Request | undefined) !== undefined,
+      g => (g.requests.find((r: workspace.Request) => r.inner.ID === id) as workspace.Request | undefined) !== undefined,
   )
   if (group) {
     group.requests = group.requests.filter(item => item.inner.ID !== id)
@@ -302,10 +310,10 @@ function reorderGroup(fromID: string, toID: string) {
 
 function duplicateRequest(request: workspace.Request) {
   const group = currentWorkspace.collection.groups.find(
-    g =>
-      // TODO: maybe this can be cleaned up?
-      // eslint-disable-next-line
-      (g.requests.find((r: workspace.Request) => r.id === request.id) as workspace.Request | undefined) !== undefined,
+      g =>
+          // TODO: maybe this can be cleaned up?
+          // eslint-disable-next-line
+          (g.requests.find((r: workspace.Request) => r.id === request.id) as workspace.Request | undefined) !== undefined,
   )
   if (group === undefined) {
     return
@@ -316,7 +324,7 @@ function duplicateRequest(request: workspace.Request) {
       id,
       name: dupName,
     })
-    wrapped.inner = { ...request.inner }
+    wrapped.inner = {...request.inner}
     wrapped.inner.ID = id // unlink this from the original request
     group.requests.push(wrapped)
     saveWorkspace(currentWorkspace)
@@ -334,8 +342,8 @@ function deleteRequestGroup(groupId: string) {
   }
   if (group.requests.length > 0) {
     Confirm(
-      'Confirm deletion',
-      `The group '${group.name}' contains ${group.requests.length}. Are you sure you want to delete it?`,
+        'Confirm deletion',
+        `The group '${group.name}' contains ${group.requests.length}. Are you sure you want to delete it?`,
     ).then(confirmed => {
       if (confirmed) {
         currentWorkspace.collection.groups = currentWorkspace.collection.groups.filter(g => g.id !== groupId)
@@ -380,33 +388,34 @@ function sendRequest(request: HttpRequest) {
   <div v-if="!isLoaded()">Loading...</div>
   <div v-else-if="!hasWorkspace">
     <WorkspaceSelection :workspaces="workspaces" @select="selectWorkspaceById" @create="createWorkspace"
-      @edit="editWorkspace" @delete="deleteWorkspace" />
+                        @edit="editWorkspace" @delete="deleteWorkspace"/>
     <WorkspaceModal :show="isLoaded() && workspaceConfigVisible" @close="closeWorkspaceConfig" @save="saveWorkspace"
-      :ws="currentWorkspace" />
+                    :ws="currentWorkspace"/>
   </div>
   <div v-else class="h-full">
     <SettingsModal :show="isLoaded() && settingsVisible" @close="closeSettings" @save="saveSettings"
-      :settings="settings" />
+                   :settings="settings"
+                   :version="versionInfo"/>
     <WorkspaceModal :show="isLoaded() && workspaceConfigVisible" @close="closeWorkspaceConfig" @save="saveWorkspace"
-      :ws="currentWorkspace" />
+                    :ws="currentWorkspace"/>
     <div class="fixed h-full w-10 bg-polar-night-1a pt-1">
       <button :class="
         'rounded p-1 text-snow-storm-1 hover:bg-polar-night-3 ' + (sidebar === 'structure' ? 'bg-polar-night-4' : '')
       " @click="setSidebar('structure')">
-        <FolderIcon class="h-6 w-6" aria-hidden="true" title="Structure" />
+        <FolderIcon class="h-6 w-6" aria-hidden="true" title="Structure"/>
       </button>
       <button :class="
         'rounded p-1 text-snow-storm-1 hover:bg-polar-night-3 ' + (sidebar === 'scope' ? 'bg-polar-night-4' : '')
       " @click="setSidebar('scope')">
-        <FunnelIcon class="h-6 w-6" aria-hidden="true" title="Scope" />
+        <FunnelIcon class="h-6 w-6" aria-hidden="true" title="Scope"/>
       </button>
       <div class="absolute bottom-0 left-1">
         <button class="rounded p-1 text-snow-storm-1 hover:bg-polar-night-3" title="Workspace"
-          @click="showWorkspaceConfig">
-          <BriefcaseIcon class="h-6 w-6" aria-hidden="true" title="Workspace" />
+                @click="showWorkspaceConfig">
+          <BriefcaseIcon class="h-6 w-6" aria-hidden="true" title="Workspace"/>
         </button>
         <button class="rounded p-1 text-snow-storm-1 hover:bg-polar-night-3" title="Settings" @click="showSettings">
-          <CogIcon class="h-6 w-6" aria-hidden="true" />
+          <CogIcon class="h-6 w-6" aria-hidden="true"/>
         </button>
       </div>
     </div>
@@ -429,18 +438,20 @@ function sendRequest(request: HttpRequest) {
         'max-w-[25%]',
         sidebar !== '' ? '' : 'hidden',
       ]">
-        <Structure v-if="sidebar === 'structure'" :expanded="true" :nodes="nodes" @select="onStructureSelect" />
+        <Structure v-if="sidebar === 'structure'" :expanded="true" :nodes="nodes" @select="onStructureSelect"/>
         <p v-else>not implemented yet</p>
       </div>
       <div class="h-full w-3/4 flex-1">
         <AppDashboard :criteria="criteria" :proxy-address="'127.0.0.1:' + settings.ProxyPort" :ws="currentWorkspace"
-          :saved-request-ids="savedRequestIds" @save-request="saveRequest" @unsave-request="unsaveRequest"
-          @request-group-change="setRequestGroup" @request-group-create="createRequestGroup"
-          @switch-workspace="switchWorkspace" @criteria-change="onCriteriaChange" @workspace-edit="showWorkspaceConfig"
-          @workspace-save="saveWorkspace" @group-order-change="reorderGroup" @duplicate-request="duplicateRequest"
-          @request-group-delete="deleteRequestGroup" @request-group-rename="renameRequestGroup"
-          @request-rename="renameRequest" @send-request="sendRequest" @update-request="updateRequest"
-          @create-workflow-from-request="createWorkflowFromRequest" :current-workflow-id="workflowId" />
+                      :saved-request-ids="savedRequestIds" @save-request="saveRequest" @unsave-request="unsaveRequest"
+                      @request-group-change="setRequestGroup" @request-group-create="createRequestGroup"
+                      @switch-workspace="switchWorkspace" @criteria-change="onCriteriaChange"
+                      @workspace-edit="showWorkspaceConfig"
+                      @workspace-save="saveWorkspace" @group-order-change="reorderGroup"
+                      @duplicate-request="duplicateRequest"
+                      @request-group-delete="deleteRequestGroup" @request-group-rename="renameRequestGroup"
+                      @request-rename="renameRequest" @send-request="sendRequest" @update-request="updateRequest"
+                      @create-workflow-from-request="createWorkflowFromRequest" :current-workflow-id="workflowId"/>
       </div>
     </div>
   </div>

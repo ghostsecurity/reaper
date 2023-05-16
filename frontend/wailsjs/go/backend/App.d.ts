@@ -3,6 +3,7 @@
 import {workflow} from '../models';
 import {workspace} from '../models';
 import {settings} from '../models';
+import {backend} from '../models';
 import {node} from '../models';
 
 export function Confirm(arg1:string,arg2:string):Promise<boolean>;
@@ -24,6 +25,8 @@ export function ExportWorkflow(arg1:workflow.WorkflowM):Promise<void>;
 export function GenerateID():Promise<string>;
 
 export function GetSettings():Promise<settings.Settings>;
+
+export function GetVersionInfo():Promise<backend.VersionInfo>;
 
 export function GetWorkspaces():Promise<Array<workspace.Workspace>>;
 
