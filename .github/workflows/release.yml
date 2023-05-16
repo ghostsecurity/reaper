@@ -109,7 +109,7 @@ jobs:
       - name: cache artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.os }}-${{ matrix.arch }}-${{env.GITHUB_RUN_ID}}
+          name: ${{ matrix.os }}-${{ matrix.arch }}-${{github.run_id}}
           path: release
   publish:
     needs: build
@@ -120,19 +120,7 @@ jobs:
       - run: mkdir -p release || true
       - uses: actions/download-artifact@v3
         with:
-          name: ubuntu-latest-amd64-${{env.GITHUB_RUN_ID}}
-      - uses: actions/download-artifact@v3
-        with:
-          name: windows-latest-amd64-${{env.GITHUB_RUN_ID}}
-      - uses: actions/download-artifact@v3
-        with:
-          name: windows-latest-arm64-${{env.GITHUB_RUN_ID}}
-      - uses: actions/download-artifact@v3
-        with:
-          name: macos-latest-amd64-${{env.GITHUB_RUN_ID}}
-      - uses: actions/download-artifact@v3
-        with:
-          name: macos-latest-arm64-${{env.GITHUB_RUN_ID}}
+          path: release/
       - run: ls release/
       - name: create changelog
         run: |
