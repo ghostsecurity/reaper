@@ -64,7 +64,7 @@ func (a *App) handleLocalRequest(request *http.Request) *http.Response {
 
 <p>Download the CA certificate for your proxy here: <a download="reaper-ca.crt" href="%s">Download CA Certificate</a>.</p>
 
-<p>For further information and configuration, please use the Reaper desktop application.</p>
+<p>For further information and configuration, please use the Reaper desktop application or check out the <a target="_blank" href="https://ghostsecurity.github.io/reaper">documentation</a>.</p>
 
 `, caDownloadURL))
 }
