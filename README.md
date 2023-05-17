@@ -11,20 +11,10 @@ distributable workflows.
 
 ![Reaper Screenshot](screenshot.png)
 
-## Installation
-
-You can grab a binary from the [latest release](https://github.com/ghostsecurity/reaper/releases/latest), `chmod +x` it,
-and run it. Make sure you download the right binary for your OS and architecture.
-
-For a more permanent install, copy it into your `PATH`, e.g. `/usr/bin/reaper`.
-
-You will be able to install with your favourite package manager in time.
-
-If your architecture does not have a prebuilt binary in the latest release, you can build it yourself. See below.
-
 ## Documentation
 
-For further documentation on configuration and usage, check out the [wiki](wiki).
+For further documentation on installation, configuration and usage, check out
+the [docs](https://ghostsecurity.github.io/reaper).
 
 ## Building and Hacking Locally
 
