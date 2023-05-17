@@ -14,12 +14,24 @@ nav_order: 1
 1. First, ensure you have [installed](../installation) Reaper.
 2. Launch Reaper and select or create a new workspace.
 3. Hit the cog icon in the bottom left.
+
+   ![img.png](../../images/browsers/reaper/img.png)
 4. Select `Certificates` and hit the `Export CA Certificate` button. Export the certificate somewhere convenient,
    perhaps your home directory or desktop - it only needs to be there temporarily.
+
+   ![img_1.png](../../images/browsers/reaper/img_1.png)
 5. Next, launch Firefox and open the Settings menu (`⌘,` on Mac).
+
+   ![img.png](../../images/browsers/firefox/img.png)
 6. Navigate to `Privacy & Security` and scroll down to `Certificates`.
+
+   ![img_1.png](../../images/browsers/firefox/img_1.png)a
 7. Hit `View Certificates` and select the `Authorities` tab.
+
+   ![img_2.png](../../images/browsers/firefox/img_2.png)
 8. Hit `Import` and select the certificate you exported from Reaper.
+
+   ![img_3.png](../../images/browsers/firefox/img_3.png)
 9. Ensure `Trust this CA to identify websites` is checked and hit `OK`.
 
 ### Configure Firefox to use Reaper

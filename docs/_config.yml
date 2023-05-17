@@ -24,15 +24,17 @@ description: >- # this means to ignore newlines until "baseurl:"
   Reaper is a reconnaissance and attack proxy, built to be a modern, lightweight, and efficient equivalent to Burp
   Suite/ZAP etc. This is an attack proxy with a heavy focus on automation, collaboration, and building universally
   distributable workflows.
-baseurl: "/" # the subpath of your site, e.g. /blog
+baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://ghostsecurity.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: ghostsecurityhq
 github_username:  ghostsecurity
 
 # Build settings
 remote_theme: just-the-docs/just-the-docs
+
 plugins:
   - jekyll-feed
+  - jekyll-remote-theme
 
 color_scheme: dark
 
