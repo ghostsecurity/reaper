@@ -1,26 +1,37 @@
 ---
 layout: page
-title: Chrome
+title: Chrome (Linux)
 parent: Browser Setup
 grand_parent: Getting Started
-permalink: /getting-started/browser-setup/chrome
-nav_order: 2
+permalink: /getting-started/browser-setup/chrome-linux
+nav_order: 4
 ---
 
-## Chrome Setup
+## Chrome (Linux) Setup
 
 ### Install the Reaper CA Certificate
 
 1. First, ensure you have [installed](../installation) Reaper.
 2. Launch Reaper and select or create a new workspace.
 3. Hit the cog icon in the bottom left.
+
+   ![img.png](../../images/browsers/reaper/img.png)
 4. Select `Certificates` and hit the `Export CA Certificate` button. Export the certificate somewhere convenient,
    perhaps your home directory or desktop - it only needs to be there temporarily.
+
+   ![img_1.png](../../images/browsers/reaper/img_1.png)
 5. Launch Chrome and open the Settings menu.
+
+   ![img.png](../../images/browsers/chrome/img.png)
 6. Navigate to `Privacy and security` and select `Manage certificates`.
+
+   ![img_4.png](../../images/browsers/chrome/linux/img_4.png)
 7. Select the `Authorities` tab and hit `Import`.
-8. Select the certificate you exported from Reaper.
-9. Continue through the wizard and ensure `Trust this certificate for identifying websites` is checked if prompted.
+8. Import the certificate you exported from Reaper earlier.
+9. Check `Trust this certificate for identifying websites` and click OK.
+
+   ![img_5.png](../../images/browsers/chrome/linux/img_5.png)
+10. Restart Chrome.
 
 ### Configure Chrome to use Reaper
 

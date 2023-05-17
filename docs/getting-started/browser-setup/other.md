@@ -4,7 +4,7 @@ title: Other Browsers/Tools
 parent: Browser Setup
 grand_parent: Getting Started
 permalink: /getting-started/browser-setup/other
-nav_order: 3
+nav_order: 5
 ---
 
 ## Other Browsers
@@ -14,8 +14,12 @@ nav_order: 3
 1. First, ensure you have [installed](../installation) Reaper.
 2. Launch Reaper and select or create a new workspace.
 3. Hit the cog icon in the bottom left.
+
+   ![img.png](../../images/browsers/reaper/img.png)
 4. Select `Certificates` and hit the `Export CA Certificate` button. Export the certificate somewhere convenient,
    perhaps your home directory or desktop - it only needs to be there temporarily.
+
+   ![img_1.png](../../images/browsers/reaper/img_1.png)
 5. Import and trust the certificate in your browser settings.
 
 ### Configure Browser to use Reaper
