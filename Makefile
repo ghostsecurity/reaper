@@ -12,7 +12,7 @@ wails:
 
 .PHONY: build
 build: clean wails
-	wails build
+	wails build -ldflags="-X 'github.com/ghostsecurity/reaper/version.Date=$$(date)'"
 
 .PHONY: test
 test: test-go test-js
@@ -45,3 +45,12 @@ run: clean wails
 .PHONY: fix
 fix:
 	cd frontend && npm install && npm run fix
+
+.PHONY: docs
+docs:
+	cd docs && bundle install && bundle exec jekyll serve --livereload
+
+.PHONY: install
+install: build
+	@./scripts/install.sh
+

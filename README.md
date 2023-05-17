@@ -1,17 +1,30 @@
 # Reaper
 
-> :dragon: HERE BE DRAGONS!
-> This is a work in progress. It's an experimental PoC and will likely change almost entirely over time. I'm currently working on it as a side-project to test out some ideas.
+> :warning:
+> This is a work in progress. It's an experimental PoC and will likely change almost entirely over time.
 
 <img width="75" align="right" src="frontend/src/assets/images/logo.png">
 
-Reaper is a reconnaissance and attack proxy, built to be a lightweight, API-focused equivalent to Burp Suite/ZAP etc. Imagine if your favourite attack proxy had a baby with your favourite API testing tool - that's our goal.
+Reaper is a reconnaissance and attack proxy, built to be a modern, lightweight, and efficient equivalent to Burp
+Suite/ZAP etc. This is an attack proxy with a heavy focus on automation, collaboration, and building universally
+distributable workflows.
 
 ![Reaper Screenshot](screenshot.png)
 
 ## Installation
 
-Eventually you can grab a binary from the releases page, or use your favourite package manager. For now, you'll need to build from source as described below...
+You can grab a binary from the [latest release](https://github.com/ghostsecurity/reaper/releases/latest), `chmod +x` it,
+and run it. Make sure you download the right binary for your OS and architecture.
+
+For a more permanent install, copy it into your `PATH`, e.g. `/usr/bin/reaper`.
+
+You will be able to install with your favourite package manager in time.
+
+If your architecture does not have a prebuilt binary in the latest release, you can build it yourself. See below.
+
+## Documentation
+
+For further documentation on configuration and usage, check out the [wiki](wiki).
 
 ## Building and Hacking Locally
 
@@ -22,5 +35,3 @@ The following steps should work across Mac, Linux and Windows:
 3. Run `make wails` to install Wails v2.
 4. Run `wails doctor` to ensure your environment is configured correctly. Install any missing dependencies as prompted.
 5. Run `make run` to start _reaper_.
-
-In order to build cross-platform, production binaries, creating and pushing a git tag will (eventually) trigger GitHub actions to publish versioned binaries as release artifacts.
