@@ -4,72 +4,37 @@ import (
 	"fmt"
 
 	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
-	"github.com/google/uuid"
 	"golang.org/x/net/context"
 )
 
 type StatusFilterNode struct {
-	id   uuid.UUID
-	name string
-	*VarStorage
+	*base
+	noInjections
 }
 
 func NewStatusFilter() *StatusFilterNode {
 	return &StatusFilterNode{
-		id:   uuid.New(),
-		name: "Status Filter",
-		VarStorage: NewVarStorage(
-			Connectors{
-				NewConnector("response", transmission.TypeRequest|transmission.TypeResponse|transmission.TypeMap, true),
-				NewConnector("min", transmission.TypeInt, false),
-				NewConnector("max", transmission.TypeInt, false),
-			},
-			Connectors{
-				NewConnector("good", transmission.TypeRequest|transmission.TypeResponse|transmission.TypeMap, true),
-				NewConnector("bad", transmission.TypeRequest|transmission.TypeResponse|transmission.TypeMap, true),
-			},
-			map[string]transmission.Transmission{
-				"min": transmission.NewInt(200),
-				"max": transmission.NewInt(399),
-			},
+		base: newBase(
+			"Status Filter",
+			TypeStatusFilter,
+			false,
+			NewVarStorage(
+				Connectors{
+					NewConnector("response", transmission.TypeRequest|transmission.TypeResponse|transmission.TypeMap, true),
+					NewConnector("min", transmission.TypeInt, false),
+					NewConnector("max", transmission.TypeInt, false),
+				},
+				Connectors{
+					NewConnector("good", transmission.TypeRequest|transmission.TypeResponse|transmission.TypeMap, true),
+					NewConnector("bad", transmission.TypeRequest|transmission.TypeResponse|transmission.TypeMap, true),
+				},
+				map[string]transmission.Transmission{
+					"min": transmission.NewInt(200),
+					"max": transmission.NewInt(399),
+				},
+			),
 		),
 	}
-}
-
-func (n *StatusFilterNode) ID() uuid.UUID {
-	return n.id
-}
-
-func (n *StatusFilterNode) IsReadOnly() bool {
-	return false
-}
-
-func (n *StatusFilterNode) Name() string {
-	return n.name
-}
-
-func (n *StatusFilterNode) SetName(name string) {
-	n.name = name
-}
-
-func (n *StatusFilterNode) GetInjections() map[string]transmission.Transmission {
-	return nil
-}
-
-func (n *StatusFilterNode) Type() Type {
-	return TypeStatusFilter
-}
-
-func (n *StatusFilterNode) GetVars() *VarStorage {
-	return n.VarStorage
-}
-
-func (n *StatusFilterNode) SetVars(v *VarStorage) {
-	n.VarStorage = v
-}
-
-func (n *StatusFilterNode) SetID(id uuid.UUID) {
-	n.id = id
 }
 
 func (n *StatusFilterNode) Run(ctx context.Context, in map[string]transmission.Transmission, out chan<- Output, last bool) (<-chan OutputInstance, <-chan error) {

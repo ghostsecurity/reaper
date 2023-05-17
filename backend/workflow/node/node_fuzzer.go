@@ -4,72 +4,37 @@ import (
 	"fmt"
 
 	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
-	"github.com/google/uuid"
 	"golang.org/x/net/context"
 )
 
 type FuzzerNode struct {
-	*VarStorage
-	id   uuid.UUID
-	name string
+	*base
+	noInjections
 }
 
 func NewFuzzer() *FuzzerNode {
 	return &FuzzerNode{
-		id:   uuid.New(),
-		name: "Fuzzer",
-		VarStorage: NewVarStorage(
-			Connectors{
-				NewConnector("start", transmission.TypeStart, true),
-				NewConnector("vars", transmission.TypeMap, true),
-				NewConnector("placeholder", transmission.TypeString, false),
-				NewConnector("list", transmission.TypeList, false),
-			},
-			Connectors{
-				NewConnector("output", transmission.TypeMap, true),
-			},
-			map[string]transmission.Transmission{
-				"placeholder": transmission.NewString("$FUZZ$"),
-				"list":        transmission.NewNumericRangeIterator(0, 100),
-			},
+		base: newBase(
+			"Fuzzer",
+			TypeFuzzer,
+			false,
+			NewVarStorage(
+				Connectors{
+					NewConnector("start", transmission.TypeStart, true),
+					NewConnector("vars", transmission.TypeMap, true),
+					NewConnector("placeholder", transmission.TypeString, false),
+					NewConnector("list", transmission.TypeList, false),
+				},
+				Connectors{
+					NewConnector("output", transmission.TypeMap, true),
+				},
+				map[string]transmission.Transmission{
+					"placeholder": transmission.NewString("$FUZZ$"),
+					"list":        transmission.NewNumericRangeIterator(0, 100),
+				},
+			),
 		),
 	}
-}
-
-func (n *FuzzerNode) IsReadOnly() bool {
-	return false
-}
-
-func (n *FuzzerNode) ID() uuid.UUID {
-	return n.id
-}
-
-func (n *FuzzerNode) Name() string {
-	return n.name
-}
-
-func (n *FuzzerNode) Type() Type {
-	return TypeFuzzer
-}
-
-func (n *FuzzerNode) SetName(name string) {
-	n.name = name
-}
-
-func (n *FuzzerNode) GetInjections() map[string]transmission.Transmission {
-	return nil
-}
-
-func (n *FuzzerNode) GetVars() *VarStorage {
-	return n.VarStorage
-}
-
-func (n *FuzzerNode) SetVars(vars *VarStorage) {
-	n.VarStorage = vars
-}
-
-func (n *FuzzerNode) SetID(id uuid.UUID) {
-	n.id = id
 }
 
 func (n *FuzzerNode) Run(ctx context.Context, in map[string]transmission.Transmission, out chan<- Output, last bool) (<-chan OutputInstance, <-chan error) {

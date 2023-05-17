@@ -8,73 +8,38 @@ import (
 
 	"github.com/ghostsecurity/reaper/backend/packaging"
 	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
-	"github.com/google/uuid"
 	"golang.org/x/net/context"
 )
 
 type SenderNode struct {
-	*VarStorage
-	id   uuid.UUID
-	name string
+	*base
+	noInjections
 }
 
 func NewSender() *SenderNode {
 	return &SenderNode{
-		id:   uuid.New(),
-		name: "Sender",
-		VarStorage: NewVarStorage(
-			Connectors{
-				NewConnector("start", transmission.TypeStart, true),
-				NewConnector("request", transmission.TypeRequest, true),
-				NewConnector("replacements", transmission.TypeMap, true),
-				NewConnector("timeout", transmission.TypeInt, false, "in milliseconds"),
-				NewConnector("follow_redirects", transmission.TypeBoolean, false, ""),
-			},
-			Connectors{
-				NewConnector("output", transmission.TypeRequest|transmission.TypeResponse|transmission.TypeMap, true),
-			},
-			map[string]transmission.Transmission{
-				"timeout":          transmission.NewInt(5000),
-				"follow_redirects": transmission.NewBoolean(false),
-			},
+		base: newBase(
+			"Sender",
+			TypeSender,
+			false,
+			NewVarStorage(
+				Connectors{
+					NewConnector("start", transmission.TypeStart, true),
+					NewConnector("request", transmission.TypeRequest, true),
+					NewConnector("replacements", transmission.TypeMap, true),
+					NewConnector("timeout", transmission.TypeInt, false, "in milliseconds"),
+					NewConnector("follow_redirects", transmission.TypeBoolean, false, ""),
+				},
+				Connectors{
+					NewConnector("output", transmission.TypeRequest|transmission.TypeResponse|transmission.TypeMap, true),
+				},
+				map[string]transmission.Transmission{
+					"timeout":          transmission.NewInt(5000),
+					"follow_redirects": transmission.NewBoolean(false),
+				},
+			),
 		),
 	}
-}
-
-func (n *SenderNode) IsReadOnly() bool {
-	return false
-}
-
-func (n *SenderNode) ID() uuid.UUID {
-	return n.id
-}
-
-func (n *SenderNode) Name() string {
-	return n.name
-}
-
-func (n *SenderNode) Type() Type {
-	return TypeSender
-}
-
-func (n *SenderNode) SetName(name string) {
-	n.name = name
-}
-
-func (n *SenderNode) GetInjections() map[string]transmission.Transmission {
-	return nil
-}
-
-func (n *SenderNode) GetVars() *VarStorage {
-	return n.VarStorage
-}
-
-func (n *SenderNode) SetVars(vars *VarStorage) {
-	n.VarStorage = vars
-}
-
-func (n *SenderNode) SetID(id uuid.UUID) {
-	n.id = id
 }
 
 func (n *SenderNode) Run(ctx context.Context, in map[string]transmission.Transmission, out chan<- Output, last bool) (<-chan OutputInstance, <-chan error) {
