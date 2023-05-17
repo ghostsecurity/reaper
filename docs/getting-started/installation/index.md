@@ -9,4 +9,4 @@ has_children: true
 
 We are currently working on adding support for your favourite package manager.
 
-In the meantime, please [build from source](source).
+In the meantime, please [build from source](./source).
