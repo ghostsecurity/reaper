@@ -3,10 +3,8 @@ package workflow
 import (
 	"errors"
 	"fmt"
-	"sync"
 
 	"github.com/ghostsecurity/reaper/backend/workflow/node"
-	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
 	"github.com/google/uuid"
 	"golang.org/x/net/context"
 )
@@ -14,19 +12,18 @@ import (
 type runner struct {
 	workflow *Workflow
 	ctx      context.Context
-	statuses map[uuid.UUID]Update
 }
 
 func newRunner(ctx context.Context, w *Workflow) *runner {
 	return &runner{
 		workflow: w,
 		ctx:      ctx,
-		statuses: make(map[uuid.UUID]Update),
 	}
 }
 
 type Update struct {
 	Node    uuid.UUID
+	Name    string
 	Status  NodeStatus
 	Message string
 }
@@ -75,27 +72,13 @@ func (r *runner) Run(updateChan chan<- Update, output chan<- node.Output) error 
 		return fmt.Errorf("workflow has no start node")
 	}
 
-	for _, node := range r.workflow.Nodes {
-		r.updateStatus(Update{
-			Node:    node.ID(),
-			Status:  NodeStatusPending,
-			Message: "Waiting for input(s)...",
-		}, updateChan)
-	}
-
-	r.updateStatus(Update{
-		Node:    startNode.ID(),
-		Status:  NodeStatusSuccess,
-		Message: "Process started.",
-	}, updateChan)
-
-	for _, node := range r.workflow.Nodes {
-		injections := node.GetInjections()
+	for _, n := range r.workflow.Nodes {
+		injections := n.GetInjections()
 		if len(injections) == 0 {
 			continue
 		}
 		for _, link := range r.workflow.Links {
-			if link.From.Node == node.ID() {
+			if link.From.Node == n.ID() {
 				for name, trans := range injections {
 					if name == link.From.Connector {
 						target, err := r.workflow.FindNode(link.To.Node)
@@ -112,184 +95,21 @@ func (r *runner) Run(updateChan chan<- Update, output chan<- node.Output) error 
 				}
 			}
 		}
-		r.updateStatus(Update{
-			Node:    node.ID(),
-			Status:  NodeStatusSuccess,
-			Message: "Input(s) injected.",
-		}, updateChan)
 	}
 
-	defaultStatus := NodeStatusSuccess
+	bus := NewBus(startNode, updateChan)
 
-	defer func() {
-		for id, status := range r.statuses {
-			if status.Status == NodeStatusPending || status.Status == NodeStatusRunning {
-				r.updateStatus(Update{
-					Node:    id,
-					Status:  defaultStatus,
-					Message: "Operation complete.",
-				}, updateChan)
-			}
-		}
-	}()
-
-	if err := r.RunNode(startNode, nil, updateChan, true, output); err != nil {
-		defaultStatus = NodeStatusAborted
-		return err
-	}
-
-	return nil
-}
-
-func (r *runner) updateStatus(update Update, c chan<- Update) {
-	if old, ok := r.statuses[update.Node]; ok {
-		if old.Status == update.Status && old.Message == update.Message {
-			return
-		}
-		if old.Status == NodeStatusSuccess {
-			return
+	for _, node := range r.workflow.Nodes {
+		if err := bus.AddNode(node); err != nil {
+			return fmt.Errorf("failed to add node to bus: %s", err)
 		}
 	}
-	r.statuses[update.Node] = update
-	c <- update
-}
 
-func (r *runner) RunNode(n node.Node, params map[string]transmission.Transmission, updateChan chan<- Update, lastInput bool, out chan<- node.Output) error {
-
-	if err := n.Validate(params); err != nil {
-		return fmt.Errorf("invalid node: %s", err)
-	}
-
-	select {
-	case <-r.ctx.Done():
-		return r.ctx.Err()
-	default:
-	}
-
-	r.updateStatus(Update{
-		Node:    n.ID(),
-		Status:  NodeStatusRunning,
-		Message: "In Progress...",
-	}, updateChan)
-
-	outputChan, errChan := n.Run(r.ctx, params, out, lastInput)
-	defer r.waitForChannels(outputChan, errChan)
-	for {
-		select {
-		case <-r.ctx.Done():
-			r.updateStatus(Update{
-				Node:    n.ID(),
-				Status:  NodeStatusAborted,
-				Message: fmt.Sprintf("Workflow cancelled: %s", r.ctx.Err()),
-			}, updateChan)
-			return r.ctx.Err()
-		case output, ok := <-outputChan:
-			if !ok {
-				if lastInput {
-					r.updateStatus(Update{
-						Node:    n.ID(),
-						Status:  NodeStatusSuccess,
-						Message: "Operation complete.",
-					}, updateChan)
-				}
-				return nil
-			}
-			if lastInput && output.Complete {
-				r.updateStatus(Update{
-					Node:    n.ID(),
-					Status:  NodeStatusSuccess,
-					Message: "Operation complete.",
-				}, updateChan)
-			}
-			if err := func() error {
-				concurrentErrChan := make(chan error, len(r.workflow.Links))
-				defer close(concurrentErrChan)
-
-				var wg sync.WaitGroup
-
-				for _, link := range r.workflow.Links {
-					if link.From.Node == n.ID() && link.From.Connector == output.OutputName {
-						wg.Add(1)
-						go func(link node.Link) {
-							defer wg.Done()
-							nextNode, err := r.workflow.FindNode(link.To.Node)
-							if err != nil {
-								concurrentErrChan <- err
-								return
-							}
-							if err := r.RunNode(nextNode, map[string]transmission.Transmission{
-								link.To.Connector: output.Data,
-							}, updateChan, output.Complete, out); err != nil {
-								if errors.Is(err, context.Canceled) {
-									concurrentErrChan <- err
-								} else {
-									concurrentErrChan <- fmt.Errorf("%w with node '%s': %s", ChildNodeError, nextNode.Name(), err)
-								}
-								return
-							}
-						}(link)
-					}
-				}
-
-				wg.Wait()
-
-				select {
-				case err := <-concurrentErrChan:
-					if err != nil {
-						return fmt.Errorf("error with node '%s': %w", n.Name(), err)
-					}
-				default:
-				}
-
-				return nil
-			}(); err != nil {
-				if errors.Is(err, context.Canceled) {
-					r.updateStatus(Update{
-						Node:    n.ID(),
-						Status:  NodeStatusAborted,
-						Message: fmt.Sprintf("Workflow cancelled: %s", err),
-					}, updateChan)
-				} else if errors.Is(err, ChildNodeError) {
-					r.updateStatus(Update{
-						Node:    n.ID(),
-						Status:  NodeStatusAborted,
-						Message: fmt.Sprintf("Workflow aborted: %s", err),
-					}, updateChan)
-				} else {
-					r.updateStatus(Update{
-						Node:    n.ID(),
-						Status:  NodeStatusError,
-						Message: fmt.Sprintf("Error: %s", err),
-					}, updateChan)
-				}
-				return err
-			}
-		case err, ok := <-errChan:
-			if ok {
-				r.updateStatus(Update{
-					Node:    n.ID(),
-					Status:  NodeStatusError,
-					Message: fmt.Sprintf("Error: %s", err),
-				}, updateChan)
-				return err
-			}
+	for _, link := range r.workflow.Links {
+		if err := bus.AddLink(link); err != nil {
+			return fmt.Errorf("failed to add link to bus: %s", err)
 		}
 	}
-}
 
-func (r *runner) waitForChannels(c <-chan node.OutputInstance, errChan <-chan error) {
-	var s, e bool
-	for {
-		select {
-		case <-r.ctx.Done():
-			return
-		case _, ok := <-c:
-			e = !ok
-		case _, ok := <-errChan:
-			s = !ok
-		}
-		if s && e {
-			return
-		}
-	}
+	return bus.Run(r.ctx, output)
 }

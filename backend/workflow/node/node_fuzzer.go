@@ -37,61 +37,65 @@ func NewFuzzer() *FuzzerNode {
 	}
 }
 
-func (n *FuzzerNode) Run(ctx context.Context, in map[string]transmission.Transmission, out chan<- Output, last bool) (<-chan OutputInstance, <-chan error) {
+func (n *FuzzerNode) Start(ctx context.Context, in <-chan Input, out chan<- OutputInstance, _ chan<- Output) error {
 
-	output := make(chan OutputInstance)
-	errs := make(chan error)
+	defer n.setBusy(false)
 
-	go func() {
-		defer close(output)
-		defer close(errs)
-		if in == nil {
-			errs <- fmt.Errorf("input is nil")
-			return
-		}
-		list, err := n.ReadInputList("list", in)
-		if err != nil {
-			errs <- fmt.Errorf("input not found: no list specified")
-			return
-		}
-		placeholder, err := n.ReadInputString("placeholder", in)
-		if err != nil {
-			errs <- fmt.Errorf("input not found: no placeholder specified")
-			return
-		}
-
-		vars, _ := n.ReadInputMap("vars", in)
-
-		var i int64
-		for {
-			i++
-			word, ok := list.Next()
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case input, ok := <-in:
 			if !ok {
-				break
-			}
-			select {
-			case <-ctx.Done():
-				errs <- ctx.Err()
-				return
-			default:
+				return nil
 			}
 
-			data := map[string]string{}
-			for k, v := range vars {
-				data[k] = v
-			}
-			data[placeholder] = word
+			n.setBusy(true)
 
-			output <- OutputInstance{
-				OutputName: "output",
-				Current:    int(i),
-				Total:      list.Count(),
-				Complete:   list.Complete() && last,
-				Data:       transmission.NewMap(data),
+			if input.Data == nil {
+				return fmt.Errorf("input is nil")
 			}
+			list, err := n.ReadInputList("list", input.Data)
+			if err != nil {
+				return fmt.Errorf("input not found: no list specified")
+			}
+			placeholder, err := n.ReadInputString("placeholder", input.Data)
+			if err != nil {
+				return fmt.Errorf("input not found: no placeholder specified")
+			}
+
+			vars, _ := n.ReadInputMap("vars", input.Data)
+
+			var i int64
+			for {
+				i++
+				word, ok := list.Next()
+				if !ok {
+					break
+				}
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				default:
+				}
+
+				data := map[string]string{}
+				for k, v := range vars {
+					data[k] = v
+				}
+				data[placeholder] = word
+
+				n.tryOut(ctx, out, OutputInstance{
+					OutputName: "output",
+					Current:    int(i),
+					Total:      list.Count(),
+					Complete:   list.Complete() && input.Last,
+					Data:       transmission.NewMap(data),
+				})
+
+			}
+
+			n.setBusy(false)
 		}
-	}()
-
-	return output, errs
-
+	}
 }

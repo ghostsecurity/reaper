@@ -62,22 +62,6 @@ func (n *RequestNode) GetInjections() map[string]transmission.Transmission {
 	}
 }
 
-func (n *RequestNode) Run(ctx context.Context, in map[string]transmission.Transmission, output chan<- Output, last bool) (<-chan OutputInstance, <-chan error) {
-	out := make(chan OutputInstance)
-	errs := make(chan error)
-	go func() {
-		defer close(out)
-		defer close(errs)
-		req, err := n.ReadInputRequest("input", nil)
-		if err != nil {
-			errs <- err
-			return
-		}
-		out <- OutputInstance{
-			OutputName: "output",
-			Data:       transmission.NewRequest(*req),
-			Complete:   last,
-		}
-	}()
-	return out, errs
+func (n *RequestNode) Start(ctx context.Context, in <-chan Input, out chan<- OutputInstance, _ chan<- Output) error {
+	return nil
 }

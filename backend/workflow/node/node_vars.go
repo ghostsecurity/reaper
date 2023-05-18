@@ -40,22 +40,6 @@ func (n *VarsNode) GetInjections() map[string]transmission.Transmission {
 	}
 }
 
-func (n *VarsNode) Run(ctx context.Context, in map[string]transmission.Transmission, _ chan<- Output, last bool) (<-chan OutputInstance, <-chan error) {
-	out := make(chan OutputInstance)
-	errs := make(chan error)
-	go func() {
-		defer close(out)
-		defer close(errs)
-		m, err := n.ReadInputMap("variables", nil)
-		if err != nil {
-			errs <- err
-			return
-		}
-		out <- OutputInstance{
-			OutputName: "output",
-			Data:       transmission.NewMap(m),
-			Complete:   last,
-		}
-	}()
-	return out, errs
+func (n *VarsNode) Start(ctx context.Context, in <-chan Input, out chan<- OutputInstance, _ chan<- Output) error {
+	return nil
 }

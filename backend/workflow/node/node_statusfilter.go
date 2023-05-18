@@ -37,60 +37,64 @@ func NewStatusFilter() *StatusFilterNode {
 	}
 }
 
-func (n *StatusFilterNode) Run(ctx context.Context, in map[string]transmission.Transmission, out chan<- Output, last bool) (<-chan OutputInstance, <-chan error) {
+func (n *StatusFilterNode) Start(ctx context.Context, in <-chan Input, out chan<- OutputInstance, _ chan<- Output) error {
 
-	output := make(chan OutputInstance)
-	errs := make(chan error)
+	defer n.setBusy(false)
 
-	go func() {
-		defer close(output)
-		defer close(errs)
-		if in == nil {
-			errs <- fmt.Errorf("input is nil")
-			return
-		}
-		response, err := n.ReadInputResponse("response", in)
-		if err != nil {
-			errs <- fmt.Errorf("input not found: no response specified: %w", err)
-			return
-		}
+	min, err := n.ReadInputInt("min", nil)
+	if err != nil {
+		return fmt.Errorf("input not found: no min specified: %w", err)
+	}
 
-		min, err := n.ReadInputInt("min", in)
-		if err != nil {
-			errs <- fmt.Errorf("input not found: no min specified: %w", err)
-			return
-		}
+	max, err := n.ReadInputInt("max", nil)
+	if err != nil {
+		return fmt.Errorf("input not found: no max specified: %w", err)
+	}
 
-		max, err := n.ReadInputInt("max", in)
-		if err != nil {
-			errs <- fmt.Errorf("input not found: no max specified: %w", err)
-			return
-		}
-
-		input, err := n.ReadValue("response", in)
-		if err != nil {
-			errs <- fmt.Errorf("input not found: no response specified: %w", err)
-			return
-		}
-
-		if response.StatusCode >= min && response.StatusCode <= max {
-			output <- OutputInstance{
-				OutputName: "good",
-				Current:    1,
-				Total:      1,
-				Complete:   last,
-				Data:       input,
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case input, ok := <-in:
+			if !ok {
+				return nil
 			}
-		} else {
-			output <- OutputInstance{
-				OutputName: "bad",
-				Current:    1,
-				Total:      1,
-				Complete:   last,
-				Data:       input,
+			n.setBusy(true)
+			if input.Data == nil {
+				return fmt.Errorf("input data is nil")
 			}
-		}
-	}()
 
-	return output, errs
+			response, err := n.ReadInputResponse("response", input.Data)
+			if err != nil {
+				return fmt.Errorf("input not found: no response specified: %w", err)
+			}
+
+			rawInput, err := n.ReadValue("response", input.Data)
+			if err != nil {
+				return fmt.Errorf("input not found: no response specified: %w", err)
+			}
+
+			if response.StatusCode >= min && response.StatusCode <= max {
+				n.tryOut(ctx, out, OutputInstance{
+					OutputName: "good",
+					Current:    1,
+					Total:      1,
+					Complete:   input.Last,
+					Data:       rawInput,
+				})
+			} else {
+				n.tryOut(ctx, out, OutputInstance{
+					OutputName: "bad",
+					Current:    1,
+					Total:      1,
+					Complete:   input.Last,
+					Data:       rawInput,
+				})
+			}
+
+			n.setBusy(false)
+
+		}
+	}
+
 }

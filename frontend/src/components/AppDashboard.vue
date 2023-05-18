@@ -134,6 +134,13 @@ const flowStderr = ref([] as string[])
 const flowActivity = ref([] as string[])
 const nodeStatuses = ref(new Map<string, string>([]))
 
+function isFinal(status: string | undefined): boolean {
+  if (!status) {
+    return false
+  }
+  return status === 'success' || status === 'error' || status === 'aborted'
+}
+
 onBeforeMount(() => {
   EventsOn('WorkflowStarted', (id: string) => {
     runningWorkflowId.value = id
@@ -142,6 +149,9 @@ onBeforeMount(() => {
     runningWorkflowId.value = ''
   })
   EventsOn('WorkflowUpdated', (data: workflow.UpdateM) => {
+    if (isFinal(nodeStatuses.value.get(data.node))) {
+      return
+    }
     nodeStatuses.value.set(data.node, data.status)
   })
   EventsOn('WorkflowOutput', (data: node.OutputM) => {

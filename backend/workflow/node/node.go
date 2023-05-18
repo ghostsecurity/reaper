@@ -1,6 +1,9 @@
 package node
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
 	"github.com/google/uuid"
 	"golang.org/x/net/context"
@@ -15,6 +18,11 @@ const (
 	ChannelStderr   Channel = "stderr"
 	ChannelActivity Channel = "activity"
 )
+
+type Input struct {
+	Last bool
+	Data map[string]transmission.Transmission
+}
 
 type Output struct {
 	Node    uuid.UUID
@@ -47,7 +55,33 @@ const (
 	TypeStart
 	TypeSender
 	TypeVariables
+	TypeDelay
 )
+
+func FromType(t Type) (Node, error) {
+	var real Node
+	switch t {
+	case TypeFuzzer:
+		real = NewFuzzer()
+	case TypeStatusFilter:
+		real = NewStatusFilter()
+	case TypeOutput:
+		real = NewOutput()
+	case TypeRequest:
+		real = NewRequest()
+	case TypeStart:
+		real = NewStart()
+	case TypeSender:
+		real = NewSender()
+	case TypeVariables:
+		real = NewVars()
+	case TypeDelay:
+		real = NewDelay()
+	default:
+		return nil, fmt.Errorf("unknown node type: %v", t)
+	}
+	return real, nil
+}
 
 type Node interface {
 	IsReadOnly() bool
@@ -59,12 +93,16 @@ type Node interface {
 	GetInputs() Connectors
 	SetStaticInputValues(map[string]transmission.Transmission) error
 	AddStaticInputValue(string, transmission.Transmission) error
-	GetInjections() map[string]transmission.Transmission
 	GetOutputs() Connectors
 	GetVars() *VarStorage
 	SetVars(*VarStorage)
-	Run(context.Context, map[string]transmission.Transmission, chan<- Output, bool) (<-chan OutputInstance, <-chan error)
+	MergeVars(*VarStorage)
 	Validate(params map[string]transmission.Transmission) error
+	LastInput() time.Time
+	Busy() bool
+
+	GetInjections() map[string]transmission.Transmission
+	Start(context.Context, <-chan Input, chan<- OutputInstance, chan<- Output) error
 }
 
 type OutputInstance struct {

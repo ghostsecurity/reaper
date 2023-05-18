@@ -37,14 +37,10 @@ func NewOutput() *OutputNode {
 	}
 }
 
-func (n *OutputNode) Run(ctx context.Context, in map[string]transmission.Transmission, output chan<- Output, last bool) (<-chan OutputInstance, <-chan error) {
+func (n *OutputNode) Start(ctx context.Context, in <-chan Input, _ chan<- OutputInstance, output chan<- Output) error {
 
 	isOut, _ := n.ReadInputBool("stdout", nil)
 	isErr, _ := n.ReadInputBool("stderr", nil)
-
-	if !isOut && !isErr {
-		return nil, nil
-	}
 
 	printf := func(format string, args ...interface{}) {
 		if isOut {
@@ -63,51 +59,62 @@ func (n *OutputNode) Run(ctx context.Context, in map[string]transmission.Transmi
 		}
 	}
 
-	out := make(chan OutputInstance)
-	errs := make(chan error)
+	defer n.setBusy(false)
 
-	go func() {
-		defer close(out)
-		defer close(errs)
-
-		if in == nil {
-			errs <- fmt.Errorf("input is nil")
-			return
-		}
-
-		if template, err := n.ReadInputString("template", in); err == nil && template != "" {
-			if params, err := n.ReadInputMap("input", in); err == nil {
-				for key, val := range params {
-					template = strings.ReplaceAll(template, key, val)
-				}
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case input, ok := <-in:
+			if !ok {
+				return nil
 			}
-			printf("%s\n", template)
-			return
-		}
 
-		if req, err := n.ReadInputRequest("input", in); err == nil {
-			printf("%s %s", req.Method, req.URL)
-			if resp, err := n.ReadInputResponse("input", in); err == nil {
-				printf(" -> %d", resp.StatusCode)
+			n.setBusy(true)
+
+			if input.Data == nil {
+				return fmt.Errorf("input is nil")
 			}
-		}
 
-		if params, err := n.ReadInputMap("input", in); err == nil {
-			if len(params) > 0 {
-				printf(" [")
-				var i int
-				for k, v := range params {
-					printf("%s=%s", k, v)
-					if i < len(params)-1 {
-						printf(" ")
+			if !isOut && !isErr {
+				continue
+			}
+
+			if template, err := n.ReadInputString("template", input.Data); err == nil && template != "" {
+				if params, err := n.ReadInputMap("input", input.Data); err == nil {
+					for key, val := range params {
+						template = strings.ReplaceAll(template, key, val)
 					}
 				}
-				printf("]")
+				printf("%s\n", template)
+				continue
 			}
+
+			if req, err := n.ReadInputRequest("input", input.Data); err == nil {
+				printf("%s %s", req.Method, req.URL)
+				if resp, err := n.ReadInputResponse("input", input.Data); err == nil {
+					printf(" -> %d", resp.StatusCode)
+				}
+			}
+
+			if params, err := n.ReadInputMap("input", input.Data); err == nil {
+				if len(params) > 0 {
+					printf(" [")
+					var i int
+					for k, v := range params {
+						printf("%s=%s", k, v)
+						if i < len(params)-1 {
+							printf(" ")
+						}
+					}
+					printf("]")
+				}
+			}
+
+			printf("\n")
+
+			n.setBusy(false)
 		}
+	}
 
-		printf("\n")
-	}()
-
-	return out, errs
 }

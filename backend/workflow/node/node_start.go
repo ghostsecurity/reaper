@@ -27,17 +27,22 @@ func NewStart() *StartNode {
 	}
 }
 
-func (n *StartNode) Run(ctx context.Context, in map[string]transmission.Transmission, output chan<- Output, last bool) (<-chan OutputInstance, <-chan error) {
-	out := make(chan OutputInstance)
-	errs := make(chan error)
-	go func() {
-		defer close(out)
-		defer close(errs)
-		out <- OutputInstance{
+func (n *StartNode) Start(ctx context.Context, in <-chan Input, out chan<- OutputInstance, _ chan<- Output) error {
+	defer n.setBusy(false)
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case input, ok := <-in:
+		if !ok {
+			return nil
+		}
+
+		n.tryOut(ctx, out, OutputInstance{
 			OutputName: "output",
 			Data:       transmission.NewStart(),
-			Complete:   last,
-		}
-	}()
-	return out, errs
+			Complete:   input.Last,
+		})
+
+	}
+	return nil
 }
