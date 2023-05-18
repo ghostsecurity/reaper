@@ -36,6 +36,7 @@ const availableNodeTypes = ref(<NodeType[]>[
   NodeType.FUZZER,
   NodeType.OUTPUT,
   NodeType.VARIABLES,
+  NodeType.DELAY,
 ])
 
 const linkColour = '#8FBCBB'

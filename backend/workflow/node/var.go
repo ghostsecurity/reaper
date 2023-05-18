@@ -262,3 +262,12 @@ func (s *VarStorage) FindInput(name string) (Connector, bool) {
 func (s *VarStorage) FindOutput(name string) (Connector, bool) {
 	return s.outputs.FindByName(name)
 }
+
+func (s *VarStorage) Merge(other *VarStorage) {
+	if s.static == nil {
+		s.static = make(map[string]transmission.Transmission)
+	}
+	for key, value := range other.static {
+		s.static[key] = value
+	}
+}

@@ -2,7 +2,6 @@ package workflow
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/ghostsecurity/reaper/backend/workflow/node"
 	"github.com/google/uuid"
@@ -138,24 +137,9 @@ func ToNodeM(n node.Node) (*NodeM, error) {
 }
 
 func (n *NodeM) ToNode() (node.Node, error) {
-	var real node.Node
-	switch node.Type(n.Type) {
-	case node.TypeFuzzer:
-		real = node.NewFuzzer()
-	case node.TypeStatusFilter:
-		real = node.NewStatusFilter()
-	case node.TypeOutput:
-		real = node.NewOutput()
-	case node.TypeRequest:
-		real = node.NewRequest()
-	case node.TypeStart:
-		real = node.NewStart()
-	case node.TypeSender:
-		real = node.NewSender()
-	case node.TypeVariables:
-		real = node.NewVars()
-	default:
-		return nil, fmt.Errorf("unknown node type: %v", n.Type)
+	real, err := node.FromType(node.Type(n.Type))
+	if err != nil {
+		return nil, err
 	}
 	real.SetID(toUUIDOrNil(n.Id))
 	real.SetName(n.Name)
@@ -163,7 +147,7 @@ func (n *NodeM) ToNode() (node.Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	real.SetVars(unpacked)
+	real.MergeVars(unpacked)
 	return real, nil
 }
 

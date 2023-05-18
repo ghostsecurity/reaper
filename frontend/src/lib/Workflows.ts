@@ -7,6 +7,7 @@ export const enum NodeType {
     START = 5,
     SENDER = 6,
     VARIABLES = 7,
+    DELAY = 8,
 }
 
 export const enum ParentType {
@@ -44,6 +45,8 @@ export function NodeTypeName(t: NodeType): string {
       return 'Sender'
     case NodeType.VARIABLES:
       return 'Variables'
+    case NodeType.DELAY:
+      return 'Delay'
     default:
       return `Unknown (${t})`
   }

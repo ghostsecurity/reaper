@@ -181,44 +181,13 @@ func (a *App) CreateWorkflowFromRequest(reqU map[string]interface{}) *workflow.W
 }
 
 func (a *App) CreateNode(nodeType int) *workflow.NodeM {
-	switch node.Type(nodeType) {
-	case node.TypeFuzzer:
-		f, err := workflow.ToNodeM(node.NewFuzzer())
-		if err != nil {
-			return nil
-		}
-		return f
-	case node.TypeOutput:
-		o, err := workflow.ToNodeM(node.NewOutput())
-		if err != nil {
-			return nil
-		}
-		return o
-	case node.TypeStatusFilter:
-		s, err := workflow.ToNodeM(node.NewStatusFilter())
-		if err != nil {
-			return nil
-		}
-		return s
-	case node.TypeRequest:
-		s, err := workflow.ToNodeM(node.NewRequest())
-		if err != nil {
-			return nil
-		}
-		return s
-	case node.TypeSender:
-		s, err := workflow.ToNodeM(node.NewSender())
-		if err != nil {
-			return nil
-		}
-		return s
-	case node.TypeVariables:
-		s, err := workflow.ToNodeM(node.NewVars())
-		if err != nil {
-			return nil
-		}
-		return s
-	default:
+	real, err := node.FromType(node.Type(nodeType))
+	if err != nil {
 		return nil
 	}
+	n, err := workflow.ToNodeM(real)
+	if err != nil {
+		return nil
+	}
+	return n
 }

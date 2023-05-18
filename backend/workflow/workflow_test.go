@@ -20,7 +20,7 @@ import (
 func Test_FuzzingWorkflow(t *testing.T) {
 
 	// generate random number
-	secret := rand.Intn(100)
+	secret := rand.Intn(1000)
 
 	// start server with endpoint /account?id={id} where id will only 200 with random number
 	addr := ":8888"
@@ -38,10 +38,112 @@ func Test_FuzzingWorkflow(t *testing.T) {
 
 	go func() { _ = srv.Serve(ln) }()
 
+	t.Run("run", func(t *testing.T) {
+
+		flow := createFlow(t)
+
+		require.NoError(t, flow.Validate())
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		defer cancel()
+
+		updates := make(chan Update)
+		defer close(updates)
+
+		go func() {
+			for update := range updates {
+				fmt.Printf("update: %s %s: %s\n", update.Node, update.Name, update.Message)
+			}
+		}()
+		outs := make(chan node.Output, 1000)
+		defer close(outs)
+
+		require.NoError(t, flow.Run(ctx, updates, outs))
+
+		var msg node.Output
+		select {
+		case msg = <-outs:
+		default:
+			t.Fatal("no output")
+		}
+
+		assert.Equal(t, fmt.Sprintf("Account: %d\n", secret), (msg).Message)
+	})
+
+	t.Run("run w/ cancel", func(t *testing.T) {
+
+		flow := createFlow(t)
+
+		require.NoError(t, flow.Validate())
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		defer cancel()
+
+		updates := make(chan Update)
+		defer close(updates)
+
+		go func() {
+			for update := range updates {
+				fmt.Printf("update: %s %s: %s\n", update.Node, update.Name, update.Message)
+			}
+		}()
+
+		go func() {
+			<-time.After(time.Millisecond * 250)
+			cancel()
+		}()
+
+		outs := make(chan node.Output, 1000)
+		defer close(outs)
+
+		require.Error(t, flow.Run(ctx, updates, outs))
+	})
+
+	t.Run("save to disk, reload and run", func(t *testing.T) {
+
+		flow := createFlow(t)
+
+		require.NoError(t, flow.Validate())
+
+		data, err := json.Marshal(flow)
+		require.NoError(t, err)
+
+		var w Workflow
+		require.NoError(t, json.Unmarshal(data, &w))
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		defer cancel()
+
+		updates := make(chan Update)
+		defer close(updates)
+
+		go func() {
+			for update := range updates {
+				fmt.Printf("update: %s: %s\n", update.Node, update.Message)
+			}
+		}()
+
+		outs := make(chan node.Output, 1000)
+		defer close(outs)
+
+		require.NoError(t, w.Run(ctx, updates, outs))
+
+		var msg node.Output
+		select {
+		case msg = <-outs:
+		default:
+			t.Fatal("no output")
+		}
+
+		assert.Equal(t, fmt.Sprintf("Account: %d\n", secret), (msg).Message)
+	})
+}
+
+func createFlow(t *testing.T) *Workflow {
 	fuzzer := node.NewFuzzer()
 	require.NoError(t, fuzzer.SetStaticInputValues(map[string]transmission.Transmission{
 		"placeholder": transmission.NewString("$ID$"),
-		"list":        transmission.NewNumericRangeIterator(0, 100),
+		"list":        transmission.NewNumericRangeIterator(0, 1000),
 	}))
 	verifier := node.NewStatusFilter()
 	require.NoError(t, verifier.SetStaticInputValues(map[string]transmission.Transmission{
@@ -72,6 +174,13 @@ func Test_FuzzingWorkflow(t *testing.T) {
 	}))
 
 	sender := node.NewSender()
+	_ = sender.SetStaticInputValues(map[string]transmission.Transmission{
+		"parallelism":      transmission.NewInt(10),
+		"timeout":          transmission.NewInt(1000),
+		"follow_redirects": transmission.NewBoolean(true),
+	})
+
+	delay := node.NewDelay()
 
 	flow := NewWorkflow()
 	start := flow.Nodes[0]
@@ -83,12 +192,23 @@ func Test_FuzzingWorkflow(t *testing.T) {
 		nOutput,
 		nError,
 		sender,
+		delay,
 	}
 
 	flow.Links = []node.Link{
 		{
 			From: node.LinkDirection{
 				Node:      start.ID(),
+				Connector: "output",
+			},
+			To: node.LinkDirection{
+				Node:      delay.ID(),
+				Connector: "input",
+			},
+		},
+		{
+			From: node.LinkDirection{
+				Node:      delay.ID(),
 				Connector: "output",
 			},
 			To: node.LinkDirection{
@@ -137,53 +257,5 @@ func Test_FuzzingWorkflow(t *testing.T) {
 			},
 		},
 	}
-
-	require.NoError(t, flow.Validate())
-
-	t.Run("run", func(t *testing.T) {
-
-		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-		defer cancel()
-
-		updates := make(chan Update)
-		defer close(updates)
-
-		go func() {
-			for update := range updates {
-				fmt.Printf("update: %s: %s\n", update.Node, update.Message)
-			}
-		}()
-		outs := make(chan node.Output, 100)
-		defer close(outs)
-
-		require.NoError(t, flow.Run(ctx, updates, outs))
-		assert.Equal(t, fmt.Sprintf("Account: %d\n", secret), (<-outs).Message)
-	})
-
-	t.Run("save to disk, reload and run", func(t *testing.T) {
-
-		data, err := json.Marshal(flow)
-		require.NoError(t, err)
-
-		var w Workflow
-		require.NoError(t, json.Unmarshal(data, &w))
-
-		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-		defer cancel()
-
-		updates := make(chan Update)
-		defer close(updates)
-
-		go func() {
-			for update := range updates {
-				fmt.Printf("update: %s: %s\n", update.Node, update.Message)
-			}
-		}()
-
-		outs := make(chan node.Output, 100)
-		defer close(outs)
-
-		require.NoError(t, w.Run(ctx, updates, outs))
-		assert.Equal(t, fmt.Sprintf("Account: %d\n", secret), (<-outs).Message)
-	})
+	return flow
 }
