@@ -174,7 +174,7 @@ func createFlow(t *testing.T) *Workflow {
 	}))
 
 	sender := node.NewSender()
-	sender.SetStaticInputValues(map[string]transmission.Transmission{
+	_ = sender.SetStaticInputValues(map[string]transmission.Transmission{
 		"parallelism":      transmission.NewInt(10),
 		"timeout":          transmission.NewInt(1000),
 		"follow_redirects": transmission.NewBoolean(true),

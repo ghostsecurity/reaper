@@ -25,8 +25,6 @@ type Bus struct {
 	mu         sync.Mutex
 	statusMu   sync.Mutex
 	inputsMu   sync.RWMutex
-	complete   map[uuid.UUID]bool
-	completeMu sync.Mutex
 	aborted    bool
 	abortedMu  sync.RWMutex
 }
@@ -43,7 +41,6 @@ func NewBus(start node.Node, sc chan<- Update) *Bus {
 		inputs:     make(map[uuid.UUID]chan node.Input),
 		routes:     make(map[string][]Route),
 		statuses:   make(map[uuid.UUID]Update),
-		complete:   make(map[uuid.UUID]bool),
 	}
 }
 
@@ -374,15 +371,6 @@ SAFETY:
 	}
 
 	return firstNodeError
-}
-
-func (b *Bus) isNodeDead(id uuid.UUID) bool {
-	b.statusMu.Lock()
-	defer b.statusMu.Unlock()
-	if status, ok := b.statuses[id]; ok {
-		return status.Status == NodeStatusAborted || status.Status == NodeStatusError
-	}
-	return false
 }
 
 func (b *Bus) updateStatus(_ context.Context, update Update) {

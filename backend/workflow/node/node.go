@@ -11,8 +11,6 @@ import (
 
 type Channel string
 
-const maxThreadsPerNode = 10
-
 const (
 	ChannelStdout   Channel = "stdout"
 	ChannelStderr   Channel = "stderr"
