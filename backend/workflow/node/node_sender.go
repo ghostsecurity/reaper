@@ -148,7 +148,7 @@ func (n *SenderNode) Start(ctx context.Context, in <-chan Input, out chan<- Outp
 					return
 				}
 
-				_ = n.tryOut(ctx, out, OutputInstance{
+				n.tryOut(ctx, out, OutputInstance{
 					OutputName: "output",
 					Complete:   input.Last,
 					Data:       transmission.NewRequestResponsePairWithMap(*request, *response, replacements),

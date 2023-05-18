@@ -91,11 +91,9 @@ func (b *base) MergeVars(vars *VarStorage) {
 	b.VarStorage.Merge(vars)
 }
 
-func (b *base) tryOut(ctx context.Context, out chan<- OutputInstance, instance OutputInstance) error {
+func (b *base) tryOut(ctx context.Context, out chan<- OutputInstance, instance OutputInstance) {
 	select {
 	case <-ctx.Done():
-		return ctx.Err()
 	case out <- instance:
-		return nil
 	}
 }
