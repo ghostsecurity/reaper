@@ -63,8 +63,8 @@ func (n *SenderNode) Start(ctx context.Context, in <-chan Input, out chan<- Outp
 	t.MaxIdleConnsPerHost = parallel
 
 	client := http.Client{
-		CheckRedirect: nil,
-		Timeout:       time.Millisecond * time.Duration(timeout),
+		Transport: t,
+		Timeout:   time.Millisecond * time.Duration(timeout),
 	}
 
 	follow, err := n.ReadInputBool("follow_redirects", nil)
