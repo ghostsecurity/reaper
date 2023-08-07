@@ -2,6 +2,7 @@
 import { InformationCircleIcon, PaintBrushIcon, ServerStackIcon, ShieldCheckIcon } from '@heroicons/vue/20/solid'
 import { Switch, SwitchDescription, SwitchGroup, SwitchLabel } from '@headlessui/vue'
 import { PropType, reactive, ref } from 'vue'
+import cowbell from '../assets/images/cowbell.png'
 
 import { BrowserOpenURL, EventsEmit } from '../../wailsjs/runtime' // eslint-disable-line import/no-unresolved
 import Settings from '../lib/Settings'
@@ -177,11 +178,18 @@ function setProxyPort(event: Event) {
                 <div class="py-6 px-4 sm:p-6 lg:pb-8">
                   <div>
                     <h2 class="text-lg font-bold leading-6">About</h2>
-                    <p class="mt-1 text-sm">See <a class="cursor-pointer text-frost-1 text-decoration-underline"
-                                                   @click="BrowserOpenURL('https://github.com/ghostsecurity/reaper')">
+                    <p class="mt-1 text-sm">See <a
+                        class="cursor-pointer text-frost-1 text-decoration-underline"
+                        @click="BrowserOpenURL('https://github.com/ghostsecurity/reaper')">
                       https://github.com/ghostsecurity/reaper
                     </a>
-                      for more information about Reaper.</p>
+                      for more information.</p>
+                    <p class="mt-1 text-sm">Don't fear the Reaper.</p>
+                  </div>
+
+                  <div>
+
+                    <img :src="cowbell" class="w-40 h-40 rounded-full mx-auto mt-4"/>
                   </div>
 
                   <div class="mt-6 flex flex-col lg:flex-row">
