@@ -2,6 +2,7 @@
 import { InformationCircleIcon, PaintBrushIcon, ServerStackIcon, ShieldCheckIcon } from '@heroicons/vue/20/solid'
 import { Switch, SwitchDescription, SwitchGroup, SwitchLabel } from '@headlessui/vue'
 import { PropType, reactive, ref } from 'vue'
+import cowbell from '../assets/images/cowbell.png'
 
 import { BrowserOpenURL, EventsEmit } from '../../wailsjs/runtime' // eslint-disable-line import/no-unresolved
 import Settings from '../lib/Settings'
@@ -188,7 +189,7 @@ function setProxyPort(event: Event) {
 
                   <div>
 
-                    <img src="src/assets/images/cowbell.png" class="w-40 h-40 rounded-full mx-auto mt-4"/>
+                    <img :src="cowbell" class="w-40 h-40 rounded-full mx-auto mt-4"/>
                   </div>
 
                   <div class="mt-6 flex flex-col lg:flex-row">
