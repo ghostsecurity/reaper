@@ -177,11 +177,18 @@ function setProxyPort(event: Event) {
                 <div class="py-6 px-4 sm:p-6 lg:pb-8">
                   <div>
                     <h2 class="text-lg font-bold leading-6">About</h2>
-                    <p class="mt-1 text-sm">See <a class="cursor-pointer text-frost-1 text-decoration-underline"
-                                                   @click="BrowserOpenURL('https://github.com/ghostsecurity/reaper')">
+                    <p class="mt-1 text-sm">See <a
+                        class="cursor-pointer text-frost-1 text-decoration-underline"
+                        @click="BrowserOpenURL('https://github.com/ghostsecurity/reaper')">
                       https://github.com/ghostsecurity/reaper
                     </a>
-                      for more information about Reaper.</p>
+                      for more information.</p>
+                    <p class="mt-1 text-sm">Don't fear the Reaper.</p>
+                  </div>
+
+                  <div>
+
+                    <img src="src/assets/images/cowbell.png" class="w-40 h-40 rounded-full mx-auto mt-4"/>
                   </div>
 
                   <div class="mt-6 flex flex-col lg:flex-row">

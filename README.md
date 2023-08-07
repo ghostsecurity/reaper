@@ -1,7 +1,7 @@
 # Reaper
 
 > :warning:
-> This is a work in progress. It's an experimental PoC and will likely change almost entirely over time.
+> This project is experimental and will likely change significantly in the future.
 
 <img width="75" align="right" src="frontend/src/assets/images/logo.png">
 
