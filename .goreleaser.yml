@@ -25,9 +25,8 @@ archives:
   - format: binary
     name_template: "{{ .Binary}}-{{ .Os }}-{{ .Arch }}"
 
-      #release:
-      #  prerelease: auto
-      #  github:
-      #    owner: ghostsecurity
-      #    name: reaper
-
+release:
+  prerelease: auto
+  github:
+    owner: ghostsecurity
+    name: reaper
