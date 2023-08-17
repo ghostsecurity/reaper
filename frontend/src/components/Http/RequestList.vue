@@ -67,6 +67,14 @@ function actionRequest(action: string, r: HttpRequest) {
   }
 }
 
+function searchMethod(method: string) {
+  emit('criteria-change', new Criteria(`method is ${method}`))
+}
+
+function searchStatus(status: number) {
+  emit('criteria-change', new Criteria(`status is ${status}`))
+}
+
 function onSearch(crit: Criteria) {
   emit('criteria-change', crit)
 }
@@ -98,12 +106,12 @@ function onSearch(crit: Criteria) {
               ? 'bg-snow-storm-1 dark:bg-polar-night-3'
               : 'hover:bg-snow-storm-1 dark:hover:bg-polar-night-2',
           ]">
-            <div :class="
+            <div @click="searchMethod(request.Method)" :class="
               'left ending text-xs font-semibold text-snow-storm dark:text-polar-night ' + MethodClass(request)
             ">
               {{ request.Method }}
             </div>
-            <div :class="
+            <div @click="request.Response ?searchStatus(request.Response.StatusCode):null" :class="
               'right ending text-xs font-semibold text-snow-storm dark:text-polar-night ' + StatusClass(request)
             ">
               {{ request.Response ? request.Response.StatusCode : '&nbsp;' }}

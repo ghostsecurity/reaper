@@ -1,4 +1,4 @@
-import { Target, Comparison, JoinType, Rule } from './Rule'
+import { Comparison, JoinType, Rule, Target } from './Rule'
 import Ruleset from './Ruleset'
 import Reader from './Reader'
 import { HttpRequest } from '../Http'
@@ -24,6 +24,8 @@ class Criteria {
           new Rule(Target.Query, Comparison.CONTAINS, input),
           new Rule(Target.Host, Comparison.CONTAINS, input),
           new Rule(Target.Scheme, Comparison.CONTAINS, input),
+          new Rule(Target.Status, Comparison.EQUAL, input),
+          new Rule(Target.Method, Comparison.EQUAL, input),
         ],
         [],
         JoinType.OR,
@@ -50,6 +52,8 @@ const targetAliases = new Map<Target, string[]>([
   [Target.Path, ['path']],
   [Target.Query, ['querystring', 'query', 'qs']],
   [Target.Tag, ['tag', 'tags']],
+  [Target.Status, ['status', 'code', 'status_code', 'statuscode']],
+  [Target.Method, ['method', 'verb']],
 ])
 
 const joinAliases = new Map<JoinType, string[]>([
