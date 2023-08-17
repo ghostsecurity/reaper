@@ -10,6 +10,7 @@ require (
 	github.com/liamg/tml v0.6.0
 	github.com/stretchr/testify v1.8.0
 	github.com/wailsapp/wails/v2 v2.5.1
+	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
 	golang.org/x/net v0.7.0
 )
 

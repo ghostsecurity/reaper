@@ -14,6 +14,9 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+
+	"github.com/ghostsecurity/reaper/backend/format"
 	"github.com/ghostsecurity/reaper/backend/highlight"
 	"github.com/ghostsecurity/reaper/backend/interceptor"
 	"github.com/ghostsecurity/reaper/backend/log"
@@ -21,7 +24,6 @@ import (
 	"github.com/ghostsecurity/reaper/backend/proxy"
 	"github.com/ghostsecurity/reaper/backend/settings"
 	"github.com/ghostsecurity/reaper/backend/workspace"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
@@ -280,4 +282,8 @@ func (a *App) message(title, msg string, dialogType runtime.DialogType) {
 	if err != nil {
 		a.logger.Errorf("Error showing notification: %s", err)
 	}
+}
+
+func (a *App) FormatCode(msg, contentType string) string {
+	return format.Code(msg, contentType)
 }

@@ -22,6 +22,8 @@ export function Error(arg1:string,arg2:string):Promise<void>;
 
 export function ExportWorkflow(arg1:workflow.WorkflowM):Promise<void>;
 
+export function FormatCode(arg1:string,arg2:string):Promise<string>;
+
 export function GenerateID():Promise<string>;
 
 export function GetSettings():Promise<settings.Settings>;

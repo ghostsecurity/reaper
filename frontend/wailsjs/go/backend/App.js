@@ -34,6 +34,10 @@ export function ExportWorkflow(arg1) {
   return window['go']['backend']['App']['ExportWorkflow'](arg1);
 }
 
+export function FormatCode(arg1, arg2) {
+  return window['go']['backend']['App']['FormatCode'](arg1, arg2);
+}
+
 export function GenerateID() {
   return window['go']['backend']['App']['GenerateID']();
 }
