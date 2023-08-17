@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 import { watch, ref, onMounted } from 'vue'
 
-import { HighlightHTTP, HighlightBody } from '../../../wailsjs/go/backend/App'
+import { DocumentDuplicateIcon, SparklesIcon } from '@heroicons/vue/24/outline'
+import { HighlightHTTP, HighlightBody, FormatCode } from '../../../wailsjs/go/backend/App'
+import { ClipboardSetText } from '../../../wailsjs/runtime'
 
 const props = defineProps({
   code: { type: String, required: true },
@@ -91,10 +93,31 @@ function indent() {
   element.selectionEnd = start + insert.length
   updateCode()
 }
+
+function copyToClipboard() {
+  ClipboardSetText(buffer.value)
+}
+
+function formatCode() {
+  FormatCode(buffer.value, props.mime).then((formatted: string) => {
+    buffer.value = formatted
+    updateCode()
+  })
+}
 </script>
 
 <template>
-  <div class="border border-polar-night-3 w-full h-full p-2">
+  <div class="absolute h-7 border border-polar-night-3 w-full flex">
+    <button class="rounded px-1 text-snow-storm-1/70 hover:text-snow-storm-1 hover:bg-polar-night-3"
+            @click="copyToClipboard">
+      <DocumentDuplicateIcon class="h-6 w-6" aria-hidden="true"/>
+    </button>
+    <button class="rounded px-1 text-snow-storm-1/70 hover:text-snow-storm-1 hover:bg-polar-night-3"
+            @click="formatCode">
+      <SparklesIcon class="h-6 w-6" aria-hidden="true"/>
+    </button>
+  </div>
+  <div class="border border-polar-night-3 w-full h-full pt-9 px-1">
     <div style="min-height: 100px;" :class="[
       'wrapper overflow-x-auto h-full w-full',
       busy ? 'wrapper plain text-left' : 'wrapper highlighted min-h-full text-left',
@@ -152,7 +175,6 @@ code {
   text-indent: 0;
   text-shadow: none;
   text-decoration: none;
-  text-decoration-line: none;
   text-decoration-style: solid;
   writing-mode: horizontal-tb;
   white-space: pre;

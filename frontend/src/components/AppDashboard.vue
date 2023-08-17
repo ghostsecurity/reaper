@@ -225,7 +225,7 @@ onMounted(() => {
     const pointerRelativeXpos = e.clientX - containerOffsetLeft
 
     // Arbitrary minimum width set on box A, otherwise its inner content will collapse to width of 0
-    const boxAminWidth = 475
+    const boxAminWidth = 300
 
     rightPanel.value.style.width = `${Math.min(
       Math.max(400, root.value.offsetWidth - (pointerRelativeXpos + 10)), // 8px padding + 2px border
