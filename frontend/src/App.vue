@@ -22,7 +22,7 @@ import {
   Confirm,
   Warn, CreateWorkflowFromRequest,
 } from '../wailsjs/go/backend/App'
-import Structure from './components/TreeStructure.vue'
+import TreeStructure from './components/TreeStructure.vue'
 import AppDashboard from './components/AppDashboard.vue'
 import SettingsModal from './components/SettingsModal.vue'
 import WorkspaceModal from './components/WorkspaceModal.vue'
@@ -129,9 +129,13 @@ function onCriteriaChange(c: Criteria) {
   Object.assign(criteria, c)
 }
 
+function setQuery(query: string) {
+  Object.assign(criteria, new Criteria(query))
+}
+
 function onStructureSelect(parts: Array<string>) {
   const query = `(host is ${parts[0]} and path is /${parts.slice(1).join('/')})`
-  Object.assign(criteria, new Criteria(query))
+  setQuery(query)
 }
 
 function prepareWorkspace(ws: workspace.Workspace) {
@@ -438,7 +442,7 @@ function sendRequest(request: HttpRequest) {
         'max-w-[25%]',
         sidebar !== '' ? '' : 'hidden',
       ]">
-        <Structure v-if="sidebar === 'structure'" :expanded="true" :nodes="nodes" @select="onStructureSelect"/>
+        <TreeStructure v-if="sidebar === 'structure'" :expanded="true" :nodes="nodes" @select="onStructureSelect"/>
         <p v-else>not implemented yet</p>
       </div>
       <div class="h-full w-3/4 flex-1">

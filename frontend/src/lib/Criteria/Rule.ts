@@ -1,24 +1,25 @@
 import { HttpRequest } from '../Http'
 
 enum Comparison {
-  EQUAL = 'eq',
-  NOT_EQUAL = 'ne',
-  CONTAINS = 'contains',
-  MATCHES = 'matches',
+    EQUAL = 'eq',
+    NOT_EQUAL = 'ne',
+    CONTAINS = 'contains',
+    MATCHES = 'matches',
 }
 
 enum Target {
-  Scheme = 'scheme',
-  Host = 'host',
-  Path = 'path',
-  Query = 'query',
-  Body = 'body',
+    Scheme = 'scheme',
+    Host = 'host',
+    Path = 'path',
+    Query = 'query',
+    Body = 'body',
+    Tag = 'tag',
 }
 
 enum JoinType {
-  NONE = 'NONE',
-  AND = 'AND',
-  OR = 'OR',
+    NONE = 'NONE',
+    AND = 'AND',
+    OR = 'OR',
 }
 
 class Rule {
@@ -36,6 +37,7 @@ class Rule {
 
   Match(req: HttpRequest): boolean {
     let field = ''
+    const match = [Comparison.EQUAL, Comparison.CONTAINS, Comparison.MATCHES].includes(this.Comparison)
     switch (this.Target) {
       case Target.Scheme:
         field = req.Scheme
@@ -52,6 +54,16 @@ class Rule {
       case Target.Body:
         field = req.Body
         break
+      case Target.Tag:
+        if ((req.Tags.find(tag => tag === this.Value) !== undefined) === match) {
+          return match
+        }
+        if (req.Response) {
+          if ((req.Response.Tags.find(tag => tag === this.Value) !== undefined) === match) {
+            return match
+          }
+        }
+        return false
       default:
         return false
     }
