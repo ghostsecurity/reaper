@@ -38,9 +38,9 @@ class Criteria {
 }
 
 const comparisonAliases = new Map<Comparison, string[]>([
-  [Comparison.EQUAL, ['eq', '==', 'is']],
-  [Comparison.NOT_EQUAL, ['neq', '!=']],
-  [Comparison.CONTAINS, ['contains', 'includes', 'has', '*=']],
+  [Comparison.EQUAL, ['eq', '==', '=', 'is', 'equals', 'equal']],
+  [Comparison.NOT_EQUAL, ['neq', '!=', 'notequals', 'notequal']],
+  [Comparison.CONTAINS, ['contains', 'includes', 'has', '*=', '~=']],
   [Comparison.MATCHES, ['matches', '~']],
 ])
 
@@ -49,6 +49,7 @@ const targetAliases = new Map<Target, string[]>([
   [Target.Host, ['hostname', 'host', 'domain']],
   [Target.Path, ['path']],
   [Target.Query, ['querystring', 'query', 'qs']],
+  [Target.Tag, ['tag', 'tags']],
 ])
 
 const joinAliases = new Map<JoinType, string[]>([

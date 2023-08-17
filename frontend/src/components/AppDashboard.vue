@@ -123,10 +123,7 @@ function compareRequests(a: HttpRequest, b: HttpRequest) {
   if (a.URL !== b.URL) {
     return false
   }
-  if (a.Body !== b.Body) {
-    return false
-  }
-  return true
+  return a.Body === b.Body
 }
 
 const flowStdout = ref([] as string[])
@@ -431,7 +428,7 @@ function createWorkflowFromRequest(r: HttpRequest) {
                        :key="liveCriteria.Raw" v-if="selectedTab() === 'log'"
                        :empty-message="'Reaper is ready to receive requests at ' + proxyAddress" :requests="requests"
                        @select="examineRequest($event, true)" :selected="req ? req.ID : ''" :criteria="liveCriteria"
-                       @create-workflow-from-request="createWorkflowFromRequest"/>
+                       @create-workflow-from-request="createWorkflowFromRequest" @criteria-change="onSearch"/>
           <GroupedRequestList :key="liveCriteria.Raw" v-if="selectedTab() === 'saved'"
                               :groups="ws.collection.groups ? ws.collection.groups : []"
                               @select="examineRequest($event, false)"
@@ -443,7 +440,7 @@ function createWorkflowFromRequest(r: HttpRequest) {
                               @duplicate-request="duplicateRequest"
                               @request-group-delete="deleteGroup" @request-rename="renameRequest"
                               @request-group-rename="renameGroup"
-                              @create-workflow-from-request="createWorkflowFromRequest"
+                              @create-workflow-from-request="createWorkflowFromRequest" @criteria-change="onSearch"
           />
           <WorkflowGUI v-if="selectedTab() === 'workflows'" :ws="ws" :selected-workflow-id="workflowId"
                        :running-workflow-id="runningWorkflowId"

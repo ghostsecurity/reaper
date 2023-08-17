@@ -41,6 +41,7 @@ const emit = defineEmits([
   'request-rename',
   'select',
   'create-workflow-from-request',
+  'criteria-change',
 ])
 
 const requestActions = new Map<string, string>([
@@ -120,6 +121,10 @@ function onDrop(evt: DragEvent, group: Group, next: Request | null) {
     dropGroup.value = ''
     dragGroupNest.value = 0
   }
+}
+
+function onSearch(crit: Criteria) {
+  emit('criteria-change', crit)
 }
 
 function matchTarget(el: HTMLElement | null, nodeName: string, className: string): boolean {
@@ -398,7 +403,8 @@ function actionRequest(action: string, request: Request) {
                           <div class="flex-1">
                             <RequestItemSummary :request="outer.inner" :name="outer.name" :show-tags="false"
                                                 @rename="renamingRequest = outer.id" :actions="requestActions"
-                                                @action="actionRequest($event, outer)" :show-response="false"/>
+                                                @action="actionRequest($event, outer)" :show-response="false"
+                                                @criteria-change="onSearch"/>
                           </div>
                         </div>
                       </div>

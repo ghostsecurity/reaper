@@ -16,7 +16,8 @@ const props = defineProps({
   savedRequestIds: { type: Array as PropType<string[]>, required: false, default: () => [] },
 })
 
-const emit = defineEmits(['save-request', 'unsave-request', 'select', 'create-workflow-from-request'])
+const emit = defineEmits([
+  'save-request', 'unsave-request', 'select', 'create-workflow-from-request', 'criteria-change'])
 
 function getActions(request: HttpRequest): Map<string, string> {
   const actions = new Map<string, string>([
@@ -64,6 +65,10 @@ function actionRequest(action: string, r: HttpRequest) {
     default:
       throw new Error(`Unknown action: ${action}`)
   }
+}
+
+function onSearch(crit: Criteria) {
+  emit('criteria-change', crit)
 }
 </script>
 
@@ -115,7 +120,7 @@ function actionRequest(action: string, r: HttpRequest) {
                 </div>
                 <div class="flex-1">
                   <RequestItemSummary :request="request" :actions="getActions(request)"
-                                      @action="actionRequest($event, request)"/>
+                                      @action="actionRequest($event, request)" @criteria-change="onSearch"/>
                 </div>
               </div>
             </div>
