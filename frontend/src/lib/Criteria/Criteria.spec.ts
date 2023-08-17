@@ -19,6 +19,8 @@ test.each([
         new Rule(Target.Query, Comparison.CONTAINS, 'invalid query'),
         new Rule(Target.Host, Comparison.CONTAINS, 'invalid query'),
         new Rule(Target.Scheme, Comparison.CONTAINS, 'invalid query'),
+        new Rule(Target.Status, Comparison.EQUAL, 'invalid query'),
+        new Rule(Target.Method, Comparison.EQUAL, 'invalid query'),
       ],
       [],
       JoinType.OR,

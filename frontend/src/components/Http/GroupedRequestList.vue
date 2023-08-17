@@ -123,6 +123,10 @@ function onDrop(evt: DragEvent, group: Group, next: Request | null) {
   }
 }
 
+function searchMethod(method: string) {
+  emit('criteria-change', new Criteria(`method is ${method}`))
+}
+
 function onSearch(crit: Criteria) {
   emit('criteria-change', crit)
 }
@@ -390,10 +394,10 @@ function actionRequest(action: string, request: Request) {
                       outer.id === selected ? 'bg-polar-night-3' : 'hover:bg-gray-50 dark:hover:bg-polar-night-2',
                       draggingRequest && dropRequest === outer.id ? 'border-b-2 border-aurora-5' : '',
                     ]" @click="selectRequest(outer.inner)">
-                      <div
-                          :class="['left ending truncate text-xs font-semibold text-snow-storm dark:text-polar-night', MethodClass(outer.inner)]">
+                      <a @click.prevent="searchMethod(outer.inner.Method)"
+                         :class="['left ending truncate text-xs font-semibold text-snow-storm dark:text-polar-night', MethodClass(outer.inner)]">
                         {{ outer.inner.Method }}
-                      </div>
+                      </a>
                       <div class="py-1 px-2">
                         <div class="flex">
                           <div class="flex-0 drag-handle m-auto pl-1 pr-3" @click.prevent.stop

@@ -14,6 +14,8 @@ enum Target {
     Query = 'query',
     Body = 'body',
     Tag = 'tag',
+    Status = 'status',
+    Method = 'method',
 }
 
 enum JoinType {
@@ -53,6 +55,15 @@ class Rule {
         break
       case Target.Body:
         field = req.Body
+        break
+      case Target.Method:
+        field = req.Method.toLowerCase()
+        this.Value = this.Value.toLowerCase()
+        break
+      case Target.Status:
+        if (req.Response) {
+          field = req.Response.StatusCode.toString()
+        }
         break
       case Target.Tag:
         if ((req.Tags.find(tag => tag === this.Value) !== undefined) === match) {
