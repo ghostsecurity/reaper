@@ -225,7 +225,7 @@ onMounted(() => {
     const boxAminWidth = 300
 
     rightPanel.value.style.width = `${Math.min(
-      Math.max(400, root.value.offsetWidth - (pointerRelativeXpos + 10)), // 8px padding + 2px border
+      Math.max(300, root.value.offsetWidth - (pointerRelativeXpos + 10)), // 8px padding + 2px border
       root.value.offsetWidth - boxAminWidth,
     )}px`
     rightPanel.value.style.flexGrow = 0
@@ -234,9 +234,7 @@ onMounted(() => {
     // Resize box A
     // * 8px is the left/right spacing between .handler and its inner pseudo-element
     // * Set flex-grow to 0 to prevent it from growing
-    // leftPanel.value.style.width = `${Math.max(boxAminWidth, pointerRelativeXpos - 8)}px`
-    // leftPanel.value.style.flexGrow = 0
-    // leftPanel.value.style.flexShrink = 0
+    leftPanel.value.style.width = `${Math.max(boxAminWidth, pointerRelativeXpos - 8)}px`
   })
   root.value.addEventListener('mouseup', () => {
     resizing.value = false
