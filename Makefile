@@ -6,14 +6,6 @@ clean:
 	rm -rf build/bin || true
 	rm -rf frontend/dist || true
 
-.PHONY: wails
-wails:
-	(which wails >/dev/null && wails update) || go install github.com/wailsapp/wails/v2/cmd/wails@latest
-
-.PHONY: build
-build: clean wails
-	wails build -ldflags="-X 'github.com/ghostsecurity/reaper/version.Date=$$(date)'"
-
 .PHONY: test
 test: test-go test-js
 
@@ -38,9 +30,20 @@ lint-go:
 	which golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.50.1
 	golangci-lint run --timeout 3m --verbose
 
+.PHONY: build-js
+build-js: clean
+	cd frontend && npm install && npm run build
+
+.PHONY: build-bindings
+build-bindings: clean
+	go run ./cmd/gen-bindings
+
+.PHONY: build
+build: clean build-bindings build-js
+
 .PHONY: run
-run: clean wails
-	REAPER_LOG_LEVEL=debug wails dev -ldflags="-X 'github.com/ghostsecurity/reaper/version.Date=$$(date)'"
+run: build
+	go run .
 
 .PHONY: fix
 fix:

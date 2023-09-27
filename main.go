@@ -1,23 +1,15 @@
 package main
 
 import (
-	"embed"
 	"fmt"
 	"os"
 
-	"github.com/ghostsecurity/reaper/backend"
+	"github.com/ghostsecurity/reaper/backend/server"
+	"github.com/ghostsecurity/reaper/frontend"
 
 	"github.com/ghostsecurity/reaper/backend/log"
 	"github.com/ghostsecurity/reaper/backend/settings"
-	"github.com/wailsapp/wails/v2"
-	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
-
-// nolint:typecheck
-//
-//go:embed all:frontend/dist
-var assets embed.FS
 
 func main() {
 
@@ -35,31 +27,15 @@ func main() {
 	}
 
 	logger.SetLevel(level)
+	logger.SetLevel(log.LevelDebug)
 
 	logger.Info("User settings loaded...")
 	logger.Infof("Log level is %s", level)
 
-	// Create an instance of the app structure
-	application := backend.New(logger.WithPrefix("app"), userSettings)
-
-	// Create application with options
-	if err := wails.Run(&options.App{
-		Title:  "Reaper",
-		Width:  1900,
-		Height: 1024,
-		AssetServer: &assetserver.Options{
-			Assets: assets,
-		},
-		BackgroundColour: &options.RGBA{R: 255, G: 0, B: 0, A: 1},
-		OnStartup:        application.Startup,
-		OnShutdown:       application.Shutdown,
-		Bind: []interface{}{
-			application,
-		},
-		Logger: logger.WithPrefix("wails"),
-	}); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
+	if err := server.New(frontend.Static).Start(); err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Error starting server: %s\n", err)
 		os.Exit(1)
 	}
+
 	logger.Info("Exited cleanly.")
 }
