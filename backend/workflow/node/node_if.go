@@ -94,7 +94,7 @@ func (n *IfNode) Start(ctx context.Context, in <-chan Input, out chan<- OutputIn
 
 			vars, err := n.ReadInputMap("vars", input.Data)
 			if err != nil {
-				return fmt.Errorf("invalid input 'vars': %s", err)
+				return fmt.Errorf("invalid input 'vars': %w", err)
 			}
 			if vars == nil {
 				vars = make(map[string]string)
@@ -102,11 +102,11 @@ func (n *IfNode) Start(ctx context.Context, in <-chan Input, out chan<- OutputIn
 
 			a, err := n.ReadInputString("a", input.Data)
 			if err != nil {
-				return fmt.Errorf("invalid input 'a': %s", err)
+				return fmt.Errorf("invalid input 'a': %w", err)
 			}
 			z, err := n.ReadInputString("z", input.Data)
 			if err != nil {
-
+				return fmt.Errorf("invalid input 'z': %w", err)
 			}
 
 			for k, v := range vars {
