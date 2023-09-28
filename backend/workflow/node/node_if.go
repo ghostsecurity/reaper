@@ -115,6 +115,9 @@ func (n *IfNode) Start(ctx context.Context, in <-chan Input, out chan<- OutputIn
 			}
 
 			result, err := n.compare(comparison, a, z)
+			if err != nil {
+				return fmt.Errorf("comparison failed: %w", err)
+			}
 
 			select {
 			case <-ctx.Done():
