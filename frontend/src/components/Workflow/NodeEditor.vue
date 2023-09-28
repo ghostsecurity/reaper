@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import {computed, PropType, ref, watch} from 'vue'
-import {XMarkIcon, FolderIcon} from '@heroicons/vue/20/solid'
-import {node, workflow} from '../../../wailsjs/go/models'
-import {NodeType, ParentType, NodeTypeName, ChildType} from '../../lib/Workflows'
+import { computed, PropType, ref, watch } from 'vue'
+import { XMarkIcon, FolderIcon } from '@heroicons/vue/20/solid'
+import { node, workflow } from '../../../wailsjs/go/models'
+import { NodeType, ParentType, NodeTypeName, ChildType } from '../../lib/Workflows'
 import IDE from '../Http/IDE.vue'
-import {HttpRequest} from '../../lib/Http'
+import { HttpRequest } from '../../lib/Http'
 import KeyValEditor from '../KeyValEditor.vue'
-import {KeyValue} from '../../lib/KeyValue'
-import {SelectFile} from '../../../wailsjs/go/backend/App'
+import { KeyValue } from '../../lib/KeyValue'
+import { SelectFile } from '../../../wailsjs/go/backend/App'
 
 interface IMap<T> {
   [index: string]: T;
@@ -19,7 +19,7 @@ interface Choice {
 }
 
 const props = defineProps({
-  node: {type: Object as PropType<workflow.NodeM>, required: true},
+  node: { type: Object as PropType<workflow.NodeM>, required: true },
 })
 
 const safe = ref<workflow.NodeM>(safeCopy(props.node))
@@ -211,19 +211,19 @@ function updateWordList(field: node.Connector) {
     return
   }
   SelectFile('Select wordlist').then(
-      (path: string) => {
-        if (!path) {
-          return
-        }
-        if (!safe.value.vars) {
-          safe.value.vars = new node.VarStorageM({})
-        }
-        safe.value.vars.static[field.name].data = path
-        publish()
-      },
-      (err: Error) => {
-        throw err
-      },
+    (path: string) => {
+      if (!path) {
+        return
+      }
+      if (!safe.value.vars) {
+        safe.value.vars = new node.VarStorageM({})
+      }
+      safe.value.vars.static[field.name].data = path
+      publish()
+    },
+    (err: Error) => {
+      throw err
+    },
   )
 }
 
@@ -397,6 +397,7 @@ function updateWordList(field: node.Connector) {
             <select :id="field.name" :name="field.name" @change="updateChoiceField(field, $event)"
                     class="flex-1 border-0 bg-polar-night-2 py-1.5 px-2 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6">
               <option
+                  v-bind:key="option.Key"
                   v-for="option in keyValsFromChoice(field)"
                   :value="option.Key"
                   :selected="(safe.vars?.static[field.name].data as Choice).key === option.Key">{{ option.Value }}

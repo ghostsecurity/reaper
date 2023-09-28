@@ -33,28 +33,28 @@ export const enum ChildType {
 }
 
 export function NodeTypeName(t: NodeType): string {
-    switch (t) {
-        case NodeType.FUZZER:
-            return 'Fuzzer'
-        case NodeType.STATUS_FILTER:
-            return 'Status Filter'
-        case NodeType.OUTPUT:
-            return 'Output'
-        case NodeType.REQUEST:
-            return 'Request'
-        case NodeType.START:
-            return 'Start'
-        case NodeType.SENDER:
-            return 'Sender'
-        case NodeType.VARIABLES:
-            return 'Variables'
-        case NodeType.DELAY:
-            return 'Delay'
-        case NodeType.EXTRACTOR:
-            return 'Extractor'
-        case NodeType.IF:
-            return 'If'
-        default:
-            return `Unknown (${t})`
-    }
+  switch (t) {
+    case NodeType.FUZZER:
+      return 'Fuzzer'
+    case NodeType.STATUS_FILTER:
+      return 'Status Filter'
+    case NodeType.OUTPUT:
+      return 'Output'
+    case NodeType.REQUEST:
+      return 'Request'
+    case NodeType.START:
+      return 'Start'
+    case NodeType.SENDER:
+      return 'Sender'
+    case NodeType.VARIABLES:
+      return 'Variables'
+    case NodeType.DELAY:
+      return 'Delay'
+    case NodeType.EXTRACTOR:
+      return 'Extractor'
+    case NodeType.IF:
+      return 'If'
+    default:
+      return `Unknown (${t})`
+  }
 }
