@@ -194,7 +194,7 @@ func (n *ExtractorNode) extractXPathHTML(response *packaging.HttpResponse, patte
 
 	node, err := htmlquery.Query(doc, pattern)
 	if err != nil {
-		panic(`not a valid XPath expression.`)
+		return "", err
 	}
 	if node == nil {
 		return "", nil
@@ -216,7 +216,7 @@ func (n *ExtractorNode) extractXPathXML(response *packaging.HttpResponse, patter
 
 	node, err := xmlquery.Query(doc, pattern)
 	if err != nil {
-		panic(`not a valid XPath expression.`)
+		return "", err
 	}
 	if node == nil {
 		return "", nil
@@ -232,17 +232,13 @@ func (n *ExtractorNode) extractXPathJSON(response *packaging.HttpResponse, patte
 		return "", err
 	}
 
-	fmt.Println(doc)
-
 	node, err := jsonquery.Query(doc, pattern)
 	if err != nil {
-		panic(`not a valid XPath expression.`)
+		return "", err
 	}
 	if node == nil {
 		return "", nil
 	}
-
-	fmt.Printf("%#v\n", node)
 
 	return fmt.Sprintf("%s", node.Value()), nil
 }
