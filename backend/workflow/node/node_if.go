@@ -60,7 +60,7 @@ func NewIf() *IfNode {
 						IfRegexNotMatch:  "regex no match",
 					}),
 					"a": transmission.NewString("$A$"),
-					"z": transmission.NewString("$B$"),
+					"z": transmission.NewString("$Z$"),
 				},
 			),
 		),
