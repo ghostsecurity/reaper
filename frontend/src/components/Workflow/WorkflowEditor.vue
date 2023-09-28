@@ -37,6 +37,8 @@ const availableNodeTypes = ref(<NodeType[]>[
   NodeType.OUTPUT,
   NodeType.VARIABLES,
   NodeType.DELAY,
+  NodeType.EXTRACTOR,
+  NodeType.IF,
 ])
 
 const linkColour = '#8FBCBB'
@@ -144,6 +146,7 @@ function redraw() {
   })
   if (!ok) {
     initial = true
+    paths.value = []
     return
   }
   paths.value = newPaths

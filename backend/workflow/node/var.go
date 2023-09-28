@@ -255,6 +255,18 @@ func (s *VarStorage) ReadInputMap(name string, dynamicInputs map[string]transmis
 	return nil, fmt.Errorf("input '%s' is not a map", name)
 }
 
+func (s *VarStorage) ReadInputChoice(name string, dynamicInputs map[string]transmission.Transmission) (string, error) {
+	val, err := s.ReadValue(name, dynamicInputs)
+	if err != nil {
+		return "", err
+	}
+	if v, ok := val.(transmission.Chooser); ok {
+		key, _ := v.Choice()
+		return key, nil
+	}
+	return "", fmt.Errorf("input '%s' is not a choice", name)
+}
+
 func (s *VarStorage) FindInput(name string) (Connector, bool) {
 	return s.inputs.FindByName(name)
 }

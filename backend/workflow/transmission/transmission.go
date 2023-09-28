@@ -53,6 +53,7 @@ const (
 	TypeResponse
 	TypeStart
 	TypeBoolean
+	TypeChoice
 	TypeAny = 0
 )
 
@@ -69,6 +70,9 @@ type Lister interface {
 }
 type Requester interface{ Request() packaging.HttpRequest }
 type Responser interface{ Response() packaging.HttpResponse }
+type Chooser interface {
+	Choice() (string, map[string]string)
+}
 
 func (t Type) Validate(transmission Transmission) error {
 	if t.Parent()&transmission.Type().Parent() != t.Parent() {
@@ -81,6 +85,7 @@ func (t Type) Validate(transmission Transmission) error {
 		TypeList,
 		TypeRequest,
 		TypeResponse,
+		TypeChoice,
 	} {
 		if t.Parent()&concrete == 0 {
 			continue
@@ -112,6 +117,10 @@ func (t Type) Validate(transmission Transmission) error {
 			}
 		case TypeBoolean:
 			if _, ok := transmission.(Booler); !ok {
+				return fmt.Errorf("invalid transmission type %q for type %q", transmission.Type(), t)
+			}
+		case TypeChoice:
+			if _, ok := transmission.(Chooser); !ok {
 				return fmt.Errorf("invalid transmission type %q for type %q", transmission.Type(), t)
 			}
 		}
