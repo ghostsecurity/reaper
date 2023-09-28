@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
 	"github.com/google/uuid"
 	"golang.org/x/net/context"
+
+	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
 )
 
 type Channel string
@@ -54,6 +55,8 @@ const (
 	TypeSender
 	TypeVariables
 	TypeDelay
+	TypeExtractor
+	TypeIf
 )
 
 func FromType(t Type) (Node, error) {
@@ -75,6 +78,10 @@ func FromType(t Type) (Node, error) {
 		real = NewVars()
 	case TypeDelay:
 		real = NewDelay()
+	case TypeExtractor:
+		real = NewExtractor()
+	case TypeIf:
+		real = NewIf()
 	default:
 		return nil, fmt.Errorf("unknown node type: %v", t)
 	}

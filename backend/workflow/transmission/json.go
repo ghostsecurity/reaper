@@ -35,6 +35,8 @@ func UnmarshalJSON(t Type, data json.RawMessage) (Transmission, error) {
 		target = new(Boolean)
 	case TypeStart:
 		target = new(Start)
+	case TypeChoice:
+		target = new(Choice)
 	default:
 		return nil, fmt.Errorf("unknown type %q", t)
 	}

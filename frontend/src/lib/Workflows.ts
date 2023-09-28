@@ -8,6 +8,8 @@ export const enum NodeType {
     SENDER = 6,
     VARIABLES = 7,
     DELAY = 8,
+    EXTRACTOR = 9,
+    IF = 10,
 }
 
 export const enum ParentType {
@@ -20,6 +22,7 @@ export const enum ParentType {
     RESPONSE = 64,
     START = 128,
     BOOLEAN = 256,
+    CHOICE = 512,
 }
 
 export const enum ChildType {
@@ -30,24 +33,28 @@ export const enum ChildType {
 }
 
 export function NodeTypeName(t: NodeType): string {
-  switch (t) {
-    case NodeType.FUZZER:
-      return 'Fuzzer'
-    case NodeType.STATUS_FILTER:
-      return 'Status Filter'
-    case NodeType.OUTPUT:
-      return 'Output'
-    case NodeType.REQUEST:
-      return 'Request'
-    case NodeType.START:
-      return 'Start'
-    case NodeType.SENDER:
-      return 'Sender'
-    case NodeType.VARIABLES:
-      return 'Variables'
-    case NodeType.DELAY:
-      return 'Delay'
-    default:
-      return `Unknown (${t})`
-  }
+    switch (t) {
+        case NodeType.FUZZER:
+            return 'Fuzzer'
+        case NodeType.STATUS_FILTER:
+            return 'Status Filter'
+        case NodeType.OUTPUT:
+            return 'Output'
+        case NodeType.REQUEST:
+            return 'Request'
+        case NodeType.START:
+            return 'Start'
+        case NodeType.SENDER:
+            return 'Sender'
+        case NodeType.VARIABLES:
+            return 'Variables'
+        case NodeType.DELAY:
+            return 'Delay'
+        case NodeType.EXTRACTOR:
+            return 'Extractor'
+        case NodeType.IF:
+            return 'If'
+        default:
+            return `Unknown (${t})`
+    }
 }

@@ -1,16 +1,25 @@
 <script lang="ts" setup>
-import { computed, PropType, ref, watch } from 'vue'
-import { XMarkIcon, FolderIcon } from '@heroicons/vue/20/solid'
-import { node, workflow } from '../../../wailsjs/go/models'
-import { NodeType, ParentType, NodeTypeName, ChildType } from '../../lib/Workflows'
+import {computed, PropType, ref, watch} from 'vue'
+import {XMarkIcon, FolderIcon} from '@heroicons/vue/20/solid'
+import {node, workflow} from '../../../wailsjs/go/models'
+import {NodeType, ParentType, NodeTypeName, ChildType} from '../../lib/Workflows'
 import IDE from '../Http/IDE.vue'
-import { HttpRequest } from '../../lib/Http'
+import {HttpRequest} from '../../lib/Http'
 import KeyValEditor from '../KeyValEditor.vue'
-import { KeyValue } from '../../lib/KeyValue'
-import { SelectFile } from '../../../wailsjs/go/backend/App'
+import {KeyValue} from '../../lib/KeyValue'
+import {SelectFile} from '../../../wailsjs/go/backend/App'
+
+interface IMap<T> {
+  [index: string]: T;
+}
+
+interface Choice {
+  key: string
+  options: IMap<string>
+}
 
 const props = defineProps({
-  node: { type: Object as PropType<workflow.NodeM>, required: true },
+  node: {type: Object as PropType<workflow.NodeM>, required: true},
 })
 
 const safe = ref<workflow.NodeM>(safeCopy(props.node))
@@ -41,6 +50,8 @@ const staticInputs = computed(() => safe.value?.vars?.inputs?.filter(input => {
     case ParentType.INT:
       return true
     case ParentType.LIST:
+      return true
+    case ParentType.CHOICE:
       return true
     case ParentType.REQUEST:
       return !input.linkable
@@ -153,12 +164,32 @@ function keyValsFromMap(field: node.Connector): KeyValue[] {
   return []
 }
 
+function keyValsFromChoice(field: node.Connector): KeyValue[] {
+  const data = (safe.value.vars?.static[field.name]?.data as Choice).options
+  if (data) {
+    return Object.entries(data).map(([k, v]) => ({
+      Key: k,
+      Value: v,
+    } as KeyValue)).sort()
+  }
+  return []
+}
+
 function updateBooleanField(field: node.Connector, ev: Event) {
   if (!safe.value || !safe.value.vars?.static[field.name]) {
     return
   }
   const val = (ev.target as HTMLInputElement).checked
   safe.value.vars.static[field.name].data = val
+  publish()
+}
+
+function updateChoiceField(field: node.Connector, ev: Event) {
+  if (!safe.value || !safe.value.vars?.static[field.name]) {
+    return
+  }
+  const val = (ev.target as HTMLSelectElement).value
+  safe.value.vars.static[field.name].data.key = val
   publish()
 }
 
@@ -180,19 +211,19 @@ function updateWordList(field: node.Connector) {
     return
   }
   SelectFile('Select wordlist').then(
-    (path: string) => {
-      if (!path) {
-        return
-      }
-      if (!safe.value.vars) {
-        safe.value.vars = new node.VarStorageM({})
-      }
-      safe.value.vars.static[field.name].data = path
-      publish()
-    },
-    (err: Error) => {
-      throw err
-    },
+      (path: string) => {
+        if (!path) {
+          return
+        }
+        if (!safe.value.vars) {
+          safe.value.vars = new node.VarStorageM({})
+        }
+        safe.value.vars.static[field.name].data = path
+        publish()
+      },
+      (err: Error) => {
+        throw err
+      },
   )
 }
 
@@ -354,6 +385,23 @@ function updateWordList(field: node.Connector) {
                   getLabel(field)
                 }}</label>
             </div>
+          </div>
+        </div>
+        <div v-else-if="field.type === ParentType.CHOICE" class="sm:col-span-4">
+          <div class="relative flex items-start py-1">
+            <div class="flex-0 pt-1 pr-2 text-sm leading-6">
+              <label :for="field.name" class="font-medium text-snow-storm-1 capitalize">{{
+                  getLabel(field)
+                }}</label>
+            </div>
+            <select :id="field.name" :name="field.name" @change="updateChoiceField(field, $event)"
+                    class="flex-1 border-0 bg-polar-night-2 py-1.5 px-2 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6">
+              <option
+                  v-for="option in keyValsFromChoice(field)"
+                  :value="option.Key"
+                  :selected="(safe.vars?.static[field.name].data as Choice).key === option.Key">{{ option.Value }}
+              </option>
+            </select>
           </div>
         </div>
         <div v-else-if="field.type === ParentType.REQUEST" class="sm:col-span-4">
