@@ -28,6 +28,7 @@ const (
 	ExtractRegexBody = "regex_body"
 	ExtractHeader    = "header"
 	ExtractStatus    = "status"
+	ExtractSession   = "session"
 )
 
 func NewExtractor() *ExtractorNode {
@@ -56,6 +57,7 @@ func NewExtractor() *ExtractorNode {
 						ExtractRegexBody: "Body Regular Expression",
 						ExtractHeader:    "Header",
 						ExtractStatus:    "Status Code",
+						ExtractSession:   "Session",
 					}),
 					"pattern":  transmission.NewString(""),
 					"variable": transmission.NewString("$EXTRACTED$"),
@@ -67,7 +69,6 @@ func NewExtractor() *ExtractorNode {
 }
 
 func (n *ExtractorNode) Start(ctx context.Context, in <-chan Input, out chan<- OutputInstance, _ chan<- Output) error {
-
 	strip, err := n.ReadInputBool("strip", nil)
 	if err != nil {
 		return err
@@ -180,13 +181,18 @@ func (n *ExtractorNode) extract(response *packaging.HttpResponse, eType string, 
 		return n.extractXPathXML(response, pattern)
 	case ExtractXPathJSON:
 		return n.extractXPathJSON(response, pattern)
+	case ExtractSession:
+		var cookies []string
+		for _, cookie := range response.Cookies {
+			cookies = append(cookies, cookie.String())
+		}
+		return strings.Join(cookies, "; "), nil
 	default:
 		return "", fmt.Errorf("invalid extraction type: %s", eType)
 	}
 }
 
 func (n *ExtractorNode) extractXPathHTML(response *packaging.HttpResponse, pattern string) (string, error) {
-
 	doc, err := htmlquery.Parse(strings.NewReader(response.Body))
 	if err != nil {
 		return "", err
@@ -208,7 +214,6 @@ func (n *ExtractorNode) extractXPathHTML(response *packaging.HttpResponse, patte
 }
 
 func (n *ExtractorNode) extractXPathXML(response *packaging.HttpResponse, pattern string) (string, error) {
-
 	doc, err := xmlquery.Parse(strings.NewReader(response.Body))
 	if err != nil {
 		return "", err
@@ -226,7 +231,6 @@ func (n *ExtractorNode) extractXPathXML(response *packaging.HttpResponse, patter
 }
 
 func (n *ExtractorNode) extractXPathJSON(response *packaging.HttpResponse, pattern string) (string, error) {
-
 	doc, err := jsonquery.Parse(strings.NewReader(response.Body))
 	if err != nil {
 		return "", err

@@ -14,7 +14,6 @@ import (
 )
 
 func TestRequestPackaging(t *testing.T) {
-
 	proxyID := uuid.New().String()
 	requestID := int64(123)
 	expectedID := fmt.Sprintf("%s:%d", proxyID, requestID)
@@ -122,7 +121,6 @@ func TestRequestPackaging(t *testing.T) {
 }
 
 func TestResponsePackaging(t *testing.T) {
-
 	proxyID := uuid.New().String()
 	requestID := int64(123)
 	expectedID := fmt.Sprintf("%s:%d", proxyID, requestID)
@@ -145,6 +143,7 @@ func TestResponsePackaging(t *testing.T) {
 				ID:         expectedID,
 				LocalID:    requestID,
 				Headers:    []KeyValue{},
+				Cookies:    []*http.Cookie{},
 				StatusCode: 200,
 				Tags:       []string{},
 			},
@@ -169,6 +168,7 @@ func TestResponsePackaging(t *testing.T) {
 						Value: "test",
 					},
 				},
+				Cookies:    []*http.Cookie{},
 				StatusCode: 200,
 				Tags:       []string{},
 			},
@@ -186,6 +186,7 @@ func TestResponsePackaging(t *testing.T) {
 				ID:         expectedID,
 				LocalID:    requestID,
 				Headers:    []KeyValue{},
+				Cookies:    []*http.Cookie{},
 				StatusCode: 200,
 				Tags:       []string{},
 				BodySize:   9,
