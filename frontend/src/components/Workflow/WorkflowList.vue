@@ -44,7 +44,7 @@ function renameWorkflow(name: string) {
     </div>
     <ul v-else class="block w-full flex-auto text-left">
       <li v-for="flow in flows" :key="flow.id"
-          :class="[flow.id === selected ? 'border-b border-frost-2 bg-polar-night-1': 'border-polar-night-3 hover:border-polar-night-4', 'block flex w-full border-t']">
+          :class="[flow.id === selected ? 'border-b border-frost-2 bg-polar-night-1': 'border-polar-night-3 hover:border-polar-night-4', 'flex w-full border-t']">
         <a @click="emit('select', flow.id)"
            class="my-1 block grow cursor-pointer pl-2">
           {{ flow.name }}
