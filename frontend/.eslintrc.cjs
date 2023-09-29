@@ -56,5 +56,8 @@ module.exports = {
     'import/no-relative-packages': 'off',
     'import/no-extraneous-dependencies': 'off',
     'tailwindcss/classnames-order': 'warn',
+    'tailwindcss/enforces-negative-arbitrary-values': 'warn',
+    'tailwindcss/enforces-shorthand': 'warn',
+    'tailwindcss/no-contradicting-classname': 'warn',
   },
 }
