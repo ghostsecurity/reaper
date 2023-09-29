@@ -33,7 +33,7 @@
     "@vue/babel-plugin-jsx": "^1.1.1",
     "@vue/test-utils": "^2.2.7",
     "autoprefixer": "^10.4.13",
-    "eslint": "^8.31.0",
+    "eslint": "^8.50.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.27.4",
     "eslint-plugin-tailwindcss": "^3.13.0",
