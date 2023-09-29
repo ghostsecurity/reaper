@@ -35,25 +35,25 @@ function renameWorkflow(name: string) {
                  @confirm="emit('delete', deleting);deleting=''"
                  @cancel="deleting = ''"/>
   <div ref="root" class="flex overflow-x-hidden">
-    <div v-if="!flows || flows.length === 0" class="pt-8 pl-8 text-center text-frost-3 w-full">
+    <div v-if="!flows || flows.length === 0" class="w-full pl-8 pt-8 text-center text-frost-3">
       <div class="flex flex-col items-center">
         <BeakerIcon class="h-12 w-12"/>
         <h3 class="mt-2 text-sm font-bold">No Workflows</h3>
         <p class="mt-1 text-sm">Create a workflow using the '+' button above.</p>
       </div>
     </div>
-    <ul v-else class="w-full block flex-auto text-left">
+    <ul v-else class="block w-full flex-auto text-left">
       <li v-for="flow in flows" :key="flow.id"
-          :class="[flow.id === selected ? 'border-frost-2 bg-polar-night-1 border-b': 'border-polar-night-3 hover:border-polar-night-4', 'w-full block flex border-t']">
+          :class="[flow.id === selected ? 'border-b border-frost-2 bg-polar-night-1': 'border-polar-night-3 hover:border-polar-night-4', 'block flex w-full border-t']">
         <a @click="emit('select', flow.id)"
-           class="block my-1 pl-2 cursor-pointer flex-grow">
+           class="my-1 block grow cursor-pointer pl-2">
           {{ flow.name }}
           <p class="text-polar-night-4">{{ flow.id.substring(0, 18) }}</p>
         </a>
-        <button class="flex-shrink pr-2" @click="renaming = flow.id">
+        <button class="shrink pr-2" @click="renaming = flow.id">
           <PencilSquareIcon class="h-5 w-5 text-polar-night-4 hover:text-frost-1" aria-hidden="true"/>
         </button>
-        <button class="flex-shrink pr-2" @click="deleting = flow.id">
+        <button class="shrink pr-2" @click="deleting = flow.id">
           <TrashIcon class="h-5 w-5 text-polar-night-4 hover:text-aurora-1" aria-hidden="true"/>
         </button>
       </li>

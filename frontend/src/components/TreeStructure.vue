@@ -99,7 +99,7 @@ function onChildSelect(part: string): (parts: Array<string>) => void {
 
 <template>
   <div v-if="!hasParent && nodes.length === 0">
-    <div class="pt-4 pl-8 text-center text-frost-3">
+    <div class="pl-8 pt-4 text-center text-frost-3">
       <FolderIcon class="mx-auto h-12 w-12" />
       <h3 class="mt-2 text-sm font-bold">No requests received</h3>
       <p class="mt-1 text-sm">Configure your browser to use Reaper</p>

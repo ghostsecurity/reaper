@@ -92,7 +92,7 @@ function closePrevious() {
          @action="action"
          @request-update="update($event)"
          @close="dropRequest"/>
-    <div v-else class="pt-8 pl-8 text-center text-frost-3">
+    <div v-else class="pl-8 pt-8 text-center text-frost-3">
       <component :is="emptyIcon" class="mx-auto h-12 w-12"/>
       <h3 class="mt-2 text-sm font-medium">{{ emptyTitle }}</h3>
       <p class="mt-1 text-sm">{{ emptyMessage }}</p>

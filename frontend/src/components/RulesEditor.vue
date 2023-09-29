@@ -58,7 +58,7 @@ function addRule() {
 </script>
 
 <template>
-  <div class="mt-2 mb-6 rounded-md border border-polar-night-4 p-2">
+  <div class="mb-6 mt-2 rounded-md border border-polar-night-4 p-2">
     <div v-if="modifiedRules.length === 0" class="border-b border-polar-night-4 pb-2">
       <p class="italic text-gray-500">No rules defined</p>
     </div>

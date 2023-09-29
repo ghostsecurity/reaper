@@ -49,7 +49,7 @@ function onSearch(crit: Criteria) {
 
 <template>
   <div class="flex items-center justify-between">
-    <div class="flex-1 relative">
+    <div class="relative flex-1">
       <div v-if="name !== ''" class="absolute left-0 top-3 w-full text-center text-sm">
         <a class="rounded-md bg-polar-night-3 px-3 py-1" style="pointer-events: all"
            @click.prevent.stop="emit('rename')">
@@ -57,7 +57,7 @@ function onSearch(crit: Criteria) {
         </a>
       </div>
       <div class="flex items-center justify-between">
-        <div class="flex-1 max-w-4xl truncate text-left text-sm font-medium text-frost-4 dark:text-frost">
+        <div class="max-w-4xl flex-1 truncate text-left text-sm font-medium text-frost-4 dark:text-frost">
           {{ request.Path }}
           <span class="text-frost-3" v-if="request.QueryString !== ''">?{{ request.QueryString }}</span>
         </div>
@@ -93,7 +93,7 @@ function onSearch(crit: Criteria) {
       <Menu v-if="actions.size > 0" as="div" class="relative inline-block text-left">
         <div>
           <MenuButton
-              class="inline-flex w-full justify-center rounded-md dark:text-snow-storm-1 px-2 py-2 text-sm font-medium text-gray-700 shadow-sm">
+              class="inline-flex w-full justify-center rounded-md p-2 text-sm font-medium text-gray-700 shadow-sm dark:text-snow-storm-1">
             <EllipsisVerticalIcon class="h-4 w-4" aria-hidden="true"/>
           </MenuButton>
         </div>
@@ -103,14 +103,14 @@ function onSearch(crit: Criteria) {
                     enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75"
                     leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
           <MenuItems
-              class="absolute right-0 z-10 mt-2 w-35 right rounded-md dark:text-snow-storm-1 bg-white dark:bg-gray-700 shadow-lg">
+              class="w-35 right absolute right-0 z-10 mt-2 rounded-md bg-white shadow-lg dark:bg-gray-700 dark:text-snow-storm-1">
             <div class="py-1">
               <MenuItem v-slot="{ active }" v-for="[action, name] in actions" :key="action">
                 <a @click="emit('action', action)" :class="[
                 active
                   ? 'bg-gray-100 text-gray-900 dark:bg-gray-600 dark:text-snow-storm-1'
                   : 'text-gray-700 dark:text-snow-storm-1',
-                'block px-4 py-2 text-sm cursor-pointer',
+                'block cursor-pointer px-4 py-2 text-sm',
               ]">
                   {{ name }}
                 </a>

@@ -107,23 +107,23 @@ function formatCode() {
 </script>
 
 <template>
-  <div class="absolute h-7 border border-polar-night-3 w-full flex">
-    <button class="rounded px-1 text-snow-storm-1/70 hover:text-snow-storm-1 hover:bg-polar-night-3"
+  <div class="absolute flex h-7 w-full border border-polar-night-3">
+    <button class="rounded px-1 text-snow-storm-1/70 hover:bg-polar-night-3 hover:text-snow-storm-1"
             @click="copyToClipboard">
       <DocumentDuplicateIcon class="h-6 w-6" aria-hidden="true"/>
     </button>
-    <button class="rounded px-1 text-snow-storm-1/70 hover:text-snow-storm-1 hover:bg-polar-night-3"
+    <button class="rounded px-1 text-snow-storm-1/70 hover:bg-polar-night-3 hover:text-snow-storm-1"
             @click="formatCode">
       <SparklesIcon class="h-6 w-6" aria-hidden="true"/>
     </button>
   </div>
-  <div class="border border-polar-night-3 w-full h-full pt-9 px-1">
+  <div class="h-full w-full border border-polar-night-3 px-1 pt-9">
     <div style="min-height: 100px;" :class="[
-      'wrapper overflow-x-auto h-full w-full',
+      'wrapper h-full w-full overflow-x-auto',
       busy ? 'wrapper plain text-left' : 'wrapper highlighted min-h-full text-left',
     ]">
-      <pre ref="pre" class="w-full h-full min-h-full" aria-hidden="true"><code v-html="highlighted"></code></pre>
-      <textarea class="w-full h-full" :readonly="readonly" spellcheck="false" ref="textarea" @input="updateCode"
+      <pre ref="pre" class="h-full min-h-full w-full" aria-hidden="true"><code v-html="highlighted"></code></pre>
+      <textarea class="h-full w-full" :readonly="readonly" spellcheck="false" ref="textarea" @input="updateCode"
                 @scroll="syncScroll" @keydown="onKeydown" v-model="buffer"></textarea>
     </div>
   </div>

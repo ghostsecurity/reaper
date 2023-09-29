@@ -117,7 +117,7 @@ function changePorts(e: Event) {
                 v-model="modifiedRule.protocol"
                 id="location"
                 name="location"
-                class="block w-full max-w-lg rounded-md bg-polar-night-4 text-sm shadow-sm focus:border-frost-1 focus:ring-frost-1">
+                class="block w-full  max-w-lg rounded-md bg-polar-night-4 text-sm shadow-sm focus:border-frost-1 focus:ring-frost-1">
                 <option value="">any</option>
                 <option value="http">http://</option>
                 <option value="https">https://</option>

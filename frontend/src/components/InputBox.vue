@@ -58,13 +58,13 @@ function focus($event: Event) {
                            leave-from="opacity-100 translate-y-0 sm:scale-100"
                            leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
             <DialogPanel
-                class="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all dark:bg-gray-700 sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+                class="relative overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all dark:bg-gray-700 sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
               <div class="sm:flex sm:items-start">
                 <div
-                    class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-frost-4 sm:mx-0 sm:h-10 sm:w-10">
+                    class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-frost-4 sm:mx-0 sm:h-10 sm:w-10">
                   <PencilIcon class="h-6 w-6 text-frost-2" aria-hidden="true"/>
                 </div>
-                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                <div class="mt-3 w-full text-center sm:ml-4 sm:mt-0 sm:text-left">
                   <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900 dark:text-snow-storm-1">
                     {{ title }}
                   </DialogTitle>
