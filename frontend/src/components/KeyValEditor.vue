@@ -94,11 +94,11 @@ function localParams(c: KeyValue[]): KeyValue[] {
 
 <template>
   <div>
-    <div v-if="readonly && Object.keys(data).length === 0" class="w-full relative">{{ emptyMessage }}</div>
+    <div v-if="readonly && Object.keys(data).length === 0" class="relative w-full">{{ emptyMessage }}</div>
     <table class="w-full" v-else>
       <tbody class="bg-white dark:bg-reaper-bg-dark">
       <tr v-for="(row, index) in localParams(copy)" :key="index">
-        <td class="w-2/5 min-w-200 border border-snow-storm-3 py-2 px-3 text-left text-xs dark:border-polar-night-4">
+        <td class="min-w-200 w-2/5 border border-snow-storm-3 px-3 py-2 text-left text-xs dark:border-polar-night-4">
           <AutocompleteInput
               @change="updateKey(index, $event)"
               :value="row.Key"
@@ -106,7 +106,7 @@ function localParams(c: KeyValue[]): KeyValue[] {
               :suggestions="keySuggestions"
               :left="true"/>
         </td>
-        <td class="border border-snow-storm-3 py-2 px-3 text-left text-xs dark:border-polar-night-4">
+        <td class="border border-snow-storm-3 px-3 py-2 text-left text-xs dark:border-polar-night-4">
           <AutocompleteInput
               @change="updateValue(index, $event)"
               :value="row.Value"

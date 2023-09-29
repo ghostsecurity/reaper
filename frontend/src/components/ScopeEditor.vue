@@ -79,7 +79,7 @@ function escapeForRegExp(target: string) {
               showSimple
                 ? 'border-frost text-frost'
                 : 'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-200',
-              'group inline-flex cursor-pointer items-center border-b-2 py-4 px-1 text-sm font-medium',
+              'group inline-flex cursor-pointer items-center border-b-2 px-1 py-4 text-sm font-medium',
             ]"
             :aria-current="showSimple ? 'page' : undefined">
             <span>Simple</span>
@@ -90,7 +90,7 @@ function escapeForRegExp(target: string) {
               !showSimple
                 ? 'border-frost text-frost'
                 : 'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-200',
-              'group inline-flex cursor-pointer items-center border-b-2 py-4 px-1 text-sm font-medium',
+              'group inline-flex cursor-pointer items-center border-b-2 px-1 py-4 text-sm font-medium',
             ]"
             :aria-current="!showSimple ? 'page' : undefined">
             <span>Advanced</span>

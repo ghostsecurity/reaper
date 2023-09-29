@@ -53,10 +53,10 @@ function toggleTab(tabId: string) {
 <template>
   <div>
     <main class="relative text-left">
-      <div class="mx-auto max-w-screen-[100%] px-4 pb-6 sm:px-6 lg:px-8 lg:pb-16">
+      <div class="max-w-screen-[100%] mx-auto px-4 pb-6 sm:px-6 lg:px-8 lg:pb-16">
         <div
-            class="overflow-hidden rounded-lg bg-snow-storm dark:bg-polar-night shadow text-polar-night dark:text-snow-storm">
-          <div class="lg:grid lg:grid-cols-12 lg:divide-y-0 lg:divide-x divide-snow-storm-3 dark:divide-polar-night-3">
+            class="overflow-hidden rounded-lg bg-snow-storm text-polar-night shadow dark:bg-polar-night dark:text-snow-storm">
+          <div class="divide-snow-storm-3 dark:divide-polar-night-3 lg:grid lg:grid-cols-12 lg:divide-x lg:divide-y-0">
             <aside class="py-6 lg:col-span-3">
               <nav class="space-y-1">
                 <a
@@ -65,12 +65,12 @@ function toggleTab(tabId: string) {
                     :key="tab.name"
                     :class="[
                     tab.id === openTab
-                      ? 'bg-polar-night-4 border-frost-3'
+                      ? 'border-frost-3 bg-polar-night-4'
                       : 'border-transparent hover:bg-polar-night-3',
-                    'group border-l-4 px-3 py-2 flex items-center text-sm font-medium cursor-pointer',
+                    'group flex cursor-pointer items-center border-l-4 px-3 py-2 text-sm font-medium',
                   ]"
                     :aria-current="tab.id === openTab ? 'page' : undefined">
-                  <component :is="tab.icon" :class="['flex-shrink-0 -ml-1 mr-3 h-6 w-6']" aria-hidden="true"/>
+                  <component :is="tab.icon" :class="['-ml-1 mr-3 h-6 w-6 shrink-0']" aria-hidden="true"/>
                   <span class="truncate">{{ tab.name }}</span>
                 </a>
               </nav>
@@ -79,7 +79,7 @@ function toggleTab(tabId: string) {
             <div class="lg:col-span-9">
               <!-- Workspace overview -->
               <div :class="{ hidden: 'overview' !== openTab }">
-                <div class="py-6 px-4 sm:p-6 lg:pb-8">
+                <div class="px-4 py-6 sm:p-6 lg:pb-8">
                   <div>
                     <h2 class="text-lg font-medium leading-6">Overview</h2>
                     <p class="mt-1 text-sm">Modify the name and core details of the workspace.</p>
@@ -103,7 +103,7 @@ function toggleTab(tabId: string) {
 
               <!-- Workspace scope -->
               <div :class="{ hidden: 'scope' !== openTab }">
-                <div class="py-6 px-4 sm:p-6 lg:pb-8">
+                <div class="px-4 py-6 sm:p-6 lg:pb-8">
                   <div>
                     <h2 class="text-lg font-medium leading-6">Scope</h2>
                     <p class="mt-1 text-sm">Change the workspace scope to laser focus on your target.</p>
@@ -117,7 +117,7 @@ function toggleTab(tabId: string) {
 
               <!-- Workspace interception scope -->
               <div :class="{ hidden: 'interception' !== openTab }">
-                <div class="py-6 px-4 sm:p-6 lg:pb-8">
+                <div class="px-4 py-6 sm:p-6 lg:pb-8">
                   <div>
                     <h2 class="text-lg font-medium leading-6">Interception</h2>
                     <p class="mt-1 text-sm">Specify which requests you'd like to intercept and modify before
@@ -132,7 +132,7 @@ function toggleTab(tabId: string) {
             </div>
           </div>
           <div class="divide-y divide-gray-200 pt-6 text-right">
-            <div class="px-4 sm:px-6 pb-4">
+            <div class="px-4 pb-4 sm:px-6">
               <div>
                 <button
                     @click="cancel"

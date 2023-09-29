@@ -72,7 +72,7 @@ function setProxyPort(event: Event) {
         <div
             class="divide-y divide-snow-storm-1 overflow-hidden rounded-lg bg-snow-storm text-polar-night shadow dark:divide-polar-night-3 dark:bg-polar-night dark:text-snow-storm">
           <div
-              class="divide-snow-storm-1 dark:divide-polar-night-3 lg:grid lg:grid-cols-12 lg:divide-y-0 lg:divide-x">
+              class="divide-snow-storm-1 dark:divide-polar-night-3 lg:grid lg:grid-cols-12 lg:divide-x lg:divide-y-0">
             <aside class="py-6 lg:col-span-3">
               <nav class="space-y-1">
                 <a
@@ -88,17 +88,17 @@ function setProxyPort(event: Event) {
                     :aria-current="tab.id === openTab ? 'page' : undefined">
                   <component
                       :is="tab.icon"
-                      class="-ml-1 mr-3 h-6 w-6 flex-shrink-0 text-polar-night-4 dark:text-snow-storm-1"
+                      class="-ml-1 mr-3 h-6 w-6 shrink-0 text-polar-night-4 dark:text-snow-storm-1"
                       aria-hidden="true"/>
                   <span class="truncate text-polar-night-4/90 dark:text-snow-storm-1/90">{{ tab.name }}</span>
                 </a>
               </nav>
             </aside>
 
-            <form class="lg:col-span-9 pb-4" method="POST">
+            <form class="pb-4 lg:col-span-9" method="POST">
               <!-- Display settings -->
               <div :class="{ hidden: 'display' !== openTab }">
-                <div class="py-6 px-4 sm:p-6 lg:pb-8">
+                <div class="px-4 py-6 sm:p-6 lg:pb-8">
                   <div>
                     <h2 class="text-lg font-bold leading-6">Display</h2>
                     <p class="mt-1 text-sm">Modify the appearance of the application.</p>
@@ -118,14 +118,14 @@ function setProxyPort(event: Event) {
                           v-model="modifiedSettings.DarkMode"
                           :class="[
                           modifiedSettings.DarkMode ? 'bg-frost-4' : 'bg-polar-night-4/50',
-                          'relative ml-4 inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full',
+                          'relative ml-4 inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full',
                           'border-2 border-transparent transition-colors duration-200 ease-in-out',
                         ]">
                         <span
                             aria-hidden="true"
                             :class="[
                             modifiedSettings.DarkMode ? 'translate-x-5' : 'translate-x-0',
-                            'inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0',
+                            'inline-block h-5 w-5 rounded-full bg-white shadow ring-0',
                             'transition duration-200 ease-in-out',
                           ]"/>
                       </Switch>
@@ -136,7 +136,7 @@ function setProxyPort(event: Event) {
 
               <!-- Proxy settings -->
               <div :class="{ hidden: 'proxy' !== openTab }">
-                <div class="py-6 px-4 sm:p-6 lg:pb-8">
+                <div class="px-4 py-6 sm:p-6 lg:pb-8">
                   <div>
                     <h2 class="text-lg font-medium leading-6">Proxy</h2>
                     <p class="text-sm">Customise proxy settings to suit your workflow.</p>
@@ -162,7 +162,7 @@ function setProxyPort(event: Event) {
 
               <!-- Certificate settings -->
               <div :class="{ hidden: 'certs' !== openTab }">
-                <div class="py-6 px-4 sm:p-6 lg:pb-8">
+                <div class="px-4 py-6 sm:p-6 lg:pb-8">
                   <div>
                     <h2 class="text-lg font-bold leading-6">Certificates</h2>
                     <p class="mt-1 text-sm">Manage certificates and configure your browser(s).</p>
@@ -175,11 +175,11 @@ function setProxyPort(event: Event) {
 
               <!-- About -->
               <div :class="{ hidden: 'about' !== openTab }">
-                <div class="py-6 px-4 sm:p-6 lg:pb-8">
+                <div class="px-4 py-6 sm:p-6 lg:pb-8">
                   <div>
                     <h2 class="text-lg font-bold leading-6">About</h2>
                     <p class="mt-1 text-sm">See <a
-                        class="cursor-pointer text-frost-1 text-decoration-underline"
+                        class="text-decoration-underline cursor-pointer text-frost-1"
                         @click="BrowserOpenURL('https://github.com/ghostsecurity/reaper')">
                       https://github.com/ghostsecurity/reaper
                     </a>
@@ -189,11 +189,11 @@ function setProxyPort(event: Event) {
 
                   <div>
 
-                    <img :src="cowbell" class="w-40 h-40 rounded-full mx-auto mt-4"/>
+                    <img :src="cowbell" class="mx-auto mt-4 h-40 w-40 rounded-full"/>
                   </div>
 
                   <div class="mt-6 flex flex-col lg:flex-row">
-                    <div class="flex-grow space-y-6">
+                    <div class="grow space-y-6">
                       <div></div>
                     </div>
                   </div>
@@ -204,7 +204,7 @@ function setProxyPort(event: Event) {
                     <div>
                       <h2 class="text-lg font-bold leading-6">Version</h2>
                       <p class="mt-1 text-sm" v-if="version">
-                        <a class="cursor-pointer text-frost-1 text-decoration-underline"
+                        <a class="text-decoration-underline cursor-pointer text-frost-1"
                            @click="version ? BrowserOpenURL(version.url) : null">{{
                             version.version
                           }}</a>{{ version.date ? " - Built " + version.date : "" }}</p>

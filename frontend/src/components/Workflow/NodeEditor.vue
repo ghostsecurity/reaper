@@ -231,9 +231,9 @@ function updateWordList(field: node.Connector) {
 
 <template>
   <div
-      class="border rounded border-polar-night-3 relative p-2 bg-polar-night-1 text-center max-h-full overflow-y-auto pointer-events-auto">
+      class="pointer-events-auto relative max-h-full overflow-y-auto rounded border border-polar-night-3 bg-polar-night-1 p-2 text-center">
     <button @click="emit('close')" class="absolute right-1 top-1">
-      <XMarkIcon class="w-4 h-4"/>
+      <XMarkIcon class="h-4 w-4"/>
     </button>
     {{ NodeTypeName(safe.type) }}
     <div class="relative mt-2 text-left">
@@ -242,14 +242,14 @@ function updateWordList(field: node.Connector) {
       <!-- GLOBAL OPTIONS -->
       <div class="mt-2">
         <div class="sm:col-span-4">
-          <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">Name</label>
+          <label class="block text-sm font-medium capitalize leading-6 text-snow-storm-1">Name</label>
           <div class="mt-1">
             <div
                 class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
               <input type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
                      v-model="safe.name"
                      @input="publish"
-                     class="flex-1 border-0 bg-transparent py-1.5 px-2 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6"/>
+                     class="flex-1 border-0 bg-transparent px-2 py-1.5 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6"/>
             </div>
           </div>
         </div>
@@ -257,7 +257,7 @@ function updateWordList(field: node.Connector) {
 
       <div v-for="field in staticInputs" class="mt-2" :key="field.name">
         <div v-if="field.type === ParentType.STRING" class="sm:col-span-4">
-          <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">{{
+          <label class="block text-sm font-medium capitalize leading-6 text-snow-storm-1">{{
               getLabel(field)
             }}</label>
           <div class="mt-1">
@@ -266,12 +266,12 @@ function updateWordList(field: node.Connector) {
               <input type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
                      :value="safe.vars?.static[field.name].data"
                      @input="updateStringField(field, $event)"
-                     class="flex-1 border-0 bg-transparent py-1.5 px-2 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6"/>
+                     class="flex-1 border-0 bg-transparent px-2 py-1.5 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6"/>
             </div>
           </div>
         </div>
         <div v-else-if="field.type === ParentType.INT" class="sm:col-span-4">
-          <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">{{
+          <label class="block text-sm font-medium capitalize leading-6 text-snow-storm-1">{{
               getLabel(field)
             }}</label>
           <div class="mt-1">
@@ -281,12 +281,12 @@ function updateWordList(field: node.Connector) {
                      spellcheck="false"
                      :value="safe.vars?.static[field.name].data"
                      @input="updateIntField(field, $event)"
-                     class="flex-1 border-0 bg-transparent py-1.5 px-2 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6"/>
+                     class="flex-1 border-0 bg-transparent px-2 py-1.5 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6"/>
             </div>
           </div>
         </div>
         <div v-else-if="field.type === ParentType.LIST" class="sm:col-span-4">
-          <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">{{
+          <label class="block text-sm font-medium capitalize leading-6 text-snow-storm-1">{{
               getLabel(field)
             }}</label>
           <div class="mt-1">
@@ -294,7 +294,7 @@ function updateWordList(field: node.Connector) {
                 class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
               <select
                   @change="updateListType(field, $event)"
-                  class="flex-1 border-0 bg-transparent py-1.5 px-2 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6">
+                  class="flex-1 border-0 bg-transparent px-2 py-1.5 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6">
                 <option :selected="isFieldChildType(field, ChildType.NUMERIC_RANGE_LIST)"
                         :value="ChildType.NUMERIC_RANGE_LIST">
                   Numeric Range
@@ -313,7 +313,7 @@ function updateWordList(field: node.Connector) {
           <div class="mt-1">
             <div v-if="isFieldChildType(field, ChildType.NUMERIC_RANGE_LIST)">
               <div class="mt-1">
-                <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">Start</label>
+                <label class="block text-sm font-medium capitalize leading-6 text-snow-storm-1">Start</label>
                 <div class="mt-1">
                   <div
                       class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
@@ -321,12 +321,12 @@ function updateWordList(field: node.Connector) {
                            spellcheck="false"
                            :value="safe.vars?.static[field.name].data[0]"
                            @input="updateNumericRangeStart(field, $event)"
-                           class="flex-1 border-0 bg-transparent py-1.5 px-2 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6"/>
+                           class="flex-1 border-0 bg-transparent px-2 py-1.5 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6"/>
                   </div>
                 </div>
               </div>
               <div class="mt-1">
-                <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">End (inclusive)</label>
+                <label class="block text-sm font-medium capitalize leading-6 text-snow-storm-1">End (inclusive)</label>
                 <div class="mt-1">
                   <div
                       class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
@@ -334,19 +334,19 @@ function updateWordList(field: node.Connector) {
                            spellcheck="false"
                            :value="safe.vars?.static[field.name].data[1]"
                            @input="updateNumericRangeEnd(field, $event)"
-                           class="flex-1 border-0 bg-transparent py-1.5 px-2 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6"/>
+                           class="flex-1 border-0 bg-transparent px-2 py-1.5 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6"/>
                   </div>
                 </div>
               </div>
             </div>
             <div v-else-if="isFieldChildType(field, ChildType.WORD_LIST)"
-                 class="text-snow-storm-1/80 mt-2">
-              <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">Wordlist</label>
-              <div class="flex py-1 text-sm border rounded border-polar-night-4 bg-white/5 mt-1">
-                <button @click="updateWordList(field)" class="mx-2 flex-shrink">
+                 class="mt-2 text-snow-storm-1/80">
+              <label class="block text-sm font-medium capitalize leading-6 text-snow-storm-1">Wordlist</label>
+              <div class="mt-1 flex rounded border border-polar-night-4 bg-white/5 py-1 text-sm">
+                <button @click="updateWordList(field)" class="mx-2 shrink">
                   <FolderIcon class="h-4 w-4 text-snow-storm-1"/>
                 </button>
-                <div class="flex-grow pt-1 cursor-pointer" @click="updateWordList(field)">
+                <div class="grow cursor-pointer pt-1" @click="updateWordList(field)">
                   <p
                       v-if="safe.vars?.static[field.name].data">{{
                       getBase(safe.vars?.static[field.name].data)
@@ -357,8 +357,8 @@ function updateWordList(field: node.Connector) {
 
             </div>
             <div v-else-if="isFieldChildType(field, ChildType.COMMA_SEP_LIST)"
-                 class="text-snow-storm-1/80 mt-2">
-              <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">Comma Separated
+                 class="mt-2 text-snow-storm-1/80">
+              <label class="block text-sm font-medium capitalize leading-6 text-snow-storm-1">Comma Separated
                 Values</label>
               <div class="mt-1">
                 <div
@@ -366,7 +366,7 @@ function updateWordList(field: node.Connector) {
                   <input type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
                          :value="safe.vars?.static[field.name].data"
                          @input="updateStringField(field, $event)"
-                         class="flex-1 border-0 bg-transparent py-1.5 px-2 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6"/>
+                         class="flex-1 border-0 bg-transparent px-2 py-1.5 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6"/>
                 </div>
               </div>
             </div>
@@ -378,10 +378,10 @@ function updateWordList(field: node.Connector) {
               <input :id="field.name" :name="field.name" type="checkbox"
                      :checked="safe.vars?.static[field.name].data"
                      @change="updateBooleanField(field, $event)"
-                     class="h-4 w-4 ml-2 bg-polar-night-4 rounded text-frost-1 focus:text-frost-1"/>
+                     class="ml-2 h-4 w-4 rounded bg-polar-night-4 text-frost-1 focus:text-frost-1"/>
             </div>
             <div class="ml-2 text-sm leading-6">
-              <label :for="field.name" class="font-medium text-snow-storm-1 capitalize">{{
+              <label :for="field.name" class="font-medium capitalize text-snow-storm-1">{{
                   getLabel(field)
                 }}</label>
             </div>
@@ -389,13 +389,13 @@ function updateWordList(field: node.Connector) {
         </div>
         <div v-else-if="field.type === ParentType.CHOICE" class="sm:col-span-4">
           <div class="relative flex items-start py-1">
-            <div class="flex-0 pt-1 pr-2 text-sm leading-6">
-              <label :for="field.name" class="font-medium text-snow-storm-1 capitalize">{{
+            <div class="flex-0 pr-2 pt-1 text-sm leading-6">
+              <label :for="field.name" class="font-medium capitalize text-snow-storm-1">{{
                   getLabel(field)
                 }}</label>
             </div>
             <select :id="field.name" :name="field.name" @change="updateChoiceField(field, $event)"
-                    class="flex-1 border-0 bg-polar-night-2 py-1.5 px-2 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6">
+                    class="flex-1 border-0 bg-polar-night-2 px-2 py-1.5 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6">
               <option
                   v-bind:key="option.Key"
                   v-for="option in keyValsFromChoice(field)"
@@ -411,7 +411,7 @@ function updateWordList(field: node.Connector) {
                @request-update="updateRequestField(field, $event)"/>
         </div>
         <div v-else-if="field.type === ParentType.MAP" class="sm:col-span-4">
-          <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">{{
+          <label class="block text-sm font-medium capitalize leading-6 text-snow-storm-1">{{
               getLabel(field)
             }}</label>
           <KeyValEditor :data="keyValsFromMap(field)"
@@ -419,7 +419,7 @@ function updateWordList(field: node.Connector) {
                         @publish="updateMapField(field, $event)"/>
         </div>
         <div v-else class="sm:col-span-4">
-          <label class="block text-sm font-medium leading-6 text-snow-storm-1 capitalize">{{ field.name }}</label>
+          <label class="block text-sm font-medium capitalize leading-6 text-snow-storm-1">{{ field.name }}</label>
           <div class="mt-1">
             <i>This value cannot be edited. This is a bug!</i>
           </div>

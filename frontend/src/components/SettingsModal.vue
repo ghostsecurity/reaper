@@ -50,7 +50,7 @@ function saveSettings(settings: Settings) {
               leave="ease-in duration-200"
               leave-from="opacity-100 translate-y-0 sm:scale-100"
               leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
-            <DialogPanel class="relative transform overflow-hidden text-left transition-all">
+            <DialogPanel class="relative overflow-hidden text-left transition-all">
               <SettingsComponent @save="saveSettings" @cancel="close" :settings="props.settings"
                                  :version="props.version"/>
             </DialogPanel>

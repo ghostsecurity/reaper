@@ -123,13 +123,13 @@ function exportWorkflow(id: string) {
 
     <InputBox v-if="creating" title="New Workflow" message="Enter the workflow name." @cancel="creating = false"
               @confirm="addWorkflow($event)"/>
-    <div ref="leftPanel" class="box-border flex-shrink overflow-y-auto w-64 h-full text-right pr-2">
+    <div ref="leftPanel" class="box-border h-full w-64 shrink overflow-y-auto pr-2 text-right">
       <button type="button" @click="creating = true"
               class="mb-1 rounded-full bg-frost-4 p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
         <PlusIcon class="h-5 w-5" aria-hidden="true"/>
       </button>
       <button type="button" @click="importWorkflow"
-              class="ml-1 mb-1 rounded-full bg-frost-4 p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+              class="mb-1 ml-1 rounded-full bg-frost-4 p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
         <FolderIcon class="h-5 w-5" aria-hidden="true"/>
       </button>
       <List :selected="selectedWorkflowId" :flows="safe.workflows" @select="selectWorkflow($event)"
@@ -137,7 +137,7 @@ function exportWorkflow(id: string) {
     </div>
 
     <div ref="rightPanel"
-         class="mx-2 box-border h-full flex-grow px-2 w-[60%]">
+         class="mx-2 box-border h-full w-[60%] grow px-2">
       <Editor v-if="currentFlow" :flow="currentFlow" @save="saveWorkflow($event)" @run="emit('run', $event)"
               @stop="emit('stop', $event)"
               :running="runningWorkflowId===currentFlow.id"
@@ -146,7 +146,7 @@ function exportWorkflow(id: string) {
               @clean="emit('clean', $event)"
               @export="exportWorkflow($event)"
       />
-      <div v-else class="flex flex-col items-center mt-16 text-white/20">
+      <div v-else class="mt-16 flex flex-col items-center text-white/20">
         <BeakerIcon class="h-12 w-12"/>
         <h3 class="mt-2 text-sm font-bold">No Workflow Selected</h3>
         <p class="mt-1 text-sm">Select or create a workflow from the list.</p>

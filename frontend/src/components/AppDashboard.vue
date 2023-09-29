@@ -382,15 +382,15 @@ function createWorkflowFromRequest(r: HttpRequest) {
     <!-- main content with search, tabs etc. -->
     <div v-if="!fullscreenIDE" ref="leftPanel" class="box-border flex-auto">
       <div class="flex h-full flex-col px-2">
-        <div class="min-h-16 flex h-16 max-h-16 flex-shrink py-2">
-          <div class="flex-grow text-left">
+        <div class="min-h-16 flex h-16 max-h-16 shrink py-2">
+          <div class="grow text-left">
             <Search @search="onSearch" :query="liveCriteria.Raw"/>
           </div>
-          <div class="ml-2 flex-shrink p-0">
+          <div class="ml-2 shrink p-0">
             <WorkspaceMenu @edit="emit('workspace-edit')" :ws="ws" @switch="switchWorkspace"/>
           </div>
         </div>
-        <div class="min-h-16 h-16 max-h-16 flex-shrink">
+        <div class="min-h-16 h-16 max-h-16 shrink">
           <div class="sm:hidden">
             <label for="tabs" class="sr-only">Select a tab</label>
             <select @change="selectTab" id="tabs" name="tabs"
@@ -405,7 +405,7 @@ function createWorkflowFromRequest(r: HttpRequest) {
                   tab.current
                     ? 'border-frost text-frost'
                     : 'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-200',
-                  'group inline-flex cursor-pointer items-center border-b-2 py-4 px-1 text-sm font-medium',
+                  'group inline-flex cursor-pointer items-center border-b-2 px-1 py-4 text-sm font-medium',
                 ]" :aria-current="tab.current ? 'page' : undefined">
                   <component :is="tab.icon" :class="[
                     tab.current ? 'text-frost' : 'text-gray-400 group-hover:text-gray-300',
@@ -413,7 +413,7 @@ function createWorkflowFromRequest(r: HttpRequest) {
                   ]" aria-hidden="true"/>
                   <span>{{ tab.name }}</span>
                   <span v-if="tab.count > 0"
-                        class="bg-indigo-100 text-indigo-600 ml-3 hidden rounded-full py-0.5 px-2.5 text-xs font-medium md:inline-block">{{
+                        class="ml-3 hidden rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-600 md:inline-block">{{
                       tab.count
                     }}</span>
                 </a>

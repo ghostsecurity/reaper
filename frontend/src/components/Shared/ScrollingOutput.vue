@@ -20,8 +20,8 @@ onMounted(scrollToBottom)
 </script>
 
 <template>
-  <div class="h-full p-1 bg-black">
-              <pre ref="terminal" class="whitespace-pre-wrap h-full overflow-auto"><code><template
+  <div class="h-full bg-black p-1">
+    <pre ref="terminal" class="h-full overflow-auto whitespace-pre-wrap text-xs"><code><template
                   v-for="line in lines">{{
                   line
                 }}</template></code></pre>

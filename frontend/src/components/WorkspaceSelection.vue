@@ -70,7 +70,7 @@ function cancelDelete() {
 </script>
 
 <template>
-  <div v-if="creating" class="max-w-2xl m-auto pt-4 text-left overflow-y-auto max-h-screen">
+  <div v-if="creating" class="m-auto max-h-screen max-w-2xl overflow-y-auto pt-4 text-left">
     <div class="mt-8">
       <label for="name" class="block text-sm font-medium text-snow-storm">Workspace Name</label>
       <div class="relative mt-1 rounded-md shadow-sm">
@@ -88,7 +88,7 @@ function cancelDelete() {
             aria-describedby="name-error"/>
       </div>
     </div>
-    <div class="mt-8 italic text-gray-400 text-sm">
+    <div class="mt-8 text-sm italic text-gray-400">
       Use the rules below to define what is in scope for your workspace. If you continue without defining any rules, all
       requests will be treated as being in scope.
     </div>
@@ -113,14 +113,14 @@ function cancelDelete() {
   </div>
   <div v-else class="h-screen">
     <div class="flex h-full">
-      <div class="flex-1 flex h-full">
-        <div class="text-center pl-8 m-auto">
+      <div class="flex h-full flex-1">
+        <div class="m-auto pl-8 text-center">
           <div class="flex flex-col items-center">
-            <div class="flex-shrink-0">
+            <div class="shrink-0">
               <PlusCircleIcon class="h-12 w-12 text-frost-3"/>
             </div>
             <p class="mt-1 text-base font-medium text-frost-3">Create new workspace</p>
-            <p class="mt-1 text-sm text-gray-500 italic">A whole new world, a new fantastic point of view.</p>
+            <p class="mt-1 text-sm italic text-gray-500">A whole new world, a new fantastic point of view.</p>
           </div>
           <div class="mt-6">
             <button
@@ -133,38 +133,38 @@ function cancelDelete() {
           </div>
         </div>
       </div>
-      <div class="flex-1 border-l border-polar-night-4 text-left px-2 max-h-full overflow-y-auto h-full">
-        <div v-if="props.workspaces.length === 0" class="flex-1 flex h-full">
-          <div class="text-center pl-8 m-auto">
+      <div class="h-full max-h-full flex-1 overflow-y-auto border-l border-polar-night-4 px-2 text-left">
+        <div v-if="props.workspaces.length === 0" class="flex h-full flex-1">
+          <div class="m-auto pl-8 text-center">
             <div class="flex flex-col items-center">
-              <div class="flex-shrink-0">
+              <div class="shrink-0">
                 <NoSymbolIcon class="h-12 w-12 text-gray-500"/>
               </div>
               <p class="mt-1 text-base font-medium text-gray-500">No existing workspaces found</p>
-              <p class="mt-1 text-sm text-gray-500 italic">Workspaces you create will show up here.</p>
+              <p class="mt-1 text-sm italic text-gray-500">Workspaces you create will show up here.</p>
             </div>
           </div>
         </div>
         <ul v-else>
           <li v-for="ws in props.workspaces" :key="ws.id">
-            <div class="flex items-center px-2 py-4 hover:bg-frost-4 group">
-              <div class="flex-shrink-0">
+            <div class="group flex items-center px-2 py-4 hover:bg-frost-4">
+              <div class="shrink-0">
                 <BriefcaseIcon class="h-10 w-10 text-frost-3 group-hover:text-snow-storm-3"/>
               </div>
               <a
                   @click="selectWorkspace(ws.id)"
-                  class="flex-grow items-center px-2 py-4 hover:bg-frost-4 group cursor-pointer">
+                  class="group grow cursor-pointer items-center px-2 py-4 hover:bg-frost-4">
                 <div class="ml-4">
                   <p class="text-base font-medium text-snow-storm-3">
                     {{ ws.name }}
                   </p>
-                  <p class="text-sm text-polar-night-4 italic">{{ ws.id }}</p>
+                  <p class="text-sm italic text-polar-night-4">{{ ws.id }}</p>
                 </div>
               </a>
               <Menu as="div" class="relative inline-block text-left">
                 <div>
                   <MenuButton
-                      class="inline-flex w-full justify-center rounded-md dark:text-snow-storm-1 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm">
+                      class="inline-flex w-full justify-center rounded-md px-4 py-2 text-sm font-medium text-gray-700 shadow-sm dark:text-snow-storm-1">
                     <EllipsisVerticalIcon class="h-4 w-4" aria-hidden="true"/>
                   </MenuButton>
                 </div>
@@ -177,7 +177,7 @@ function cancelDelete() {
                     leave-from-class="transform opacity-100 scale-100"
                     leave-to-class="transform opacity-0 scale-95">
                   <MenuItems
-                      class="absolute right-0 z-10 mt-2 w-35 origin-top-right rounded-md dark:text-snow-storm-1 bg-white dark:bg-gray-700 shadow-lg">
+                      class="w-35 absolute right-0 z-10 mt-2 origin-top-right rounded-md bg-white shadow-lg dark:bg-gray-700 dark:text-snow-storm-1">
                     <div class="py-1">
                       <MenuItem v-slot="{ active }">
                         <a
@@ -186,7 +186,7 @@ function cancelDelete() {
                             active
                               ? 'bg-gray-100 text-gray-900 dark:bg-gray-600 dark:text-snow-storm-1'
                               : 'text-gray-700 dark:text-snow-storm-1',
-                            'block px-4 py-2 text-sm cursor-pointer',
+                            'block cursor-pointer px-4 py-2 text-sm',
                           ]">
                           Edit
                         </a>
@@ -198,7 +198,7 @@ function cancelDelete() {
                             active
                               ? 'bg-gray-100 text-gray-900 dark:bg-gray-600 dark:text-snow-storm-1'
                               : 'text-gray-700 dark:text-snow-storm-1',
-                            'block px-4 py-2 text-sm cursor-pointer',
+                            'block cursor-pointer px-4 py-2 text-sm',
                           ]">
                           Delete
                         </a>

@@ -308,7 +308,7 @@ function getContentType(headers: KeyValue[], def: string): string {
 </script>
 
 <template>
-  <div class="flex h-full max-h-full min-w-0 max-w-full flex-col overflow-hidden py-2 relative">
+  <div class="relative flex h-full max-h-full min-w-0 max-w-full flex-col overflow-hidden py-2">
     <div class="flex-0 flex items-stretch text-xs">
       <!-- Button for method (GET, POST etc.) -->
       <div class="flex-0 rounded-l-md border border-frost-1 bg-frost-1 py-2 hover:bg-frost-1/80">
@@ -332,7 +332,7 @@ function getContentType(headers: KeyValue[], def: string): string {
                   v-slot="{ active, selected }">
                   <li :class="[
                     active ? 'bg-frost-1 text-white' : 'text-gray-900 dark:text-snow-storm-1',
-                    'relative cursor-pointer select-none py-2 px-1',
+                    'relative cursor-pointer select-none px-1 py-2',
                   ]">
                     <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">
                       {{ method }}
@@ -390,7 +390,7 @@ function getContentType(headers: KeyValue[], def: string): string {
         </transition>
       </Menu>
 
-      <div v-if="!defaultAction" class="flex-0 rounded-r-md bg-snow-storm-1 align-middle dark:bg-polar-night-4 w-2"></div>
+      <div v-if="!defaultAction" class="flex-0 w-2 rounded-r-md bg-snow-storm-1 align-middle dark:bg-polar-night-4"></div>
 
       <div v-if="showButtons" class="flex-0 -mr-1 flex pl-2 pt-1 text-right align-middle">
         <a class="cursor-pointer pt-1 text-gray-400 hover:text-polar-night-1 dark:hover:text-snow-storm-1"
@@ -407,7 +407,7 @@ function getContentType(headers: KeyValue[], def: string): string {
 
     <!-- request -->
     <div :class="[request.Response ? 'h-1/2' : 'h-full', 'overflow-y-hidden']">
-      <div class="flex flex-col h-full">
+      <div class="flex h-full flex-col">
         <!-- request tabs (headers, body, etc. )-->
         <div class="flex-0 min-h-16 h-16 max-h-16 px-2">
           <div class="sm:hidden">
@@ -426,7 +426,7 @@ function getContentType(headers: KeyValue[], def: string): string {
                   tab.current
                     ? 'border-frost text-frost'
                     : 'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-200',
-                  'group cursor-pointer border-b-2 px-1 pt-5 pb-1 text-xs',
+                  'group cursor-pointer border-b-2 px-1 pb-1 pt-5 text-xs',
                 ]" :aria-current="tab.current ? 'page' : undefined">
                   <span>{{ tab.name }}</span>
                 </a>
@@ -435,7 +435,7 @@ function getContentType(headers: KeyValue[], def: string): string {
           </div>
         </div>
 
-        <div class="flex-1 min-w-0 w-full overflow-y-auto">
+        <div class="w-full min-w-0 flex-1 overflow-y-auto">
           <KeyValEditor v-if="requestTab === 'headers'" :data="request.Headers" :readonly="readonly"
             :key-suggestions="Object.keys(Headers)" @publish="updateHeaders($event)" />
           <KeyValEditor v-else-if="requestTab === 'query'" :data="request.Query" :readonly="readonly"
@@ -447,9 +447,9 @@ function getContentType(headers: KeyValue[], def: string): string {
     </div>
 
     <!-- response -->
-    <div v-if="request.Response" class="overflow-y-hidden h-1/2 pt-4">
-      <div class="flex flex-col h-full">
-        <h3 class="text-left text-sm p-2 text-polar-night-4 bg-snow-storm-1 dark:text-snow-storm-1 dark:bg-polar-night-4">
+    <div v-if="request.Response" class="h-1/2 overflow-y-hidden pt-4">
+      <div class="flex h-full flex-col">
+        <h3 class="bg-snow-storm-1 p-2 text-left text-sm text-polar-night-4 dark:bg-polar-night-4 dark:text-snow-storm-1">
           Response ({{ request.Response.StatusCode }})
         </h3>
         <div class="flex-0 min-h-16 h-16 max-h-16 px-2">
@@ -469,7 +469,7 @@ function getContentType(headers: KeyValue[], def: string): string {
                   tab.current
                     ? 'border-frost text-frost'
                     : 'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-200',
-                  'group cursor-pointer border-b-2 px-1 pt-5 pb-1 text-xs',
+                  'group cursor-pointer border-b-2 px-1 pb-1 pt-5 text-xs',
                 ]" :aria-current="tab.current ? 'page' : undefined">
                   <span>{{ tab.name }}</span>
                 </a>
@@ -478,7 +478,7 @@ function getContentType(headers: KeyValue[], def: string): string {
           </div>
         </div>
 
-        <div class="flex-1 min-w-0 w-full overflow-y-auto">
+        <div class="w-full min-w-0 flex-1 overflow-y-auto">
           <KeyValEditor v-if="responseTab === 'headers'" :data="request.Response.Headers" :readonly="readonly"
             :key-suggestions="Object.keys(Headers)" @publish="updateResponseHeaders($event)" />
           <CodeEditor v-else-if="responseTab === 'body'" :code="request.Response.Body" :readonly="readonly"

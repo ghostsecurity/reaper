@@ -8,7 +8,10 @@ import {
   TrashIcon,
   CheckCircleIcon,
   PauseCircleIcon,
-  ExclamationCircleIcon, BarsArrowDownIcon, BoltIcon, EyeSlashIcon,
+  ExclamationCircleIcon,
+  BarsArrowDownIcon,
+  BoltIcon,
+  EyeSlashIcon,
   XCircleIcon,
   ArrowUpOnSquareIcon,
 } from '@heroicons/vue/20/solid'
@@ -41,8 +44,8 @@ const availableNodeTypes = ref(<NodeType[]>[
   NodeType.IF,
 ])
 
-const linkColour = '#8FBCBB'
-const linkStrokeWidth = '2'
+const linkColour = '#444444'
+const linkStrokeWidth = '3'
 const editingNode = ref(<workflow.NodeM | null>null)
 const menuMode = ref('')
 // used to prevent click + drag events overlapping
@@ -574,6 +577,11 @@ function updateNode(n: workflow.NodeM) {
   saveWorkflow(safe.value)
 }
 
+function clearNode() {
+  editingNode.value = null
+  menuMode.value = ''
+}
+
 function setMenu(n: string) {
   editingNode.value = null
   if (menuMode.value === n) {
@@ -606,19 +614,18 @@ function trackMover(id: string, el: any) {
   }
   movers.value.set(id, el)
 }
-
 </script>
 
 <template>
-  <div class="w-full h-full box-border relative">
-    <div class="w-full h-full flex flex-col overflow-hidden">
-      <div class="canvas border border-polar-night-4 stripy grow-[3] relative w-full h-full overflow-auto"
+  <div class="relative box-border h-full w-full">
+    <div class="flex h-full w-full flex-col overflow-hidden">
+      <div class="canvas stripy relative h-full w-full grow-[3] overflow-auto border border-polar-night-4"
            @mousemove="drag" @mouseup="dragEnd"
            @scroll="redraw"
            @resize="redraw"
            ref="canvas"
       >
-        <svg ref="svg" xmlns="http://www.w3.org/2000/svg" class="absolute w-full h-full"
+        <svg ref="svg" xmlns="http://www.w3.org/2000/svg" class="absolute h-full w-full"
              @click="setMenu('')"
         >
           <path ref="connector" fill="none" stroke="" :stroke-width="linkStrokeWidth"/>
@@ -636,41 +643,41 @@ function trackMover(id: string, el: any) {
               <div @mousedown.prevent.stop="startLinkFromInput(node.id, input.name)"
                    v-for="input in node.vars?.inputs?.filter((inp) => inp.linkable)"
                    :key="input.name"
-                   class="flex items-center pr-2 py-0 my-0 leading-4 group">
-                <div class="flex-grow mr-2 opacity-60 text-right">
+                   class="group my-0 flex items-center py-0 pr-2 leading-4">
+                <div class="mr-2 flex-grow text-right opacity-60">
                   {{ input.name }}
                 </div>
                 <div :data-node="node.id" :data-connector="input.name"
-                     class="connector input flex-shrink w-2 h-2 border border-frost rounded-full group-hover:border-4">
+                     class="connector input h-2 w-2 flex-shrink rounded-full border border-frost group-hover:border-4">
                 </div>
               </div>
             </div>
-            <div class="flex-grow group">
+            <div class="group flex-grow">
               <div
                   @click="!mouseMoved && editNode(node.id)"
-                  :class="[editingNode && editingNode.id == node.id ? 'border-snow-storm-1 bg-polar-night-2' : (node.type == NodeType.START ? 'border-aurora-4 bg-aurora-4/25' : 'bg-polar-night-2 border-frost-1/50'),  'px-2 py-4 border rounded cursor-move relative',  getStatusClass(node.id)]"
+                  :class="[editingNode && editingNode.id == node.id ? 'border-snow-storm-1 bg-polar-night-2' : (node.type == NodeType.START ? 'border-aurora-4 bg-aurora-4/25' : 'border-frost-1/50 bg-polar-night-2'),  'relative cursor-move rounded border px-2 py-4',  getStatusClass(node.id)]"
                   style="min-width:90px">
                 {{ node.name }}
                 <div v-if="node.type != NodeType.START && NodeTypeName(node.type) !== node.name"
-                     class="absolute ml-1 left-0 top-0 py-0.5 p-2 text-xs bg-polar-night-2 rounded-md text-gray-400 italic"
+                     class="absolute left-0 top-0 ml-1 rounded-md bg-polar-night-2 p-2 py-0.5 text-xs italic text-gray-400"
                      style="margin-top: -0.5rem;">
                   {{ NodeTypeName(node.type) }}
                 </div>
                 <div>
-                  <div class="absolute left-1 bottom-1">
+                  <div class="absolute bottom-1 left-1">
                     <Spinner v-if="running && props.statuses.get(node.id) === 'running'"/>
                     <CheckCircleIcon v-else-if="props.statuses.get(node.id) === 'success'"
-                                     class="w-4 h-4 mr-2 text-aurora-4"/>
+                                     class="mr-2 h-4 w-4 text-aurora-4"/>
                     <XCircleIcon v-else-if="props.statuses.get(node.id) === 'error'"
-                                 class="w-4 h-4 mr-2 text-aurora-1"/>
+                                 class="mr-2 h-4 w-4 text-aurora-1"/>
                     <PauseCircleIcon v-else-if="props.statuses.get(node.id) === 'pending'"
-                                     class="w-4 h-4 mr-2 text-aurora-3"/>
+                                     class="mr-2 h-4 w-4 text-aurora-3"/>
                     <ExclamationCircleIcon v-else-if="props.statuses.get(node.id) === 'aborted'"
-                                           class="w-4 h-4 mr-2 text-gray-400"/>
+                                           class="mr-2 h-4 w-4 text-gray-400"/>
                   </div>
                 </div>
                 <div v-if="!node.readonly && !dragId" @mousedown.prevent.stop
-                     class="absolute top-0 right-0 invisible hover:visible group-hover:visible text-snow-storm-1">
+                     class="invisible absolute right-0 top-0 text-snow-storm-1 hover:visible group-hover:visible">
                   <button @click.prevent.stop="duplicateNode(node.id)" class="group/btn px-0.5">
                     <Square2StackIcon class="h-4 w-4 group-hover/btn:text-frost-1"/>
                   </button>
@@ -684,11 +691,11 @@ function trackMover(id: string, el: any) {
               <div @mousedown.prevent.stop="startLinkFromOutput(node.id, output.name)"
                    v-for="output in node.vars?.outputs"
                    :key="output.name"
-                   class="flex items-center pl-2 py-0 my-0 leading-4 group">
+                   class="group my-0 flex items-center py-0 pl-2 leading-4">
                 <div :data-node="node.id" :data-connector="output.name"
-                     class="connector output flex-shrink w-2 h-2 border border-frost rounded-full group-hover:border-4">
+                     class="connector output h-2 w-2 flex-shrink rounded-full border border-frost group-hover:border-4">
                 </div>
-                <div class="flex-grow ml-2 opacity-60 text-right">
+                <div class="ml-2 flex-grow text-right opacity-60">
                   {{ output.name }}
                 </div>
 
@@ -697,44 +704,44 @@ function trackMover(id: string, el: any) {
           </div>
         </div>
       </div>
-      <div class="absolute right-5 top-5 text-right pointer-events-none">
+      <div class="pointer-events-none absolute right-5 top-5 text-right">
         <div class="pointer-events-auto">
           <button type="button" @click="setMenu('add')"
-                  :class="[menuMode==='add'?'bg-frost-1':'bg-frost-4', 'mb-1 rounded-full  p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mx-0.5']">
+                  :class="[menuMode==='add'?'bg-frost-1':'bg-frost-4', 'mx-0.5 mb-1  rounded-full p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600']">
             <PlusIcon class="h-5 w-5" aria-hidden="true"/>
           </button>
         </div>
-        <div v-if="editingNode" class="mt-1 h-full overflow-y-hidden pointer-events-none">
-          <NodeEditor :node="editingNode" @update="updateNode" @close="editingNode = null; menuMode = ''"/>
+        <div v-if="editingNode" class="pointer-events-none mt-1 h-full overflow-y-hidden">
+          <NodeEditor :node="editingNode" @update="updateNode" @close="clearNode"/>
         </div>
         <div v-else-if="menuMode==='add'"
-             class="mt-1 border rounded border-snow-storm-1 relative bg-polar-night-2 pointer-events-auto">
+             class="pointer-events-auto relative mt-1 rounded border border-snow-storm-1 bg-polar-night-2">
           <button v-for="t in availableNodeTypes" :key="t" @click="addNode(t);setMenu('')"
-                  class="w-full border border-polar-night-4 py-1 bg-polar-night-2 hover:bg-polar-night-4">
+                  class="w-full border border-polar-night-4 bg-polar-night-2 py-1 hover:bg-polar-night-4">
             {{ NodeTypeName(t) }}
           </button>
         </div>
       </div>
       <div
-          class="flex flex-col box-border w-full box-border relative border-x border-b border-polar-night-3 text-left h-[25%]"
+          class="relative box-border flex h-[25%]  w-full flex-col border-x border-b border-polar-night-3 text-left"
           style="flex: 0 0 auto">
         <div class="flex-shrink p-1">
           <button :disabled="running"
-                  :class="['bg-polar-night-4 rounded-md p-2 mr-0.5', !running ? 'text-snow-storm-1 hover:text-frost-1' : 'text-snow-storm-1/20']"
+                  :class="['mr-0.5 rounded-md bg-polar-night-4 p-2', !running ? 'text-snow-storm-1 hover:text-frost-1' : 'text-snow-storm-1/20']"
                   @click="emit('run', safe.id)">
             <PlayIcon class="h-5 w-5" aria-hidden="true"/>
           </button>
           <button :disabled="!running"
-                  :class="['bg-polar-night-4 rounded-md p-2 mx-0.5', running ? 'text-snow-storm-1 hover:text-frost-1' : 'text-snow-storm-1/20']"
+                  :class="['mx-0.5 rounded-md bg-polar-night-4 p-2', running ? 'text-snow-storm-1 hover:text-frost-1' : 'text-snow-storm-1/20']"
                   @click="emit('stop', safe.id)">
             <StopIcon class="h-5 w-5" aria-hidden="true"/>
           </button>
           <button :disabled="running"
-                  :class="['bg-polar-night-4 rounded-md p-2 mx-0.5', !running ? 'text-snow-storm-1 hover:text-frost-1' : 'text-snow-storm-1/20']"
+                  :class="['mx-0.5 rounded-md bg-polar-night-4 p-2', !running ? 'text-snow-storm-1 hover:text-frost-1' : 'text-snow-storm-1/20']"
                   @click="emit('clean', safe.id)">
             <EyeSlashIcon class="h-5 w-5" aria-hidden="true"/>
           </button>
-          <button class="bg-polar-night-4 rounded-md p-2 mx-0.5 text-snow-storm-1 hover:text-frost-1"
+          <button class="mx-0.5 rounded-md bg-polar-night-4 p-2 text-snow-storm-1 hover:text-frost-1"
                   @click="emit('export', safe.id)">
             <ArrowUpOnSquareIcon class="h-5 w-5" aria-hidden="true"/>
           </button>
@@ -756,7 +763,7 @@ function trackMover(id: string, el: any) {
                    :class="[tab.current
                     ? 'border-frost text-frost'
                     : 'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-200',
-                  'group inline-flex cursor-pointer items-center border-b-2 py-2 px-1 text-sm font-medium']"
+                  'group inline-flex cursor-pointer items-center border-b-2 px-1 py-2 text-sm font-medium']"
                    :aria-current="tab.current ? 'page' : undefined">
                   <component :is="tab.icon" :class="[
                     tab.current ? 'text-frost' : 'text-gray-400 group-hover:text-gray-300',
@@ -768,7 +775,7 @@ function trackMover(id: string, el: any) {
           </div>
         </div>
 
-        <div class="flex-grow overflow-hidden box-border border-t border-polar-night-3">
+        <div class="box-border flex-grow overflow-hidden border-t border-polar-night-3">
           <ScrollingOutput v-if="selectedTab() === 'stdout'" :lines="stdoutLines"/>
           <ScrollingOutput v-else-if="selectedTab() === 'stderr'" :lines="stderrLines"/>
           <ScrollingOutput v-else-if="selectedTab() === 'activity'" :lines="activityLines"/>
