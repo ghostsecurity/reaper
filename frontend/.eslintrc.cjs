@@ -12,12 +12,7 @@ module.exports = {
     'plugin:import/warnings',
     'plugin:import/typescript',
   ],
-  overrides: [
-    {
-      files: ['*.vue'],
-      parser: 'vue-eslint-parser',
-    },
-  ],
+  overrides: [],
   parser: 'vue-eslint-parser',
   parserOptions: {
     parser: '@typescript-eslint/parser',
@@ -51,7 +46,7 @@ module.exports = {
     'no-tabs': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-shadow': ['error'],
-    'no-unused-vars': 'off',
+    'no-unused-vars': 'warn',
     '@typescript-eslint/no-unused-vars': 'error',
     'import/no-relative-packages': 'off',
     'import/no-extraneous-dependencies': 'off',
