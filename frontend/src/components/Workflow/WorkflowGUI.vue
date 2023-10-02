@@ -123,7 +123,7 @@ function exportWorkflow(id: string) {
 
     <InputBox v-if="creating" title="New Workflow" message="Enter the workflow name." @cancel="creating = false"
               @confirm="addWorkflow($event)"/>
-    <div ref="leftPanel" class="box-border h-full w-64 shrink overflow-y-auto pr-2 text-right">
+    <div ref="leftPanel" class="box-border h-full w-48 shrink overflow-y-auto pr-2 text-right">
       <button type="button" @click="creating = true"
               class="mb-1 rounded-full bg-frost-4 p-1.5 text-white shadow-sm hover:bg-frost-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
         <PlusIcon class="h-5 w-5" aria-hidden="true"/>
