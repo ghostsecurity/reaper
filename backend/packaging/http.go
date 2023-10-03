@@ -38,10 +38,10 @@ type HttpResponse struct {
 	Headers    []KeyValue
 	Tags       []string
 	BodySize   int
+	Cookies    []*http.Cookie
 }
 
 func PackageHttpRequest(request *http.Request, proxyID string, reqID int64) (*HttpRequest, error) {
-
 	// replace nil body with empty body
 	if request.Body == nil {
 		request.Body = io.NopCloser(strings.NewReader(""))
@@ -76,7 +76,6 @@ func PackageHttpRequest(request *http.Request, proxyID string, reqID int64) (*Ht
 }
 
 func tagRequest(req *http.Request) []string {
-
 	tags := []string{} // define as empty array for json friendliness
 
 	if req.Header.Get("Authorization") != "" {
@@ -95,7 +94,6 @@ func tagRequest(req *http.Request) []string {
 }
 
 func tagResponse(resp *http.Response) []string {
-
 	tags := []string{} // define as empty array for json friendliness
 
 	if resp.Header.Get("Set-Cookie") != "" {
@@ -145,7 +143,6 @@ func packageMap(header map[string][]string) []KeyValue {
 }
 
 func PackageHttpResponse(response *http.Response, proxyID string, reqID int64) (*HttpResponse, error) {
-
 	// replace nil body with empty body
 	if response.Body == nil {
 		response.Body = io.NopCloser(strings.NewReader(""))
@@ -171,6 +168,7 @@ func PackageHttpResponse(response *http.Response, proxyID string, reqID int64) (
 		StatusCode: response.StatusCode,
 		Headers:    packageMap(response.Header),
 		Tags:       tagResponse(response),
+		Cookies:    response.Cookies(),
 	}, nil
 }
 
@@ -186,6 +184,5 @@ func UnpackageHttpRequest(h *HttpRequest) (*http.Request, error) {
 }
 
 func UnpackageHttpResponse(h *HttpResponse, req *http.Request) (*http.Response, error) {
-
 	return nil, fmt.Errorf("not implemented")
 }
