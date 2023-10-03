@@ -46,7 +46,7 @@ func NewExtractor() *ExtractorNode {
 					NewConnector("strip", transmission.TypeBoolean, false, "Remove leading/trailing whitespace"),
 				},
 				Connectors{
-					NewConnector("output", transmission.TypeMap, true),
+					NewConnector("output", transmission.TypeRequest|transmission.TypeResponse|transmission.TypeMap, true),
 				},
 				map[string]transmission.Transmission{
 					"type": transmission.NewChoice("body", map[string]string{
@@ -137,10 +137,15 @@ func (n *ExtractorNode) Start(ctx context.Context, in <-chan Input, out chan<- O
 			}
 			vars[variable] = value
 
+			request, err := n.ReadInputRequest("response", input.Data)
+			if err != nil {
+				return err
+			}
+
 			n.tryOut(ctx, out, OutputInstance{
 				OutputName: "output",
 				Complete:   input.Last,
-				Data:       transmission.NewMap(vars),
+				Data:       transmission.NewRequestResponsePairWithMap(*request, *response, vars),
 			})
 		}
 	}
