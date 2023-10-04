@@ -42,6 +42,7 @@ const availableNodeTypes = ref(<NodeType[]>[
   NodeType.DELAY,
   NodeType.EXTRACTOR,
   NodeType.IF,
+  NodeType.MERGER,
 ])
 
 const linkColour = '#444444'

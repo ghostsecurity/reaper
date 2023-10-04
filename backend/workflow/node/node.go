@@ -57,6 +57,7 @@ const (
 	TypeDelay
 	TypeExtractor
 	TypeIf
+	TypeMerger
 )
 
 func FromType(t Type) (Node, error) {
@@ -82,6 +83,8 @@ func FromType(t Type) (Node, error) {
 		real = NewExtractor()
 	case TypeIf:
 		real = NewIf()
+	case TypeMerger:
+		real = NewMerger()
 	default:
 		return nil, fmt.Errorf("unknown node type: %v", t)
 	}
