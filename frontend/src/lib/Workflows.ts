@@ -10,6 +10,7 @@ export const enum NodeType {
     DELAY = 8,
     EXTRACTOR = 9,
     IF = 10,
+    MERGER = 11,
 }
 
 export const enum ParentType {
@@ -54,6 +55,8 @@ export function NodeTypeName(t: NodeType): string {
       return 'Extractor'
     case NodeType.IF:
       return 'If'
+    case NodeType.MERGER:
+      return 'Merger'
     default:
       return `Unknown (${t})`
   }
