@@ -43,19 +43,23 @@ function renameWorkflow(name: string) {
       </div>
     </div>
     <ul v-else class="block w-full flex-auto text-left">
-      <li v-for="flow in flows" :key="flow.id"
+      <li v-for="flow in flows" :key="flow.id" class="group"
           :class="[flow.id === selected ? 'border-b border-frost-2 bg-polar-night-1': 'border-polar-night-3 hover:border-polar-night-4', 'flex w-full border-t']">
         <a @click="emit('select', flow.id)"
-           class="my-1 block grow cursor-pointer pl-2">
+           class="my-1 block grow cursor-pointer truncate pl-2">
           {{ flow.name }}
-          <p class="text-polar-night-4">{{ flow.id.substring(0, 18) }}</p>
+          <div class="flex items-center justify-between">
+            <div class="py-1 text-xs text-polar-night-4">{{ flow.id.substring(0, 8) }}</div>
+            <div class="hidden group-hover:flex">
+              <button class="shrink pr-2" @click="renaming = flow.id">
+                <PencilSquareIcon class="h-5 w-5 text-polar-night-4 hover:text-frost-1" aria-hidden="true"/>
+              </button>
+              <button class="shrink pr-2" @click="deleting = flow.id">
+                <TrashIcon class="h-4 w-4 text-polar-night-4 hover:text-aurora-1" aria-hidden="true"/>
+              </button>
+            </div>
+          </div>
         </a>
-        <button class="shrink pr-2" @click="renaming = flow.id">
-          <PencilSquareIcon class="h-5 w-5 text-polar-night-4 hover:text-frost-1" aria-hidden="true"/>
-        </button>
-        <button class="shrink pr-2" @click="deleting = flow.id">
-          <TrashIcon class="h-5 w-5 text-polar-night-4 hover:text-aurora-1" aria-hidden="true"/>
-        </button>
       </li>
     </ul>
   </div>

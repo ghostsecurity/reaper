@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { watch, ref, onMounted } from 'vue'
 
-import { DocumentDuplicateIcon, SparklesIcon } from '@heroicons/vue/24/outline'
+import { DocumentDuplicateIcon, SparklesIcon, ArrowPathRoundedSquareIcon } from '@heroicons/vue/24/outline'
 import { HighlightHTTP, HighlightBody, FormatCode } from '../../../wailsjs/go/backend/App'
 import { ClipboardSetText } from '../../../wailsjs/runtime'
 
@@ -104,27 +104,72 @@ function formatCode() {
     updateCode()
   })
 }
+
+function encodeParams(rawParams: string) {
+  const lines = rawParams.split('\n')
+  const params = lines.map((line: string) => {
+    const [key, value] = line.split(': ').map(str => str.trim())
+    return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+  })
+  buffer.value = params.join('&')
+}
+
+function decodeParams(encodedParams: string) {
+  const params = new URLSearchParams(encodedParams)
+  let result = ''
+  params.forEach((value, key) => {
+    result += `${key}: ${value}\n`
+  })
+  buffer.value = result.trim()
+}
+
+function transformCode() {
+  const input = buffer.value.trim()
+
+  // presence of & or = means it's an encoded string
+  if (input.includes('&') || input.includes('=')) {
+    decodeParams(input)
+  } else {
+    encodeParams(input)
+  }
+  updateCode()
+}
 </script>
 
 <template>
   <div class="absolute flex h-7 w-full border border-polar-night-3">
     <button class="rounded px-1 text-snow-storm-1/70 hover:bg-polar-night-3 hover:text-snow-storm-1"
             @click="copyToClipboard">
-      <DocumentDuplicateIcon class="h-6 w-6" aria-hidden="true"/>
+      <DocumentDuplicateIcon class="h-6 w-6"
+                             aria-hidden="true" />
     </button>
     <button class="rounded px-1 text-snow-storm-1/70 hover:bg-polar-night-3 hover:text-snow-storm-1"
             @click="formatCode">
-      <SparklesIcon class="h-6 w-6" aria-hidden="true"/>
+      <SparklesIcon class="h-6 w-6" aria-hidden="true" />
+    </button>
+    <button class="rounded px-1 text-snow-storm-1/70 hover:bg-polar-night-3 hover:text-snow-storm-1"
+            @click="transformCode">
+      <ArrowPathRoundedSquareIcon class="h-6 w-6"
+                                  aria-hidden="true" />
     </button>
   </div>
-  <div class="h-full w-full border border-polar-night-3 px-1 pt-9">
-    <div style="min-height: 100px;" :class="[
-      'wrapper h-full w-full overflow-x-auto',
-      busy ? 'wrapper plain text-left' : 'wrapper highlighted min-h-full text-left',
-    ]">
-      <pre ref="pre" class="h-full min-h-full w-full" aria-hidden="true"><code v-html="highlighted"></code></pre>
-      <textarea class="h-full w-full" :readonly="readonly" spellcheck="false" ref="textarea" @input="updateCode"
-                @scroll="syncScroll" @keydown="onKeydown" v-model="buffer"></textarea>
+  <div class="h-full w-full border border-polar-night-3 bg-neutral-800/50 p-8 px-1 pb-2">
+    <div style="min-height: 100px;"
+         :class="[
+           'wrapper h-full w-full overflow-x-auto',
+           busy ? 'wrapper plain text-left' : 'wrapper highlighted min-h-full text-left',
+         ]">
+      <pre ref="pre"
+           class="h-full min-h-full w-full"
+           aria-hidden="true"><code v-html="highlighted"></code></pre>
+      <textarea class="h-full w-full"
+                :readonly="readonly"
+                spellcheck="false"
+                ref="textarea"
+                @input="updateCode"
+                @scroll="syncScroll"
+                @keydown="onKeydown"
+                v-model="buffer"></textarea>
     </div>
   </div>
 </template>
@@ -160,9 +205,9 @@ pre {
 
 textarea,
 code {
-  font-size: 1.05em !important;
+  font-size: 0.9em !important;
   font-family: monospace !important;
-  line-height: 1.2em !important;
+  line-height: 1.5em !important;
   tab-size: 2;
   word-spacing: 0;
   letter-spacing: 0;

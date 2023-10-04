@@ -639,13 +639,13 @@ function trackMover(id: string, el: any) {
              :style="getPosition(node.id, i)"
              draggable="true" @mousedown="dragStart(node.id, $event)"
         >
-          <div class="flex items-center">
+          <div class="flex items-center text-sm">
             <div class="flex-shrink">
               <div @mousedown.prevent.stop="startLinkFromInput(node.id, input.name)"
                    v-for="input in node.vars?.inputs?.filter((inp) => inp.linkable)"
                    :key="input.name"
                    class="group my-0 flex items-center py-0 pr-2 leading-4">
-                <div class="mr-2 flex-grow text-right opacity-60">
+                <div id="input-label" class="mr-2 flex-grow text-right font-medium text-green-300 opacity-60">
                   {{ input.name }}
                 </div>
                 <div :data-node="node.id" :data-connector="input.name"
@@ -688,7 +688,7 @@ function trackMover(id: string, el: any) {
                 </div>
               </div>
             </div>
-            <div class="flex-shrink">
+            <div class="flex-shrink text-sm">
               <div @mousedown.prevent.stop="startLinkFromOutput(node.id, output.name)"
                    v-for="output in node.vars?.outputs"
                    :key="output.name"
@@ -696,7 +696,7 @@ function trackMover(id: string, el: any) {
                 <div :data-node="node.id" :data-connector="output.name"
                      class="connector output h-2 w-2 flex-shrink rounded-full border border-frost group-hover:border-4">
                 </div>
-                <div class="ml-2 flex-grow text-right opacity-60">
+                <div id="output-label" class="ml-2 flex-grow text-left text-fuchsia-300 opacity-60">
                   {{ output.name }}
                 </div>
 
@@ -791,10 +791,10 @@ function trackMover(id: string, el: any) {
 .stripy {
   background: repeating-linear-gradient(
       45deg,
-      #242933,
-      #242933 10px,
-      #212630 10px,
-      #212630 20px
+      #222,
+      #222 10px,
+      #232323 10px,
+      #232323 20px
   );
 }
 </style>
