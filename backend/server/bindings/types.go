@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
-const basePath = "./frontend/src/lib/api/"
+var basePath = filepath.Join("frontend", "src", "lib", "api")
 
 func generateTypes(summary Summary) error {
 
@@ -17,7 +18,7 @@ func generateTypes(summary Summary) error {
 	}
 	for _, entry := range entries {
 		if entry.IsDir() {
-			if err := os.RemoveAll(basePath + entry.Name()); err != nil {
+			if err := os.RemoveAll(filepath.Join(basePath, entry.Name())); err != nil {
 				return fmt.Errorf("failed to remove directory '%s': %w", entry.Name(), err)
 			}
 		}
@@ -35,7 +36,7 @@ func generateTypes(summary Summary) error {
 	/// and write them
 	for dir, types := range packageMap {
 
-		if err := os.MkdirAll(basePath+dir, 0755); err != nil {
+		if err := os.MkdirAll(filepath.Join(basePath, dir), 0755); err != nil {
 			return fmt.Errorf("failed to create directory '%s': %w", dir, err)
 		}
 
@@ -74,8 +75,8 @@ func generateTypes(summary Summary) error {
 			_, _ = fmt.Fprint(file, t.TSDefinition()+"\n\n")
 		}
 
-		if err := os.WriteFile(basePath+dir+"/index.ts", file.Bytes(), 0644); err != nil {
-			return fmt.Errorf("failed to write file '%s': %w", dir+"/index.ts", err)
+		if err := os.WriteFile(filepath.Join(basePath, dir, "index.ts"), file.Bytes(), 0644); err != nil {
+			return fmt.Errorf("failed to write file '%s': %w", filepath.Join(dir, "index.ts"), err)
 		}
 	}
 

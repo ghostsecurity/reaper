@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -12,7 +13,7 @@ var markerImportsEnd = []byte("// %IMPORTS:END%\n")
 var markerMethodsStart = []byte("// %METHODS:START%\n")
 var markerMethodsEnd = []byte("// %METHODS:END%\n")
 
-const clientPath = "./frontend/src/lib/api/Client.ts"
+var clientPath = filepath.Join("frontend", "src", "lib", "api", "Client.ts")
 
 func generateClient(summary Summary) error {
 

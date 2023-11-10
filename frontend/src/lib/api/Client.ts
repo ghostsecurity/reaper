@@ -4,12 +4,12 @@
 */
 import { MessageType, WebsocketMessage } from './websocket.type'
 // %IMPORTS:START%
-import { VersionInfo } from './api'
 import { UpdateM, NodeM, WorkflowM } from './workflow'
 import { OutputM } from './node'
 import { Workspace } from './workspace'
 import { HttpRequest } from './packaging'
 import { Settings } from './settings'
+import { VersionInfo } from './api'
 // %IMPORTS:END%
 
 export default class Client {
@@ -408,6 +408,16 @@ export default class Client {
         resolve()
       }
       this.callMethod('StopWorkflow', [a0], receive, reject)
+    })
+  }
+
+  Test(a0: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      const receive = (args: string[]) => {
+        const output0: string = JSON.parse(args[0])
+        resolve(output0)
+      }
+      this.callMethod('Test', [a0], receive, reject)
     })
   }
 
