@@ -73,6 +73,10 @@ func (a *API) BindingsOnly(x workflow.UpdateM, y node.OutputM) {
 
 }
 
+func (a *API) Test(input string) string {
+	return input
+}
+
 // Close can be called to shut down the api
 func (a *API) Close() {
 	a.cancel()
