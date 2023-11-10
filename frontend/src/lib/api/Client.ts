@@ -4,12 +4,12 @@
 */
 import { MessageType, WebsocketMessage } from './websocket.type'
 // %IMPORTS:START%
+import { VersionInfo } from './api'
 import { UpdateM, NodeM, WorkflowM } from './workflow'
 import { OutputM } from './node'
 import { Workspace } from './workspace'
 import { HttpRequest } from './packaging'
 import { Settings } from './settings'
-import { VersionInfo } from './api'
 // %IMPORTS:END%
 
 export default class Client {
@@ -424,18 +424,18 @@ export default class Client {
   // %METHODS:END%
 
   /*
-                      Test(a: string): Promise<string> {
-                      let res: (value: string | PromiseLike<string>) => void;
-                      let rej: (reason?: any) => void;
-                      return new Promise<string>((resolve, reject) => {
-                          res = resolve;
-                          rej = reject;
-                          const receive = (_: string[]) => {
-                              let a: string = JSON.parse(args[0]);
-                              res(a);
-                          }
-                          this.callMethod("Test", [a], receive, rej);
-                      })
+                        Test(a: string): Promise<string> {
+                        let res: (value: string | PromiseLike<string>) => void;
+                        let rej: (reason?: any) => void;
+                        return new Promise<string>((resolve, reject) => {
+                            res = resolve;
+                            rej = reject;
+                            const receive = (_: string[]) => {
+                                let a: string = JSON.parse(args[0]);
+                                res(a);
+                            }
+                            this.callMethod("Test", [a], receive, rej);
+                        })
 
-                   */
+                     */
 }

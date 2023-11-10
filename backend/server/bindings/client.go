@@ -8,10 +8,10 @@ import (
 	"strings"
 )
 
-var markerImportsStart = []byte("// %IMPORTS:START%\n")
-var markerImportsEnd = []byte("// %IMPORTS:END%\n")
-var markerMethodsStart = []byte("// %METHODS:START%\n")
-var markerMethodsEnd = []byte("// %METHODS:END%\n")
+var markerImportsStart = []byte("// %IMPORTS:START%")
+var markerImportsEnd = []byte("// %IMPORTS:END%")
+var markerMethodsStart = []byte("// %METHODS:START%")
+var markerMethodsEnd = []byte("// %METHODS:END%")
 
 var clientPath = filepath.Join("frontend", "src", "lib", "api", "Client.ts")
 
@@ -35,10 +35,12 @@ func generateClient(summary Summary) error {
 	generated := bytes.Join([][]byte{
 		beforeImports,
 		markerImportsStart,
+		{'\n'},
 		imports,
 		markerImportsEnd,
 		beforeMethods,
 		markerMethodsStart,
+		{'\n'},
 		methods,
 		markerMethodsEnd,
 		afterMethods,
