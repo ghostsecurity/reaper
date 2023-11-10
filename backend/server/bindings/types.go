@@ -123,9 +123,8 @@ func generateStruct(typ PackageType, cache map[string]struct{}) ([]byte, error) 
 			continue
 		}
 		parts := strings.Split(jt, ",")
-		name := field.Name
-		name = parts[0]
-		if name == "-" {
+		name := parts[0]
+		if name == "-" || name == "" {
 			continue
 		}
 		tsType, err := (&converter{}).convertType(field.Type, typ.Go.PkgPath())
