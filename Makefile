@@ -4,7 +4,7 @@ default: build
 .PHONY: clean
 clean:
 	rm -rf build/bin || true
-	rm -rf frontend/dist || true
+	rm -rf frontend/dist/* || true
 
 .PHONY: test
 test: test-go test-js

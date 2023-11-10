@@ -14,4 +14,4 @@ jobs:
         with:
           go-version: '1.19'
           cache: false
-      - run: mkdir -p frontend/dist && make lint-go
+      - run: make lint-go
