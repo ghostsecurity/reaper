@@ -58,7 +58,7 @@ jobs:
       - name: build
         run: |
           make build-bindings build-js
-          go build -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${W_VERSION}' -X 'github.com/ghostsecurity/reaper/version.Date=$(date)' -s -w" -o ${W_BIN}
+          go build -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${W_VERSION}' -X 'github.com/ghostsecurity/reaper/version.Date=$(date)' -s -w" -o ${W_BIN} ./cmd/reaper
 
       - name: move artifact
         run: |
