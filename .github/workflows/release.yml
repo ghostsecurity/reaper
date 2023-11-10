@@ -28,9 +28,6 @@ jobs:
           cache: true
           cache-dependency-path: go.sum
 
-      - name: dist
-        run: mkdir -p dist
-
       - name: set arch
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -60,7 +57,7 @@ jobs:
 
       - name: build
         run: |
-          make build-bindings
+          make build-bindings build-js
           go build -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${W_VERSION}' -X 'github.com/ghostsecurity/reaper/version.Date=$(date)' -s -w" -o ${W_BIN}
 
       - name: move artifact

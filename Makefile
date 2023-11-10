@@ -43,11 +43,11 @@ build: clean build-bindings build-js
 
 .PHONY: install
 install: build
-	go install .
+	go install ./cmd/reaper
 
 .PHONY: run
 run: build
-	go run .
+	go run ./cmd/reaper
 
 .PHONY: fix
 fix:

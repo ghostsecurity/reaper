@@ -16,4 +16,4 @@ jobs:
           go-version: '1.19'
           cache: true
       - name: Run Go tests
-        run: make test-go
+        run: mkdir -p frontend/dist && make test-go
