@@ -1,109 +1,34 @@
-name: release
+name: goreleaser
 
 on:
-  pull_request:
   push:
     tags:
-      - v*
+      - '*'
+
+permissions:
+  contents: write
 
 jobs:
-  build:
-    name: build
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ macos-latest, windows-latest, ubuntu-latest ]
-        arch: [ amd64, arm64 ]
-        exclude:
-          - os: ubuntu-latest
-            arch: arm64
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-go@v3
-        with:
-          go-version-file: go.mod
-          cache: true
-          cache-dependency-path: go.sum
-
-      - name: set arch
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          echo "GOARCH=${{ matrix.arch }}" >> $GITHUB_ENV
-          echo "GOHOSTARCH=amd64" >> $GITHUB_ENV
-
-      - name: prep vars
-        if: matrix.os == 'windows-latest'
-        run: |
-          echo "W_OS=windows" >> $env:GITHUB_ENV
-          echo "W_ARCH=${{ matrix.arch }}" >> $env:GITHUB_ENV
-          echo "W_PLATFORM=windows/${{ matrix.arch }}" >> $env:GITHUB_ENV
-          echo "W_VERSION=$(git describe --always --tags)" >> $env:GITHUB_ENV
-          echo "W_BIN=reaper.exe" >> $env:GITHUB_ENV
-
-      - name: prep vars
-        if: matrix.os != 'windows-latest'
-        run: |
-          OS=${{ matrix.os }}
-          [[ "$OS" = "macos-latest" ]] && OS=darwin
-          [[ "$OS" = "ubuntu-latest" ]] && OS=linux
-          echo W_OS=${OS} >> $GITHUB_ENV
-          echo W_ARCH=${{ matrix.arch }} >> $GITHUB_ENV
-          echo "W_PLATFORM=${OS}/${{ matrix.arch }}" >> $GITHUB_ENV
-          echo "W_VERSION=$(git describe --always --tags)" >> $GITHUB_ENV
-          echo "W_BIN=reaper" >> $GITHUB_ENV
-
-      - name: build
-        if: matrix.os != 'windows-latest'
-        run: |
-          make build-bindings build-js
-          go build -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${W_VERSION}' -X 'github.com/ghostsecurity/reaper/version.Date=$(date)' -s -w" -o ${W_BIN} ./cmd/reaper
-
-      - name: build
-        if: matrix.os == 'windows-latest'
-        run: |
-          make build-bindings build-js
-          go build -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${W_VERSION}' -X 'github.com/ghostsecurity/reaper/version.Date=$(date)' -s -w" -o ${W_BIN} .\cmd\reaper
-          
-      - name: move artifact
-        run: |
-          mkdir -p release
-          cp '${{ env.W_BIN }}' release/$(basename '${{ env.W_BIN }}' | sed s/reaper/reaper-${{ env.W_OS }}-${{ env.W_ARCH }}/g)
-          ls release/
-      - name: cache artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ env.W_OS }}-${{ matrix.arch }}-${{github.run_id}}
-          path: release
-  publish:
-    needs: build
-    name: publish
+  goreleaser:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - uses: actions/checkout@v3
+      -
+        name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - run: mkdir -p release || true
-      - uses: actions/download-artifact@v3
+      -
+        name: Set up Go
+        uses: actions/setup-go@v4
+      -
+        name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v5
         with:
-          path: release/
-      - run: |
-          ls release/
-          find ./release -name 'reaper-*' -exec chmod +x {} \;
-      - name: create changelog
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          git log $(git describe --abbrev=0 --tags `git rev-list --tags --skip=1 --max-count=1` || git rev-list --max-parents=0 HEAD)..HEAD --oneline --no-color 2>&1 | sed 's/^[^ ]* /- /' | grep -v '^- test:' | grep -v '^- docs:' | grep -v '^- build:' | tee changelog.md
-      - name: github release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          body_path: changelog.md
-          files: |
-            release/*/*
-
-
+          # either 'goreleaser' (default) or 'goreleaser-pro'
+          distribution: goreleaser
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Your GoReleaser Pro key, if you are using the 'goreleaser-pro' distribution
+          # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
