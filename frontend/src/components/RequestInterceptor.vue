@@ -1,41 +1,41 @@
 <script lang="ts" setup>
-import {PropType, ref, watch} from 'vue'
-import {HandRaisedIcon} from '@heroicons/vue/20/solid'
+import { PropType, ref, watch } from 'vue'
+import { HandRaisedIcon } from '@heroicons/vue/20/solid'
 import IDE from './Http/IDE.vue'
-import Client from "../lib/api/Client";
-import {HttpRequest} from "../lib/api/packaging";
+import Client from '../lib/api/Client'
+import { HttpRequest } from '../lib/api/packaging'
 
 const props = defineProps(
-    {
-      emptyTitle: {type: String, required: false, default: 'Nothing intercepted yet.'},
-      emptyMessage: {
-        type: String,
-        required: false,
-        default: 'Configure your interception rules and start intercepting requests.',
-      },
-      emptyIcon: {type: Object, required: false, default: HandRaisedIcon},
-      request: {type: Object as PropType<HttpRequest | null>, required: false, default: null},
-      previous: {type: Object as PropType<HttpRequest | null>, required: false, default: null},
-      count: {type: Number, required: false, default: 0},
-      client: {type: Object as PropType<Client>, required: true},
+  {
+    emptyTitle: { type: String, required: false, default: 'Nothing intercepted yet.' },
+    emptyMessage: {
+      type: String,
+      required: false,
+      default: 'Configure your interception rules and start intercepting requests.',
     },
+    emptyIcon: { type: Object, required: false, default: HandRaisedIcon },
+    request: { type: Object as PropType<HttpRequest | null>, required: false, default: null },
+    previous: { type: Object as PropType<HttpRequest | null>, required: false, default: null },
+    count: { type: Number, required: false, default: 0 },
+    client: { type: Object as PropType<Client>, required: true },
+  },
 )
 
 const req = ref<HttpRequest | null>(props.request)
 const previous = ref<HttpRequest | null>(props.previous)
 
 watch(
-    () => props.request,
-    () => {
-      req.value = props.request
-    },
+  () => props.request,
+  () => {
+    req.value = props.request
+  },
 )
 
 watch(
-    () => props.previous,
-    () => {
-      previous.value = props.previous
-    },
+  () => props.previous,
+  () => {
+    previous.value = props.previous
+  },
 )
 
 const writeActions = new Map<string, string>([

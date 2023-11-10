@@ -1,19 +1,19 @@
 <script lang="ts" setup>
-import {PropType} from 'vue'
-import {TransitionChild, TransitionRoot, Dialog, DialogPanel} from '@headlessui/vue'
+import { PropType } from 'vue'
+import { TransitionChild, TransitionRoot, Dialog, DialogPanel } from '@headlessui/vue'
 import SettingsComponent from './SettingsEditor.vue'
-import {Settings} from "../lib/api/settings";
-import {VersionInfo} from "../lib/api/api";
-import Client from "../lib/api/Client";
+import { Settings } from '../lib/api/settings'
+import { VersionInfo } from '../lib/api/api'
+import Client from '../lib/api/Client'
 
 const props = defineProps({
   show: {
     type: Boolean,
     required: true,
   },
-  settings: {type: Object as PropType<Settings>, required: true},
-  version: {type: Object as PropType<VersionInfo | null>, required: true},
-  client: {type: Object as PropType<Client>, required: true},
+  settings: { type: Object as PropType<Settings>, required: true },
+  version: { type: Object as PropType<VersionInfo | null>, required: true },
+  client: { type: Object as PropType<Client>, required: true },
 })
 
 const emit = defineEmits(['save', 'close'])

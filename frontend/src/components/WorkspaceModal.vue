@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import {PropType} from 'vue'
-import {TransitionChild, TransitionRoot, Dialog, DialogPanel} from '@headlessui/vue'
+import { PropType } from 'vue'
+import { TransitionChild, TransitionRoot, Dialog, DialogPanel } from '@headlessui/vue'
 import WorkspaceEditor from './WorkspaceEditor.vue'
-import {Workspace} from '../lib/api/workspace'
+import { Workspace } from '../lib/api/workspace'
 
 defineProps({
-  show: {type: Boolean, required: true},
-  ws: {type: Object as PropType<Workspace>, required: true},
+  show: { type: Boolean, required: true },
+  ws: { type: Object as PropType<Workspace>, required: true },
 })
 
 const emit = defineEmits(['save', 'close'])

@@ -10,10 +10,10 @@ import (
 	"github.com/ghostsecurity/reaper/backend/server/api"
 )
 
-var markerImportsStart = []byte("//%IMPORTS:START%\n")
-var markerImportsEnd = []byte("//%IMPORTS:END%\n")
-var markerMethodsStart = []byte("//%METHODS:START%\n")
-var markerMethodsEnd = []byte("//%METHODS:END%\n")
+var markerImportsStart = []byte("// %IMPORTS:START%\n")
+var markerImportsEnd = []byte("// %IMPORTS:END%\n")
+var markerMethodsStart = []byte("// %METHODS:START%\n")
+var markerMethodsEnd = []byte("// %METHODS:END%\n")
 
 const clientPath = "./frontend/src/lib/api/Client.ts"
 
@@ -87,7 +87,7 @@ func generateClientMethods() ([]byte, []byte, []PackageType, error) {
 
 			_, _ = fmt.Fprintf(buffer, `    %s(%s): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            const receive = (args: string[]) => {
+            const receive = () => {
                 resolve();
             }
             this.callMethod("%[1]s", [%[3]s], receive, reject);
@@ -226,11 +226,6 @@ func (c *converter) convertType(t reflect.Type, parentPkgPath string) (*PackageT
 	t = simplifyType(t)
 	parts := strings.Split(t.String(), ".")
 	typeName := parts[len(parts)-1]
-
-	switch typeName {
-	case "Regexp":
-		typeName = "RegExp"
-	}
 
 	pt := PackageType{
 		Name: typeName,

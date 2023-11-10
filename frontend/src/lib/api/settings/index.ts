@@ -1,4 +1,3 @@
-
 export interface Settings {
   ca_cert: Uint8Array
   ca_key: Uint8Array
@@ -7,4 +6,3 @@ export interface Settings {
   log_level: number
   dark_mode: boolean
 }
-

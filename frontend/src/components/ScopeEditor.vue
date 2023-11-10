@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import {reactive, ref, PropType} from 'vue'
-import {Scope, Rule} from '../lib/api/workspace'
+import { reactive, ref, PropType } from 'vue'
+import { Scope, Rule } from '../lib/api/workspace'
 import RulesEditor from './RulesEditor.vue'
 
 const props = defineProps({
@@ -29,12 +29,12 @@ const emit = defineEmits(['save'])
 
 function saveInclude(include: Rule[]) {
   advancedScope.include = include
-  emit('save', {...advancedScope})
+  emit('save', { ...advancedScope })
 }
 
 function saveExclude(exclude: Rule[]) {
   advancedScope.exclude = exclude
-  emit('save', {...advancedScope})
+  emit('save', { ...advancedScope })
 }
 
 function saveSimple() {
@@ -60,7 +60,7 @@ function saveSimple() {
         ports: [443, 80],
       } as Rule,
   )
-  emit('save', {...simpleScope})
+  emit('save', { ...simpleScope })
 }
 
 function escapeForRegExp(target: string) {

@@ -1,25 +1,25 @@
 <script lang="ts" setup>
-import {PropType, ref, watch} from 'vue'
-import {PlusIcon, FolderIcon, BeakerIcon} from '@heroicons/vue/20/solid'
-import {WorkflowM} from '../../lib/api/workflow';
-import {Workspace} from '../../lib/api/workspace';
+import { PropType, ref, watch } from 'vue'
+import { PlusIcon, FolderIcon, BeakerIcon } from '@heroicons/vue/20/solid'
+import { saveAs } from 'file-saver'
+import { useFileDialog } from '@vueuse/core/index'
+import { WorkflowM } from '../../lib/api/workflow'
+import { Workspace } from '../../lib/api/workspace'
 import List from './WorkflowList.vue'
 import InputBox from '../InputBox.vue'
 import Editor from './WorkflowEditor.vue'
-import Client from "../../lib/api/Client";
-import {saveAs} from "file-saver";
-import {useFileDialog} from "@vueuse/core/index";
-import {VarStorageM} from "../../lib/api/node";
+import Client from '../../lib/api/Client'
+import { VarStorageM } from '../../lib/api/node'
 
 const props = defineProps({
-  ws: {type: Object as PropType<Workspace>, required: true},
-  selectedWorkflowId: {type: String, required: false, default: ''},
-  runningWorkflowId: {type: String, required: false, default: ''},
-  statuses: {type: Object as PropType<Map<string, string>>, required: true},
-  stdoutLines: {type: Array as PropType<string[]>, required: true},
-  stderrLines: {type: Array as PropType<string[]>, required: true},
-  activityLines: {type: Array as PropType<string[]>, required: true},
-  client: {type: Object as PropType<Client>, required: true},
+  ws: { type: Object as PropType<Workspace>, required: true },
+  selectedWorkflowId: { type: String, required: false, default: '' },
+  runningWorkflowId: { type: String, required: false, default: '' },
+  statuses: { type: Object as PropType<Map<string, string>>, required: true },
+  stdoutLines: { type: Array as PropType<string[]>, required: true },
+  stderrLines: { type: Array as PropType<string[]>, required: true },
+  activityLines: { type: Array as PropType<string[]>, required: true },
+  client: { type: Object as PropType<Client>, required: true },
 })
 
 const safe = ref<Workspace>(JSON.parse(JSON.stringify(props.ws)))
@@ -47,7 +47,7 @@ const rightPanel = ref()
 
 const creating = ref(false)
 const currentFlow = ref<WorkflowM | null>(safe.value.workflows.find(
-    wf => wf.id === props.selectedWorkflowId,
+  wf => wf.id === props.selectedWorkflowId,
 ) ?? null)
 
 const emit = defineEmits(['select', 'save', 'run', 'stop', 'clean'])
@@ -105,20 +105,19 @@ function renameWorkflow(id: string, name: string) {
 }
 
 function importWorkflow() {
-
-  const {files, open, reset, onChange} = useFileDialog()
-  open({multiple: false, directory: false, accept: '.atk'})
+  const { files, open, reset, onChange } = useFileDialog()
+  open({ multiple: false, directory: false, accept: '.atk' })
   onChange((files: FileList) => {
     if (files.length === 0) {
       return
     }
-    const reader = new FileReader();
+    const reader = new FileReader()
     reader.onload = function () {
-      let w: WorkflowM = JSON.parse(reader.result as string)
+      const w: WorkflowM = JSON.parse(reader.result as string)
       safe.value.workflows.push(w)
       saveWorkspace(safe.value)
       emit('select', w.id)
-    };
+    }
     reader.readAsText(files[0])
   })
 }
@@ -128,8 +127,8 @@ function exportWorkflow(id: string) {
   if (!wf) {
     return
   }
-  let data = new TextEncoder().encode(JSON.stringify(wf))
-  saveAs(new Blob([data.buffer]), id + '.atk');
+  const data = new TextEncoder().encode(JSON.stringify(wf))
+  saveAs(new Blob([data.buffer]), `${id}.atk`)
   emit('select', id)
 }
 

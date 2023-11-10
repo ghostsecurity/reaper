@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import {PropType} from 'vue'
-import {ChevronDownIcon, Cog6ToothIcon, ArrowsRightLeftIcon} from '@heroicons/vue/20/solid'
-import {Menu, MenuButton, MenuItem, MenuItems} from '@headlessui/vue'
-import {Workspace} from "../lib/api/workspace";
+import { PropType } from 'vue'
+import { ChevronDownIcon, Cog6ToothIcon, ArrowsRightLeftIcon } from '@heroicons/vue/20/solid'
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
+import { Workspace } from '../lib/api/workspace'
 
 const props = defineProps({
-  ws: {type: Object as PropType<Workspace>, required: true},
+  ws: { type: Object as PropType<Workspace>, required: true },
 })
 
 const emit = defineEmits(['switch', 'edit'])

@@ -1,30 +1,29 @@
 <script lang="ts" setup>
-import {InformationCircleIcon, PaintBrushIcon, ServerStackIcon, ShieldCheckIcon} from '@heroicons/vue/20/solid'
-import {Switch, SwitchDescription, SwitchGroup, SwitchLabel} from '@headlessui/vue'
-import {PropType, reactive, ref} from 'vue'
+import { InformationCircleIcon, PaintBrushIcon, ServerStackIcon, ShieldCheckIcon } from '@heroicons/vue/20/solid'
+import { Switch, SwitchDescription, SwitchGroup, SwitchLabel } from '@headlessui/vue'
+import { PropType, reactive, ref } from 'vue'
+import { saveAs } from 'file-saver'
 import cowbell from '../assets/images/cowbell.png'
-import {saveAs} from 'file-saver';
 
-import {Settings} from '../lib/api/settings'
+import { Settings } from '../lib/api/settings'
 
 import ButtonConfirm from './Shared/ButtonConfirm.vue'
 import ButtonCancel from './Shared/ButtonCancel.vue'
 import ButtonNetrual from './Shared/ButtonNeutral.vue'
-import {VersionInfo} from "../lib/api/api";
-import Client from "../lib/api/Client";
-import * as string_decoder from "string_decoder";
+import { VersionInfo } from '../lib/api/api'
+import Client from '../lib/api/Client'
 
 const props = defineProps({
-  settings: {type: Object as PropType<Settings>, required: true},
-  version: {type: Object as PropType<VersionInfo | null>, required: true},
-  client: {type: Object as PropType<Client>, required: true},
+  settings: { type: Object as PropType<Settings>, required: true },
+  version: { type: Object as PropType<VersionInfo | null>, required: true },
+  client: { type: Object as PropType<Client>, required: true },
 })
 
 const tabs = [
-  {name: 'Display', icon: PaintBrushIcon, id: 'display'},
-  {name: 'Certificates', icon: ShieldCheckIcon, id: 'certs'},
-  {name: 'Proxy', icon: ServerStackIcon, id: 'proxy'},
-  {name: 'About', icon: InformationCircleIcon, id: 'about'},
+  { name: 'Display', icon: PaintBrushIcon, id: 'display' },
+  { name: 'Certificates', icon: ShieldCheckIcon, id: 'certs' },
+  { name: 'Proxy', icon: ServerStackIcon, id: 'proxy' },
+  { name: 'About', icon: InformationCircleIcon, id: 'about' },
 ]
 const openTab = ref('display')
 const modifiedSettings = reactive(props.settings)
@@ -36,7 +35,7 @@ function setDarkMode(darkMode: boolean) {
 }
 
 function exportCA() {
-  saveAs(new Blob([props.settings.ca_cert.buffer]), 'cert.crt');
+  saveAs(new Blob([props.settings.ca_cert.buffer]), 'cert.crt')
 }
 
 /**

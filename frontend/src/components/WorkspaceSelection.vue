@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import {PropType, reactive, ref} from 'vue'
-import {PlusCircleIcon, BriefcaseIcon, NoSymbolIcon, PlusIcon, EllipsisVerticalIcon} from '@heroicons/vue/20/solid'
-import {Menu, MenuButton, MenuItem, MenuItems} from '@headlessui/vue'
+import { PropType, reactive, ref } from 'vue'
+import { PlusCircleIcon, BriefcaseIcon, NoSymbolIcon, PlusIcon, EllipsisVerticalIcon } from '@heroicons/vue/20/solid'
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import ScopeEditor from './ScopeEditor.vue'
 import ConfirmDialog from './ConfirmDialog.vue'
-import {Scope, Workspace} from "../lib/api/workspace";
+import { Scope, Workspace } from '../lib/api/workspace'
 
 const props = defineProps({
   workspaces: {

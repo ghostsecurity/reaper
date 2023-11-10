@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import {ref, PropType} from 'vue'
-import {Workspace, Rule} from '../lib/api/workspace'
+import { ref, PropType } from 'vue'
+import { Rule } from '../lib/api/workspace'
 import RuleEditor from './RuleEditor.vue'
 
 const props = defineProps({

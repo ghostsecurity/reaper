@@ -7,8 +7,8 @@ import {
   CodeBracketSquareIcon,
   PhotoIcon,
 } from '@heroicons/vue/20/solid'
-import {PropType, reactive, ref, watch} from 'vue'
-import {StructureNode} from "../lib/api/workspace";
+import { PropType, reactive, ref, watch } from 'vue'
+import { StructureNode } from '../lib/api/workspace'
 
 const props = defineProps({
   nodes: {
@@ -38,19 +38,19 @@ const lastShrink = ref(0)
 const emit = defineEmits(['select'])
 
 watch(
-    () => props.shrinkIndex,
-    (newVal: number) => {
-      if (newVal <= lastShrink.value) {
-        return
-      }
-      lastShrink.value = newVal
-      if (props.hasParent) {
-        props.nodes.forEach(node => {
-          visible.set(node.name, false)
-        })
-      }
-    },
-    {immediate: true},
+  () => props.shrinkIndex,
+  (newVal: number) => {
+    if (newVal <= lastShrink.value) {
+      return
+    }
+    lastShrink.value = newVal
+    if (props.hasParent) {
+      props.nodes.forEach(node => {
+        visible.set(node.name, false)
+      })
+    }
+  },
+  { immediate: true },
 )
 
 function toggle(name: string) {

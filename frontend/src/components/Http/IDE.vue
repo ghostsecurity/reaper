@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import {ArrowsPointingInIcon, ArrowsPointingOutIcon, ChevronDownIcon, XMarkIcon} from '@heroicons/vue/20/solid'
-import {computed, PropType, ref, watch} from 'vue'
+import { ArrowsPointingInIcon, ArrowsPointingOutIcon, ChevronDownIcon, XMarkIcon } from '@heroicons/vue/20/solid'
+import { computed, PropType, ref, watch } from 'vue'
 import {
   Listbox,
   ListboxButton,
@@ -11,23 +11,23 @@ import {
   MenuItem,
   MenuItems,
 } from '@headlessui/vue'
-import {Headers} from '../../lib/http'
+import { Headers } from '../../lib/http'
 import CodeEditor from './CodeEditor.vue'
 import KeyValEditor from '../KeyValEditor.vue'
-import Client from "../../lib/api/Client";
-import {HttpRequest, HttpResponse, KeyValue} from "../../lib/api/packaging";
+import Client from '../../lib/api/Client'
+import { HttpRequest, HttpResponse, KeyValue } from '../../lib/api/packaging'
 
 const props = defineProps({
-  request: {type: Object as PropType<HttpRequest>, required: true},
+  request: { type: Object as PropType<HttpRequest>, required: true },
   actions: {
     type: Object as PropType<Map<string, string>>,
     required: false,
     default: new Map<string, string>([['send', 'Send']]),
   },
-  readonly: {type: Boolean, default: true},
-  fullscreen: {type: Boolean, default: false},
-  showButtons: {type: Boolean, default: true},
-  client: {type: Object as PropType<Client>, required: true},
+  readonly: { type: Boolean, default: true },
+  fullscreen: { type: Boolean, default: false },
+  showButtons: { type: Boolean, default: true },
+  client: { type: Object as PropType<Client>, required: true },
 })
 
 const emit = defineEmits(['action', 'close', 'fullscreen', 'request-update', 'create-workflow-from-request'])
@@ -35,20 +35,20 @@ const defaultAction = ref(props.actions.keys().next().value)
 const extraActions = ref([...props.actions.keys()].filter(key => key !== defaultAction.value))
 
 watch(
-    () => props.actions,
-    () => {
-      defaultAction.value = props.actions.keys().next().value
-      extraActions.value = [...props.actions.keys()].filter(key => key !== defaultAction.value)
-    },
+  () => props.actions,
+  () => {
+    defaultAction.value = props.actions.keys().next().value
+    extraActions.value = [...props.actions.keys()].filter(key => key !== defaultAction.value)
+  },
 )
 
 const selectedMethod = ref(props.request.method)
 
 watch(
-    () => props.request,
-    () => {
-      selectedMethod.value = props.request.method
-    },
+  () => props.request,
+  () => {
+    selectedMethod.value = props.request.method
+  },
 )
 
 const methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE']
@@ -137,7 +137,7 @@ function updateURL(u: string) {
     clone.scheme = url.protocol
     clone.query = [] as KeyValue[]
     url.searchParams.forEach((value: string, key: string) => {
-      clone.query.push({key: key, value: value})
+      clone.query.push({ key, value })
     })
     clone.query_string = buildQueryString(clone.query)
   } catch (e) {
@@ -178,7 +178,7 @@ function cloneTags(tags: Array<string>): Array<string> {
 function cloneKeyValues(kv: KeyValue[]): KeyValue[] {
   const clone: KeyValue[] = []
   for (let i = 0; i < kv.length; i += 1) {
-    clone.push({key: kv[i].key, value: kv[i].value})
+    clone.push({ key: kv[i].key, value: kv[i].value })
   }
   return clone
 }

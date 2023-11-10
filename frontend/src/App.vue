@@ -1,20 +1,20 @@
 <script lang="ts" setup>
+import { onBeforeMount, reactive, ref } from 'vue'
+import { FunnelIcon, FolderIcon, CogIcon, BriefcaseIcon } from '@heroicons/vue/24/outline'
 import Client from './lib/api/Client'
-import {onBeforeMount, reactive, ref} from 'vue'
-import {FunnelIcon, FolderIcon, CogIcon, BriefcaseIcon} from '@heroicons/vue/24/outline'
-import {Settings} from './lib/api/settings'
+import { Settings } from './lib/api/settings'
 import setDarkMode from './lib/theme'
-import {Criteria} from './lib/Criteria/Criteria'
+import { Criteria } from './lib/Criteria/Criteria'
 import TreeStructure from './components/TreeStructure.vue'
 import AppDashboard from './components/AppDashboard.vue'
 import SettingsModal from './components/SettingsModal.vue'
 import WorkspaceModal from './components/WorkspaceModal.vue'
 import WorkspaceSelection from './components/WorkspaceSelection.vue'
-import {HttpRequest} from './lib/api/packaging'
-import {VersionInfo} from "./lib/api/api";
-import {Workspace, StructureNode, Group, Request} from "./lib/api/workspace";
-import {WorkflowM} from "./lib/api/workflow";
-import MessageDialog from "./components/MessageDialog.vue";
+import { HttpRequest } from './lib/api/packaging'
+import { VersionInfo } from './lib/api/api'
+import { Workspace, StructureNode, Group, Request } from './lib/api/workspace'
+import { WorkflowM } from './lib/api/workflow'
+import MessageDialog from './components/MessageDialog.vue'
 
 const settings = reactive({} as Settings)
 const currentWorkspace = reactive({} as Workspace)
@@ -33,10 +33,9 @@ const proxyAddress = ref('')
 const proxyMessage = ref('Starting...')
 const versionInfo = ref(<VersionInfo | null>null)
 const savedRequestIds = ref([] as string[])
-const alertMessage = ref("")
+const alertMessage = ref('')
 
-let c = new Client()
-
+const client = new Client()
 
 function resetSavedIDs() {
   const list = [] as string[]
@@ -49,24 +48,24 @@ function resetSavedIDs() {
 }
 
 onBeforeMount(() => {
-  c.Init().then(() => {
-    c.OnEvent('NotifyUser', (msg: string) => {
+  client.Init().then(() => {
+    client.OnEvent('NotifyUser', (msg: string) => {
       alertMessage.value = msg
     })
-    c.OnEvent('Close', () => {
+    client.OnEvent('Close', () => {
       document.location.reload()
     })
-    c.GetSettings().then((stngs: Settings) => {
+    client.GetSettings().then((stngs: Settings) => {
       Object.assign(settings, stngs)
       loadedSettings.value = true
       setDarkMode(settings.dark_mode)
-      c.GetWorkspaces().then(spaces => {
+      client.GetWorkspaces().then(spaces => {
         workspaces.value = spaces
         loadedWorkspaces.value = true
-        c.GetVersionInfo().then((info: VersionInfo) => {
+        client.GetVersionInfo().then((info: VersionInfo) => {
           versionInfo.value = info
           loadedVersion.value = true
-          c.GetWorkspace().then((ws: Workspace | null) => {
+          client.GetWorkspace().then((ws: Workspace | null) => {
             if (!ws) {
               return
             }
@@ -78,10 +77,10 @@ onBeforeMount(() => {
         })
       })
     })
-    c.OnEvent("TreeUpdate", (n: Array<StructureNode>) => {
+    client.OnEvent('TreeUpdate', (n: Array<StructureNode>) => {
       nodes.value = n
     })
-    c.OnEvent("ProxyStatusChange", (up: boolean, addr: string, msg: string) => {
+    client.OnEvent('ProxyStatusChange', (up: boolean, addr: string, msg: string) => {
       proxyStatus.value = up
       proxyAddress.value = addr
       proxyMessage.value = msg
@@ -98,7 +97,7 @@ function closeSettings() {
 }
 
 function saveSettings(s: Settings) {
-  c.SaveSettings(s)
+  client.SaveSettings(s)
   closeSettings()
 }
 
@@ -114,7 +113,7 @@ function saveWorkspace(ws: Workspace) {
   // buffer saves to 3 seconds after last activity
   clearTimeout(saveTimeout)
   saveTimeout = setTimeout(() => {
-    c.SaveWorkspace(currentWorkspace)
+    client.SaveWorkspace(currentWorkspace)
   }, 1000) as unknown as number
   closeWorkspaceConfig()
 }
@@ -153,7 +152,7 @@ function prepareWorkspace(ws: Workspace) {
     ws.workflows = [] /* eslint-disable-line */
   }
   if (ws.collection.groups.length === 0) {
-    c.GenerateID().then(id => {
+    client.GenerateID().then(id => {
       ws.collection.groups.push(
           {
             id,
@@ -168,9 +167,9 @@ function prepareWorkspace(ws: Workspace) {
 }
 
 function selectWorkspace(ws: Workspace) {
-  c.StopProxy().then(() => {
-    c.SetWorkspace(ws).then(() => {
-      c.StartProxy().then(() => {
+  client.StopProxy().then(() => {
+    client.SetWorkspace(ws).then(() => {
+      client.StartProxy().then(() => {
         prepareWorkspace(ws)
         nodes.value = ws.tree.root.children
         Object.assign(currentWorkspace, ws)
@@ -182,7 +181,7 @@ function selectWorkspace(ws: Workspace) {
 }
 
 function selectWorkspaceById(id: string) {
-  c.LoadWorkspace(id).then((ws: Workspace | null) => {
+  client.LoadWorkspace(id).then((ws: Workspace | null) => {
     if (ws === null) {
       return
     }
@@ -191,7 +190,7 @@ function selectWorkspaceById(id: string) {
 }
 
 function createWorkspace(ws: Workspace) {
-  c.CreateWorkspace(ws).then((created: Workspace | null) => {
+  client.CreateWorkspace(ws).then((created: Workspace | null) => {
     if (created === null) {
       return
     }
@@ -202,22 +201,22 @@ function createWorkspace(ws: Workspace) {
 function switchWorkspace() {
   loadedWorkspaces.value = false
   hasWorkspace.value = false
-  c.GetWorkspaces().then(spaces => {
+  client.GetWorkspaces().then(spaces => {
     workspaces.value = spaces
     loadedWorkspaces.value = true
   })
 }
 
 function editWorkspace(id: string) {
-  c.LoadWorkspace(id).then(ws => {
+  client.LoadWorkspace(id).then(ws => {
     Object.assign(currentWorkspace, ws)
     showWorkspaceConfig()
   })
 }
 
 function deleteWorkspace(id: string) {
-  c.DeleteWorkspace(id).then(() => {
-    c.GetWorkspaces().then(spaces => {
+  client.DeleteWorkspace(id).then(() => {
+    client.GetWorkspaces().then(spaces => {
       workspaces.value = spaces
       loadedWorkspaces.value = true
     })
@@ -226,8 +225,8 @@ function deleteWorkspace(id: string) {
 
 function setRequestGroup(request: Request, groupID: string, nextID: string) {
   const oldGroup = currentWorkspace.collection.groups.find(
-      // TODO: maybe this can be cleaned up?
-      // eslint-disable-next-line
+    // TODO: maybe this can be cleaned up?
+    // eslint-disable-next-line
       (g: Group) => (g.requests.find((r: Request) => r.id === request.id) as Request | undefined) !== undefined,
   )
   if (oldGroup !== undefined) {
@@ -248,10 +247,10 @@ function setRequestGroup(request: Request, groupID: string, nextID: string) {
 }
 
 function createRequestGroup(name: string) {
-  c.GenerateID().then(id => {
+  client.GenerateID().then(id => {
     currentWorkspace.collection.groups.splice(
-        0,
-        0,
+      0,
+      0,
         {
           id,
           name,
@@ -267,8 +266,8 @@ function saveRequest(request: HttpRequest, groupID: string) {
     // TODO: lint fix?
     ;[group] = currentWorkspace.collection.groups // eslint-disable-line
   }
-  c.GenerateID().then(id => {
-    const wrapped = {id: id, name: ''} as Request
+  client.GenerateID().then(id => {
+    const wrapped = { id, name: '' } as Request
     wrapped.inner = JSON.parse(JSON.stringify(request))
     wrapped.inner.response = null
     if (group) {
@@ -285,7 +284,7 @@ function saveRequest(request: HttpRequest, groupID: string) {
 function unsaveRequest(request: HttpRequest | Request) {
   const id = 'inner' in request ? request.inner.id : (request as unknown as HttpRequest).id
   const group = currentWorkspace.collection.groups.find(
-      (g: Group) => (g.requests.find((r: Request) => r.inner.id === id) as Request | undefined) !== undefined,
+    (g: Group) => (g.requests.find((r: Request) => r.inner.id === id) as Request | undefined) !== undefined,
   )
   if (group) {
     group.requests = group.requests.filter((item: Request) => item.inner.id !== id)
@@ -326,21 +325,21 @@ function reorderGroup(fromID: string, toID: string) {
 
 function duplicateRequest(request: Request) {
   const group = currentWorkspace.collection.groups.find(
-      (g: Group) =>
-          // TODO: maybe this can be cleaned up?
-          // eslint-disable-next-line
+    (g: Group) =>
+    // TODO: maybe this can be cleaned up?
+    // eslint-disable-next-line
           (g.requests.find((r: Request) => r.id === request.id) as Request | undefined) !== undefined,
   )
   if (group === undefined) {
     return
   }
   const dupName = request.name.endsWith(' (copy)') ? request.name : `${request.name} (copy)`
-  c.GenerateID().then(id => {
+  client.GenerateID().then(id => {
     const wrapped = {
       id,
       name: dupName,
     } as Request
-    wrapped.inner = {...request.inner}
+    wrapped.inner = { ...request.inner }
     wrapped.inner.id = id // unlink this from the original request
     group.requests.push(wrapped)
     saveWorkspace(currentWorkspace)
@@ -357,7 +356,9 @@ function deleteRequestGroup(groupId: string) {
     return
   }
   if (group.requests.length > 0) {
-    if (confirm(`The group '${group.name}' contains ${group.requests.length}. Are you sure you want to delete it?`)) {
+    if (window.confirm(
+      `The group '${group.name}' contains ${group.requests.length}. Are you sure you want to delete it?`,
+    )) {
       currentWorkspace.collection.groups = currentWorkspace.collection.groups.filter((g: Group) => g.id !== groupId)
       saveWorkspace(currentWorkspace)
     }
@@ -373,7 +374,8 @@ function renameRequestGroup(groupId: string, name: string) {
 }
 
 function renameRequest(requestId: string, name: string) {
-  const request = currentWorkspace.collection.groups.flatMap((g: Group) => g.requests).find((r: Request) => r.id === requestId)
+  const request = currentWorkspace.collection.groups.flatMap((g: Group) => g.requests)
+    .find((r: Request) => r.id === requestId)
   if (!request) {
     return
   }
@@ -383,7 +385,7 @@ function renameRequest(requestId: string, name: string) {
 const workflowId = ref('')
 
 function createWorkflowFromRequest(request: HttpRequest) {
-  c.CreateWorkflowFromRequest(request).then((w: WorkflowM | null) => {
+  client.CreateWorkflowFromRequest(request).then((w: WorkflowM | null) => {
     if (w === null) {
       return
     }
@@ -394,13 +396,13 @@ function createWorkflowFromRequest(request: HttpRequest) {
 }
 
 function sendRequest(request: HttpRequest) {
-  c.SendRequest(request)
+  client.SendRequest(request)
 }
 </script>
 
 <template>
   <div class="absolute " v-if="alertMessage">
-    <div class="bg-polar-night-1a text-snow-storm-1 p-2 rounded">
+    <div class="rounded bg-polar-night-1a p-2 text-snow-storm-1">
       <MessageDialog :message="alertMessage" @close="alertMessage = ''"/>
     </div>
   </div>
@@ -412,7 +414,7 @@ function sendRequest(request: HttpRequest) {
                     :ws="currentWorkspace"/>
   </div>
   <div v-else class="h-full">
-    <SettingsModal :client="c" :show="isLoaded() && settingsVisible" @close="closeSettings" @save="saveSettings"
+    <SettingsModal :client="client" :show="isLoaded() && settingsVisible" @close="closeSettings" @save="saveSettings"
                    :settings="settings"
                    :version="versionInfo"/>
     <WorkspaceModal :show="isLoaded() && workspaceConfigVisible" @close="closeWorkspaceConfig" @save="saveWorkspace"
@@ -461,7 +463,7 @@ function sendRequest(request: HttpRequest) {
         <p v-else>not implemented yet</p>
       </div>
       <div class="h-full w-3/4 flex-1">
-        <AppDashboard :client="c" :criteria="criteria" :proxy-address="'127.0.0.1:' + settings.proxy_port"
+        <AppDashboard :client="client" :criteria="criteria" :proxy-address="'127.0.0.1:' + settings.proxy_port"
                       :ws="currentWorkspace"
                       :saved-request-ids="savedRequestIds" @save-request="saveRequest" @unsave-request="unsaveRequest"
                       @request-group-change="setRequestGroup" @request-group-create="createRequestGroup"

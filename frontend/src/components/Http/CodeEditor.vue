@@ -1,15 +1,15 @@
 <script lang="ts" setup>
-import {watch, ref, onMounted, PropType} from 'vue'
+import { watch, ref, onMounted, PropType } from 'vue'
 
-import {DocumentDuplicateIcon, SparklesIcon, ArrowPathRoundedSquareIcon} from '@heroicons/vue/24/outline'
-import Client from "../../lib/api/Client";
+import { DocumentDuplicateIcon, SparklesIcon, ArrowPathRoundedSquareIcon } from '@heroicons/vue/24/outline'
+import Client from '../../lib/api/Client'
 
 const props = defineProps({
-  code: {type: String, required: true},
-  readonly: {type: Boolean, required: true},
-  http: {type: Boolean, default: false},
-  mime: {type: String, default: 'text/plain'},
-  client: {type: Object as PropType<Client>, required: true}
+  code: { type: String, required: true },
+  readonly: { type: Boolean, required: true },
+  http: { type: Boolean, default: false },
+  mime: { type: String, default: 'text/plain' },
+  client: { type: Object as PropType<Client>, required: true },
 })
 
 const buffer = ref(props.code)
@@ -22,13 +22,13 @@ const pre = ref()
 const emit = defineEmits(['change'])
 
 watch(
-    () => props.code,
-    () => {
-      buffer.value = props.code
-      const element = textarea.value as HTMLTextAreaElement
-      element.value = buffer.value
-      updateCode()
-    },
+  () => props.code,
+  () => {
+    buffer.value = props.code
+    const element = textarea.value as HTMLTextAreaElement
+    element.value = buffer.value
+    updateCode()
+  },
 )
 
 onMounted(() => {
@@ -83,7 +83,7 @@ function indent() {
   const element = textarea.value as HTMLTextAreaElement
   const start = element.selectionStart
   const end = element.selectionEnd
-  const {value} = element
+  const { value } = element
   const before = value.substring(0, start)
   const after = value.substring(end)
   const insert = '  '

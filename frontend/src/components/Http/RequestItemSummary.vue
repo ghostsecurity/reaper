@@ -1,16 +1,16 @@
 <script lang="ts" setup>
-import {PropType} from 'vue'
-import {EllipsisVerticalIcon} from '@heroicons/vue/20/solid'
-import {Menu, MenuButton, MenuItem, MenuItems} from '@headlessui/vue'
-import {Criteria} from '../../lib/Criteria/Criteria'
-import {HttpRequest} from "../../lib/api/packaging";
+import { PropType } from 'vue'
+import { EllipsisVerticalIcon } from '@heroicons/vue/20/solid'
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
+import { Criteria } from '../../lib/Criteria/Criteria'
+import { HttpRequest } from '../../lib/api/packaging'
 
 defineProps({
-  name: {type: String, required: false, default: ''},
-  request: {type: Object as PropType<HttpRequest>, required: true},
-  showTags: {type: Boolean, required: false, default: true},
-  showResponse: {type: Boolean, required: false, default: true},
-  actions: {type: Object as PropType<Map<string, string>>, required: false, default: () => new Map<string, string>()},
+  name: { type: String, required: false, default: '' },
+  request: { type: Object as PropType<HttpRequest>, required: true },
+  showTags: { type: Boolean, required: false, default: true },
+  showResponse: { type: Boolean, required: false, default: true },
+  actions: { type: Object as PropType<Map<string, string>>, required: false, default: () => new Map<string, string>() },
 })
 
 const emit = defineEmits(['rename', 'action', 'criteria-change'])
@@ -33,8 +33,8 @@ function humanSize(size: number): string {
     maximumSignificantDigits: 2,
     unitDisplay: 'narrow',
   })
-      .format(size)
-      .replace(/([a-zA-z]+)/, ' $1')
+    .format(size)
+    .replace(/([a-zA-z]+)/, ' $1')
 }
 
 function searchTag(tag: string) {

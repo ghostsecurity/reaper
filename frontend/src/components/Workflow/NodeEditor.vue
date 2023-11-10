@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import {useFileDialog} from '@vueuse/core'
-import {computed, PropType, ref, watch} from 'vue'
-import {XMarkIcon, FolderIcon} from '@heroicons/vue/20/solid'
-import {NodeM} from '../../lib/api/workflow'
-import {TransmissionM, Connector, VarStorageM} from '../../lib/api/node'
-import {NodeType, ParentType, NodeTypeName, ChildType} from '../../lib/Workflows'
+import { useFileDialog } from '@vueuse/core'
+import { computed, PropType, ref, watch } from 'vue'
+import { XMarkIcon, FolderIcon } from '@heroicons/vue/20/solid'
+import { NodeM } from '../../lib/api/workflow'
+import { TransmissionM, Connector, VarStorageM } from '../../lib/api/node'
+import { NodeType, ParentType, NodeTypeName, ChildType } from '../../lib/Workflows'
 import IDE from '../Http/IDE.vue'
 import KeyValEditor from '../KeyValEditor.vue'
-import Client from "../../lib/api/Client";
-import {HttpRequest, KeyValue} from "../../lib/api/packaging";
+import Client from '../../lib/api/Client'
+import { HttpRequest, KeyValue } from '../../lib/api/packaging'
 
 interface IMap<T> {
   [index: string]: T;
@@ -20,8 +20,8 @@ interface Choice {
 }
 
 const props = defineProps({
-  node: {type: Object as PropType<NodeM>, required: true},
-  client: {type: Object as PropType<Client>, required: true},
+  node: { type: Object as PropType<NodeM>, required: true },
+  client: { type: Object as PropType<Client>, required: true },
 })
 
 const safe = ref<NodeM>(safeCopy(props.node))
@@ -208,20 +208,20 @@ function updateWordList(field: Connector) {
     return
   }
 
-  const {files, open, reset, onChange} = useFileDialog()
-  open({multiple: false, directory: false})
+  const { open, onChange } = useFileDialog()
+  open({ multiple: false, directory: false })
   onChange((files: FileList) => {
     if (files.length === 0) {
       return
     }
-    const reader = new FileReader();
+    const reader = new FileReader()
     reader.onload = function () {
       if (!safe.value.vars) {
         safe.value.vars = {} as VarStorageM
       }
       safe.value.vars.static[field.name].data = reader.result
       publish()
-    };
+    }
     reader.readAsText(files[0])
   })
 }

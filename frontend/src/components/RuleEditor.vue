@@ -1,16 +1,16 @@
 <script lang="ts" setup>
-import {reactive, ref, PropType} from 'vue'
-import {CheckIcon, XMarkIcon, PencilIcon, TrashIcon} from '@heroicons/vue/20/solid'
-import {Rule} from '../lib/api/workspace'
+import { reactive, ref, PropType } from 'vue'
+import { CheckIcon, XMarkIcon, PencilIcon, TrashIcon } from '@heroicons/vue/20/solid'
+import { Rule } from '../lib/api/workspace'
 
 const props = defineProps({
-  rule: {type: Object as PropType<Rule>, required: true},
-  saved: {type: Boolean, required: false, default: false},
+  rule: { type: Object as PropType<Rule>, required: true },
+  saved: { type: Boolean, required: false, default: false },
 })
 
 const emit = defineEmits(['save', 'cancel', 'remove'])
 
-const modifiedRule = reactive({...props.rule})
+const modifiedRule = reactive({ ...props.rule })
 const editing = ref(!props.saved)
 const savedLocally = ref(props.saved)
 
@@ -19,7 +19,7 @@ function startEdit() {
 }
 
 function save() {
-  emit('save', {...modifiedRule})
+  emit('save', { ...modifiedRule })
   editing.value = false
   savedLocally.value = true
 }
@@ -27,11 +27,11 @@ function save() {
 function cancel() {
   editing.value = false
   Object.assign(modifiedRule, props.rule)
-  emit('cancel', {...props.rule}, savedLocally.value)
+  emit('cancel', { ...props.rule }, savedLocally.value)
 }
 
 function remove() {
-  emit('remove', {...modifiedRule})
+  emit('remove', { ...modifiedRule })
 }
 
 function portsString(): string {
@@ -45,9 +45,9 @@ function changePorts(e: Event) {
     return
   }
   modifiedRule.ports = raw
-      .split(',')
-      .map(port => parseInt(port.trim(), 10))
-      .filter(port => !Number.isNaN(port))
+    .split(',')
+    .map(port => parseInt(port.trim(), 10))
+    .filter(port => !Number.isNaN(port))
 }
 </script>
 

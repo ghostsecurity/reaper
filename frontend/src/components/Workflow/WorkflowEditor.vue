@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {onActivated, onBeforeUpdate, onMounted, onUpdated, PropType, ref, watch} from 'vue'
+import { onActivated, onBeforeUpdate, onMounted, onUpdated, PropType, ref, watch } from 'vue'
 import {
   PlayIcon,
   PlusIcon,
@@ -15,23 +15,23 @@ import {
   XCircleIcon,
   ArrowUpOnSquareIcon,
 } from '@heroicons/vue/20/solid'
-import {uuid} from 'vue-uuid'
-import {WorkflowM, NodeM, Position, LinkM, LinkDirectionM} from '../../lib/api/workflow'
+import { uuid } from 'vue-uuid'
+import { WorkflowM, NodeM, Position, LinkM, LinkDirectionM } from '../../lib/api/workflow'
 import NodeEditor from './NodeEditor.vue'
-import {NodeType, NodeTypeName} from '../../lib/Workflows'
+import { NodeType, NodeTypeName } from '../../lib/Workflows'
 import Spinner from '../Shared/LoadingSpinner.vue'
 import ScrollingOutput from '../Shared/ScrollingOutput.vue'
-import Client from "../../lib/api/Client";
-import {Connector, VarStorageM} from "../../lib/api/node";
+import Client from '../../lib/api/Client'
+import { Connector } from '../../lib/api/node'
 
 const props = defineProps({
-  flow: {type: Object as PropType<WorkflowM>, required: true},
-  running: {type: Boolean, required: false, default: false},
-  statuses: {type: Object as PropType<Map<string, string>>, required: true},
-  stdoutLines: {type: Array as PropType<string[]>, required: true},
-  stderrLines: {type: Array as PropType<string[]>, required: true},
-  activityLines: {type: Array as PropType<string[]>, required: true},
-  client: {type: Object as PropType<Client>, required: true},
+  flow: { type: Object as PropType<WorkflowM>, required: true },
+  running: { type: Boolean, required: false, default: false },
+  statuses: { type: Object as PropType<Map<string, string>>, required: true },
+  stdoutLines: { type: Array as PropType<string[]>, required: true },
+  stderrLines: { type: Array as PropType<string[]>, required: true },
+  activityLines: { type: Array as PropType<string[]>, required: true },
+  client: { type: Object as PropType<Client>, required: true },
 })
 
 const availableNodeTypes = ref(<NodeType[]>[
@@ -85,9 +85,9 @@ function saveWorkflow(f: WorkflowM) {
 }
 
 const tabs = ref([
-  {name: 'Stdout', id: 'stdout', icon: BarsArrowDownIcon, current: true},
-  {name: 'Stderr', id: 'stderr', icon: BarsArrowDownIcon, current: false},
-  {name: 'Activity', id: 'activity', icon: BoltIcon, current: false},
+  { name: 'Stdout', id: 'stdout', icon: BarsArrowDownIcon, current: true },
+  { name: 'Stderr', id: 'stderr', icon: BarsArrowDownIcon, current: false },
+  { name: 'Activity', id: 'activity', icon: BoltIcon, current: false },
 ])
 
 function selectedTab(): string {
@@ -143,11 +143,11 @@ function redraw() {
       y: (toConn.offsetTop + toConn.offsetHeight / 2) + toNode.offsetTop,
     }
     const path = `M${
-            posA.x},${posA.y} `
+      posA.x},${posA.y} `
         + `C${
-            posA.x + curveOffset.value},${posA.y} ${
-            posB.x - curveOffset.value},${posB.y} ${
-            posB.x},${posB.y}`
+          posA.x + curveOffset.value},${posA.y} ${
+          posB.x - curveOffset.value},${posB.y} ${
+          posB.x},${posB.y}`
     newPaths.push(path)
   })
   if (!ok) {
@@ -462,11 +462,11 @@ function moveLink(ev: MouseEvent) {
   }
 
   const dStr = `M${
-          posA.x},${posA.y} `
+    posA.x},${posA.y} `
       + `C${
-          posA.x + curveOffset.value},${posA.y} ${
-          posB.x - curveOffset.value},${posB.y} ${
-          posB.x},${posB.y}`
+        posA.x + curveOffset.value},${posA.y} ${
+        posB.x - curveOffset.value},${posB.y} ${
+        posB.x},${posB.y}`
   connector.value.setAttribute('d', dStr)
   if (!connectorB) {
     connector.value.setAttribute('stroke', 'blue')
@@ -490,8 +490,7 @@ function canLink(link: LinkM): boolean {
   if (!output || !input) {
     return false
   }
-  return (input.type & output.type) === input.type;
-
+  return (input.type & output.type) === input.type
 }
 
 function endLinking() {
@@ -514,7 +513,8 @@ function unlinkAnyFromOutput(node: string, conn: string) {
   if (!safe.value) {
     return
   }
-  const index = safe.value.links.findIndex((l: LinkM) => l.from.node === node && (l.from.connector === conn || conn === ''))
+  const index = safe.value.links
+    .findIndex((l: LinkM) => l.from.node === node && (l.from.connector === conn || conn === ''))
   if (index >= 0) {
     safe.value.links.splice(index, 1)
     saveWorkflow(safe.value)
