@@ -51,18 +51,14 @@ func generateClientMethods(summary Summary) ([]byte, []byte, error) {
 	buffer := bytes.NewBuffer(nil)
 	importsBuffer := bytes.NewBuffer(nil)
 
-	var imports []Type
-
 	for _, method := range summary.Methods {
 		var argStrs []string
 		var callArgs []string
 		for i, inType := range method.InTypes {
-			imports = append(imports, inType)
 			argName := fmt.Sprintf("a%d", i)
 			argStrs = append(argStrs, fmt.Sprintf("%s: %s", argName, inType.TSProp()))
-			callArgs = append(callArgs, fmt.Sprintf("%s", argName))
+			callArgs = append(callArgs, argName)
 		}
-		imports = append(imports, method.OutTypes...)
 		if len(method.OutTypes) == 0 {
 
 			_, _ = fmt.Fprintf(buffer, `    %s(%s): Promise<void> {

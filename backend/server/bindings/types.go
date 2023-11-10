@@ -9,11 +9,6 @@ import (
 
 const basePath = "./frontend/src/lib/api/"
 
-type TSPkg struct {
-	code    []byte
-	imports map[string]map[string]struct{} // path -> types
-}
-
 func generateTypes(summary Summary) error {
 
 	entries, err := os.ReadDir(basePath)
