@@ -11,34 +11,41 @@ import (
 )
 
 type KeyValue struct {
-	Key   string
-	Value string
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 type HttpRequest struct {
-	Method      string
-	URL         string
-	Host        string
-	Path        string
-	QueryString string
-	Scheme      string
-	Body        string
-	ID          string
-	LocalID     int64
-	Headers     []KeyValue
-	Query       []KeyValue
-	Tags        []string
+	Method      string        `json:"method"`
+	URL         string        `json:"url"`
+	Host        string        `json:"host"`
+	Path        string        `json:"path"`
+	QueryString string        `json:"query_string"`
+	Scheme      string        `json:"scheme"`
+	Body        string        `json:"body"`
+	ID          string        `json:"id"`
+	LocalID     int64         `json:"local_id"`
+	Headers     []KeyValue    `json:"headers"`
+	Query       []KeyValue    `json:"query"`
+	Tags        []string      `json:"tags"`
+	Response    *HttpResponse `json:"response"`
 }
 
 type HttpResponse struct {
-	Body       string
-	StatusCode int
-	ID         string
-	LocalID    int64
-	Headers    []KeyValue
-	Tags       []string
-	BodySize   int
-	Cookies    []*http.Cookie
+	Body       string       `json:"body"`
+	StatusCode int          `json:"status_code"`
+	ID         string       `json:"id"`
+	LocalID    int64        `json:"local_id"`
+	Headers    []KeyValue   `json:"headers"`
+	Tags       []string     `json:"tags"`
+	BodySize   int          `json:"body_size"`
+	Cookies    []KeyValue   `json:"cookies"`
+	Request    *HttpRequest `json:"request"`
+}
+
+type Cookie struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 func PackageHttpRequest(request *http.Request, proxyID string, reqID int64) (*HttpRequest, error) {
@@ -59,6 +66,8 @@ func PackageHttpRequest(request *http.Request, proxyID string, reqID int64) (*Ht
 	// restore original body for entire request write
 	request.Body = io.NopCloser(backup)
 
+	resp, _ := PackageHttpResponse(request.Response, proxyID, reqID)
+
 	return &HttpRequest{
 		ID:          fmt.Sprintf("%s:%d", proxyID, reqID),
 		LocalID:     reqID,
@@ -72,6 +81,7 @@ func PackageHttpRequest(request *http.Request, proxyID string, reqID int64) (*Ht
 		Query:       packageMap(request.URL.Query()),
 		Scheme:      request.URL.Scheme,
 		Tags:        tagRequest(request),
+		Response:    resp,
 	}, nil
 }
 
@@ -143,6 +153,11 @@ func packageMap(header map[string][]string) []KeyValue {
 }
 
 func PackageHttpResponse(response *http.Response, proxyID string, reqID int64) (*HttpResponse, error) {
+
+	if response == nil {
+		return nil, nil
+	}
+
 	// replace nil body with empty body
 	if response.Body == nil {
 		response.Body = io.NopCloser(strings.NewReader(""))
@@ -160,6 +175,14 @@ func PackageHttpResponse(response *http.Response, proxyID string, reqID int64) (
 	// restore original body for entire response write
 	response.Body = io.NopCloser(backup)
 
+	cookies := make([]KeyValue, 0)
+	for _, cookie := range response.Cookies() {
+		cookies = append(cookies, KeyValue{
+			Key:   cookie.Name,
+			Value: cookie.Value,
+		})
+	}
+
 	return &HttpResponse{
 		ID:         fmt.Sprintf("%s:%d", proxyID, reqID),
 		LocalID:    reqID,
@@ -168,7 +191,7 @@ func PackageHttpResponse(response *http.Response, proxyID string, reqID int64) (
 		StatusCode: response.StatusCode,
 		Headers:    packageMap(response.Header),
 		Tags:       tagResponse(response),
-		Cookies:    response.Cookies(),
+		Cookies:    cookies,
 	}, nil
 }
 

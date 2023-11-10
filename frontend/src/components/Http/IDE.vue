@@ -1,20 +1,21 @@
 <script lang="ts" setup>
-import { XMarkIcon, ChevronDownIcon, ArrowsPointingOutIcon, ArrowsPointingInIcon } from '@heroicons/vue/20/solid'
-import { PropType, ref, computed, watch } from 'vue'
+import { ArrowsPointingInIcon, ArrowsPointingOutIcon, ChevronDownIcon, XMarkIcon } from '@heroicons/vue/20/solid'
+import { computed, PropType, ref, watch } from 'vue'
 import {
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
   Listbox,
   ListboxButton,
   ListboxOption,
   ListboxOptions,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
 } from '@headlessui/vue'
-import { HttpRequest, HttpResponse, Headers } from '../../lib/Http'
+import { Headers } from '../../lib/http'
 import CodeEditor from './CodeEditor.vue'
 import KeyValEditor from '../KeyValEditor.vue'
-import { KeyValue } from '../../lib/KeyValue'
+import Client from '../../lib/api/Client'
+import { HttpRequest, HttpResponse, KeyValue } from '../../lib/api/packaging'
 
 const props = defineProps({
   request: { type: Object as PropType<HttpRequest>, required: true },
@@ -26,6 +27,7 @@ const props = defineProps({
   readonly: { type: Boolean, default: true },
   fullscreen: { type: Boolean, default: false },
   showButtons: { type: Boolean, default: true },
+  client: { type: Object as PropType<Client>, required: true },
 })
 
 const emit = defineEmits(['action', 'close', 'fullscreen', 'request-update', 'create-workflow-from-request'])
@@ -40,12 +42,12 @@ watch(
   },
 )
 
-const selectedMethod = ref(props.request.Method)
+const selectedMethod = ref(props.request.method)
 
 watch(
   () => props.request,
   () => {
-    selectedMethod.value = props.request.Method
+    selectedMethod.value = props.request.method
   },
 )
 
@@ -117,9 +119,9 @@ function buildQueryString(params: KeyValue[]): string {
     if (i > 0) {
       qs += '&'
     }
-    qs += param.Key
-    if (param.Value !== '') {
-      qs += `=${encodeURIComponent(param.Value)}`
+    qs += param.key
+    if (param.value !== '') {
+      qs += `=${encodeURIComponent(param.value)}`
     }
   }
   return qs
@@ -129,17 +131,17 @@ function updateURL(u: string) {
   const clone = cloneRequest(props.request) as HttpRequest
   try {
     const url = new URL(u)
-    clone.URL = u
-    clone.Host = url.host
-    clone.Path = url.pathname
-    clone.Scheme = url.protocol
-    clone.Query = [] as KeyValue[]
+    clone.url = u
+    clone.host = url.host
+    clone.path = url.pathname
+    clone.scheme = url.protocol
+    clone.query = [] as KeyValue[]
     url.searchParams.forEach((value: string, key: string) => {
-      clone.Query.push({ Key: key, Value: value })
+      clone.query.push({ key, value })
     })
-    clone.QueryString = buildQueryString(clone.Query)
+    clone.query_string = buildQueryString(clone.query)
   } catch (e) {
-    clone.URL = u
+    clone.url = u
   }
   emit('request-update', clone)
 }
@@ -148,22 +150,21 @@ function cloneRequest(input: HttpRequest | null): HttpRequest | null {
   if (input === null || input === undefined) {
     return null
   }
-  const clone: HttpRequest = {
-    ID: input.ID,
-    LocalID: input.LocalID,
-    URL: input.URL,
-    Method: input.Method,
-    Scheme: input.Scheme,
-    Host: input.Host,
-    Path: input.Path,
-    Body: input.Body,
-    QueryString: input.QueryString,
-    Tags: cloneTags(input.Tags),
-    Query: cloneKeyValues(input.Query),
-    Headers: cloneKeyValues(input.Headers),
-    Response: cloneResponse(input.Response),
+  return {
+    id: input.id,
+    local_id: input.local_id,
+    url: input.url,
+    method: input.method,
+    scheme: input.scheme,
+    host: input.host,
+    path: input.path,
+    body: input.body,
+    query_string: input.query_string,
+    tags: cloneTags(input.tags),
+    query: cloneKeyValues(input.query),
+    headers: cloneKeyValues(input.headers),
+    response: cloneResponse(input.response),
   }
-  return clone
 }
 
 function cloneTags(tags: Array<string>): Array<string> {
@@ -177,7 +178,7 @@ function cloneTags(tags: Array<string>): Array<string> {
 function cloneKeyValues(kv: KeyValue[]): KeyValue[] {
   const clone: KeyValue[] = []
   for (let i = 0; i < kv.length; i += 1) {
-    clone.push({ Key: kv[i].Key, Value: kv[i].Value })
+    clone.push({ key: kv[i].key, value: kv[i].value })
   }
   return clone
 }
@@ -186,88 +187,88 @@ function cloneResponse(input: HttpResponse | null): HttpResponse | null {
   if (input === null || input === undefined) {
     return null
   }
-  const clone: HttpResponse = {
-    ID: input.ID,
-    LocalID: input.LocalID,
-    Body: input.Body,
-    StatusCode: input.StatusCode,
-    Request: cloneRequest(input.Request),
-    Headers: cloneKeyValues(input.Headers),
-    Tags: cloneTags(input.Tags),
-    BodySize: input.BodySize,
+  return {
+    id: input.id,
+    local_id: input.local_id,
+    body: input.body,
+    status_code: input.status_code,
+    request: cloneRequest(input.request),
+    headers: cloneKeyValues(input.headers),
+    tags: cloneTags(input.tags),
+    body_size: input.body_size,
+    cookies: cloneKeyValues(input.cookies),
   }
-  return clone
 }
 
 function buildURL(c: HttpRequest): string {
-  let url = c.Scheme
+  let url = c.scheme
   if (!url) {
     url = 'https'
   }
   if (!url.endsWith(':')) {
     url += ':'
   }
-  url += `//${c.Host}${c.Path}`
-  if (c.QueryString !== '') {
-    url += `?${c.QueryString}`
+  url += `//${c.host}${c.path}`
+  if (c.query_string !== '') {
+    url += `?${c.query_string}`
   }
   return url
 }
 
 function updateQuery(params: KeyValue[]) {
   const clone = cloneRequest(props.request) as HttpRequest
-  clone.Query = params
-  clone.QueryString = buildQueryString(params)
-  clone.URL = buildURL(clone)
+  clone.query = params
+  clone.query_string = buildQueryString(params)
+  clone.url = buildURL(clone)
   emit('request-update', clone)
 }
 
 function updateMethod(method: string) {
   const clone = cloneRequest(props.request) as HttpRequest
-  clone.Method = method
+  clone.method = method
   emit('request-update', clone)
 }
 
 function updateHeaders(headers: KeyValue[]) {
   const clone = cloneRequest(props.request) as HttpRequest
-  clone.Headers = headers
+  clone.headers = headers
   emit('request-update', clone)
 }
 
 function updateBody(b: string) {
   const clone = cloneRequest(props.request) as HttpRequest
-  clone.Body = b
+  clone.body = b
   emit('request-update', clone)
 }
 
 function updateResponseHeaders(headers: KeyValue[]) {
   const clone = cloneRequest(props.request) as HttpRequest
-  if (clone.Response === null) {
+  if (clone.response === null) {
     return
   }
-  clone.Response.Headers = headers
+  clone.response.headers = headers
   emit('request-update', clone)
 }
 
 function updateResponseBody(b: string) {
   const clone = cloneRequest(props.request) as HttpRequest
-  if (clone.Response === null) {
+  if (clone.response === null) {
     return
   }
-  clone.Response.Body = b
+  clone.response.body = b
   emit('request-update', clone)
 }
 
 function getMime(): string {
-  const headers = props.request?.Headers || []
+  const headers = props.request?.headers || []
   const mime = getContentType(headers, '')
   if (mime !== '') {
     return mime
   }
-  if (props.request?.Body === '') {
+  if (props.request?.body === '') {
     return 'text/plain'
   }
-  const body = props.request?.Body.trim() || ''
+  const body = props.request?.body.trim() || ''
   if (body.startsWith('{') || body.startsWith('[')) {
     return 'application/json'
   }
@@ -278,15 +279,15 @@ function getMime(): string {
 }
 
 function getResponseMime(): string {
-  const headers = props.request?.Response?.Headers || []
+  const headers = props.request?.response?.headers || []
   const mime = getContentType(headers, '')
   if (mime !== '') {
     return mime
   }
-  if (props.request?.Response?.Body === '') {
+  if (props.request?.response?.body === '') {
     return 'text/plain'
   }
-  const body = props.request?.Response?.Body.trim() || ''
+  const body = props.request?.response?.body.trim() || ''
   if (body.startsWith('{') || body.startsWith('[')) {
     return 'application/json'
   }
@@ -299,8 +300,8 @@ function getResponseMime(): string {
 function getContentType(headers: KeyValue[], def: string): string {
   for (let i = 0; i < headers.length; i += 1) {
     const header = headers[i]
-    if (header.Key.toLowerCase() === 'content-type') {
-      return header.Value
+    if (header.key.toLowerCase() === 'content-type') {
+      return header.value
     }
   }
   return def
@@ -314,22 +315,22 @@ function getContentType(headers: KeyValue[], def: string): string {
       <div class="flex-0 rounded-l-md border border-frost-1 bg-frost-1 py-2 hover:bg-frost-1/80">
         <span v-if="readonly" class="px-4">{{ selectedMethod }}</span>
         <Listbox v-else as="div" @update:model-value="updateMethod($event)" v-model="selectedMethod"
-          class="relative m-0 p-0 text-left align-middle">
+                 class="relative m-0 p-0 text-left align-middle">
           <div class="relative">
             <ListboxButton
-              class="focus:ring-none relative w-full cursor-pointer pl-4 pr-10 text-left align-middle shadow-sm focus:border-none focus:outline-none">
+                class="focus:ring-none relative w-full cursor-pointer pl-4 pr-10 text-left align-middle shadow-sm focus:border-none focus:outline-none">
               <span class="truncate">{{ selectedMethod }}</span>
               <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                <ChevronDownIcon class="h-5 w-5" aria-hidden="true" />
+                <ChevronDownIcon class="h-5 w-5" aria-hidden="true"/>
               </span>
             </ListboxButton>
 
             <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100"
-              leave-to-class="opacity-0">
+                        leave-to-class="opacity-0">
               <ListboxOptions style="z-index: 11"
-                class="max-h-70 absolute z-10 mt-1 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-polar-night-4 sm:text-sm">
+                              class="max-h-70 absolute z-10 mt-1 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-polar-night-4 sm:text-sm">
                 <ListboxOption as="template" v-for="method in methods" :key="method" :value="method"
-                  v-slot="{ active, selected }">
+                               v-slot="{ active, selected }">
                   <li :class="[
                     active ? 'bg-frost-1 text-white' : 'text-gray-900 dark:text-snow-storm-1',
                     'relative cursor-pointer select-none px-1 py-2',
@@ -347,10 +348,10 @@ function getContentType(headers: KeyValue[], def: string): string {
 
       <!-- Input for full URL -->
       <div class="flex-1 bg-snow-storm-1 align-middle dark:bg-polar-night-4">
-        <input type="text" :readonly="readonly" :value="request.URL"
-          @input="updateURL(($event.target as HTMLInputElement).value)"
-          @change="updateURL(($event.target as HTMLInputElement).value)"
-          class="my-0 h-full w-full border-none bg-transparent py-0 text-sm outline-none ring-0 focus:border-transparent focus:outline-none focus:ring-0" />
+        <input type="text" :readonly="readonly" :value="request.url"
+               @input="updateURL(($event.target as HTMLInputElement).value)"
+               @change="updateURL(($event.target as HTMLInputElement).value)"
+               class="my-0 h-full w-full border-none bg-transparent py-0 text-sm outline-none ring-0 focus:border-transparent focus:outline-none focus:ring-0"/>
       </div>
 
       <!-- default action button -->
@@ -366,54 +367,56 @@ function getContentType(headers: KeyValue[], def: string): string {
       <Menu v-if="extraActions.length > 0" as="div" class="flex-0 relative m-0 p-0 text-left align-middle">
         <div class="h-full rounded-r-md border border-frost-4 bg-frost-4 hover:dark:bg-frost-4/80">
           <MenuButton
-            class="m-0 h-full w-full justify-center px-0 align-middle font-medium text-gray-700 focus:outline-none">
-            <ChevronDownIcon class="h-5 w-5" aria-hidden="true" />
+              class="m-0 h-full w-full justify-center px-0 align-middle font-medium text-gray-700 focus:outline-none">
+            <ChevronDownIcon class="h-5 w-5" aria-hidden="true"/>
           </MenuButton>
         </div>
 
-        <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95"
-          enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75"
-          leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
+        <transition enter-active-class="transition ease-out duration-100"
+                    enter-from-class="transform opacity-0 scale-95"
+                    enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75"
+                    leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
           <MenuItems
-            class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-snow-storm-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-polar-night-4">
+              class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-snow-storm-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-polar-night-4">
             <div class="py-1">
               <MenuItem v-slot="{ active }" v-for="action in extraActions" :key="action">
-              <a @click="emit('action', action)" :class="[
+                <a @click="emit('action', action)" :class="[
                 active ? 'bg-frost-1 text-white' : 'text-gray-800 dark:text-snow-storm-1',
                 'block cursor-pointer px-4 py-2 text-sm',
               ]">
-                {{ actions.get(action) }}
-              </a>
+                  {{ actions.get(action) }}
+                </a>
               </MenuItem>
             </div>
           </MenuItems>
         </transition>
       </Menu>
 
-      <div v-if="!defaultAction" class="flex-0 w-2 rounded-r-md bg-snow-storm-1 align-middle dark:bg-polar-night-4"></div>
+      <div v-if="!defaultAction"
+           class="flex-0 w-2 rounded-r-md bg-snow-storm-1 align-middle dark:bg-polar-night-4"></div>
 
       <div v-if="showButtons" class="flex-0 -mr-1 flex pl-2 pt-1 text-right align-middle">
         <a class="cursor-pointer pt-1 text-gray-400 hover:text-polar-night-1 dark:hover:text-snow-storm-1"
-          @click="toggleFullscreen(!fullscreen)">
-          <ArrowsPointingOutIcon v-if="!fullscreen" class="h-5 w-5" />
-          <ArrowsPointingInIcon v-else class="h-5 w-5" />
+           @click="toggleFullscreen(!fullscreen)">
+          <ArrowsPointingOutIcon v-if="!fullscreen" class="h-5 w-5"/>
+          <ArrowsPointingInIcon v-else class="h-5 w-5"/>
         </a>
         <a class="cursor-pointer text-gray-400 hover:text-polar-night-1 dark:hover:text-snow-storm-1"
-          @click="emit('close')">
-          <XMarkIcon class="h-7 w-7" />
+           @click="emit('close')">
+          <XMarkIcon class="h-7 w-7"/>
         </a>
       </div>
     </div>
 
     <!-- request -->
-    <div :class="[request.Response ? 'h-1/2' : 'h-full', 'overflow-y-hidden']">
+    <div :class="[request.response ? 'h-1/2' : 'h-full', 'overflow-y-hidden']">
       <div class="flex h-full flex-col">
         <!-- request tabs (headers, body, etc. )-->
         <div class="flex-0 min-h-16 h-16 max-h-16 px-2">
           <div class="sm:hidden">
             <label for="tabs" class="sr-only">Select a tab</label>
             <select @change="selectRequestTab" id="tabs" name="tabs"
-              class="block w-full rounded-md bg-polar-night-2 text-sm text-snow-storm-1 focus:border-frost focus:ring-frost">
+                    class="block w-full rounded-md bg-polar-night-2 text-sm text-snow-storm-1 focus:border-frost focus:ring-frost">
               <option v-for="tab in requestTabs" :key="tab.id" :selected="tab.current" :value="tab.id">
                 {{ tab.name }}
               </option>
@@ -436,27 +439,28 @@ function getContentType(headers: KeyValue[], def: string): string {
         </div>
 
         <div class="w-full min-w-0 flex-1 overflow-y-auto">
-          <KeyValEditor v-if="requestTab === 'headers'" :data="request.Headers" :readonly="readonly"
-            :key-suggestions="Object.keys(Headers)" @publish="updateHeaders($event)" />
-          <KeyValEditor v-else-if="requestTab === 'query'" :data="request.Query" :readonly="readonly"
-            @publish="updateQuery($event)" />
-          <CodeEditor v-else-if="requestTab === 'body'" :code="request.Body" :mime="getMime()" :readonly="readonly"
-            @change="updateBody($event)" />
+          <KeyValEditor v-if="requestTab === 'headers'" :data="request.headers" :readonly="readonly"
+                        :key-suggestions="Object.keys(Headers)" @publish="updateHeaders($event)"/>
+          <KeyValEditor v-else-if="requestTab === 'query'" :data="request.query" :readonly="readonly"
+                        @publish="updateQuery($event)"/>
+          <CodeEditor v-else-if="requestTab === 'body'" :client="client" :code="request.body" :mime="getMime()"
+                      :readonly="readonly"
+                      @change="updateBody($event)"/>
         </div>
       </div>
     </div>
 
     <!-- response -->
-    <div v-if="request.Response" class="h-1/2 overflow-y-hidden pt-4">
+    <div v-if="request.response" class="h-1/2 overflow-y-hidden pt-4">
       <div class="flex h-full flex-col">
         <h3 class="bg-snow-storm-1 p-2 text-left text-sm text-polar-night-4 dark:bg-polar-night-4 dark:text-snow-storm-1">
-          Response ({{ request.Response.StatusCode }})
+          Response ({{ request.response.status_code }})
         </h3>
         <div class="flex-0 min-h-16 h-16 max-h-16 px-2">
           <div class="sm:hidden">
             <label for="tabs" class="sr-only">Select a tab</label>
             <select @change="selectResponseTab" id="tabs" name="tabs"
-              class="block w-full rounded-md bg-polar-night-2 text-sm text-snow-storm-1 focus:border-frost focus:ring-frost">
+                    class="block w-full rounded-md bg-polar-night-2 text-sm text-snow-storm-1 focus:border-frost focus:ring-frost">
               <option v-for="tab in responseTabs" :key="tab.id" :selected="tab.current" :value="tab.id">
                 {{ tab.name }}
               </option>
@@ -479,10 +483,11 @@ function getContentType(headers: KeyValue[], def: string): string {
         </div>
 
         <div class="w-full min-w-0 flex-1 overflow-y-auto">
-          <KeyValEditor v-if="responseTab === 'headers'" :data="request.Response.Headers" :readonly="readonly"
-            :key-suggestions="Object.keys(Headers)" @publish="updateResponseHeaders($event)" />
-          <CodeEditor v-else-if="responseTab === 'body'" :code="request.Response.Body" :readonly="readonly"
-            :mime="getResponseMime()" @change="updateResponseBody($event)" />
+          <KeyValEditor v-if="responseTab === 'headers'" :data="request.response.headers" :readonly="readonly"
+                        :key-suggestions="Object.keys(Headers)" @publish="updateResponseHeaders($event)"/>
+          <CodeEditor v-else-if="responseTab === 'body'" :client="client" :code="request.response.body"
+                      :readonly="readonly"
+                      :mime="getResponseMime()" @change="updateResponseBody($event)"/>
         </div>
       </div>
     </div>

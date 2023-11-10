@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { PropType, ref, watch } from 'vue'
 import { HandRaisedIcon } from '@heroicons/vue/20/solid'
-import { HttpRequest } from '../lib/Http'
 import IDE from './Http/IDE.vue'
+import Client from '../lib/api/Client'
+import { HttpRequest } from '../lib/api/packaging'
 
 const props = defineProps(
   {
@@ -16,6 +17,7 @@ const props = defineProps(
     request: { type: Object as PropType<HttpRequest | null>, required: false, default: null },
     previous: { type: Object as PropType<HttpRequest | null>, required: false, default: null },
     count: { type: Number, required: false, default: 0 },
+    client: { type: Object as PropType<Client>, required: true },
   },
 )
 
@@ -83,11 +85,11 @@ function closePrevious() {
 
 <template>
   <div class="h-full w-full">
-    <IDE v-if="!!previous" :request="previous" :readonly="true"
+    <IDE v-if="!!previous" :client="client" :request="previous" :readonly="true"
          :actions="readActions"
          @action="action"
          @close="closePrevious"/>
-    <IDE v-else-if="!!req" :request="req" :readonly="false"
+    <IDE v-else-if="!!req" :client="client" :request="req" :readonly="false"
          :actions="writeActions"
          @action="action"
          @request-update="update($event)"

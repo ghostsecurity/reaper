@@ -2,8 +2,8 @@
 import { PropType } from 'vue'
 import { EllipsisVerticalIcon } from '@heroicons/vue/20/solid'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { HttpRequest } from '../../lib/Http'
 import { Criteria } from '../../lib/Criteria/Criteria'
+import { HttpRequest } from '../../lib/api/packaging'
 
 defineProps({
   name: { type: String, required: false, default: '' },
@@ -58,13 +58,13 @@ function onSearch(crit: Criteria) {
       </div>
       <div class="flex items-center justify-between">
         <div class="max-w-4xl flex-1 truncate text-left text-sm font-medium text-frost-4 dark:text-frost">
-          {{ request.Path }}
-          <span class="text-frost-3" v-if="request.QueryString !== ''">?{{ request.QueryString }}</span>
+          {{ request.path }}
+          <span class="text-frost-3" v-if="request.query_string !== ''">?{{ request.query_string }}</span>
         </div>
         <div class="flex-0 ml-2 flex text-right">
           <p class="px-2 text-xs font-semibold leading-5">
-            <span v-if="showResponse && request.Response" class="text-polar-night-1a dark:text-snow-storm-1">
-              {{ humanSize(request.Response.BodySize) }}
+            <span v-if="showResponse && request.response" class="text-polar-night-1a dark:text-snow-storm-1">
+              {{ humanSize(request.response.body_size) }}
             </span>
           </p>
         </div>
@@ -72,16 +72,16 @@ function onSearch(crit: Criteria) {
       <div class="sm:flex sm:justify-between">
         <div class="flex-1">
           <p class="flex items-center text-sm text-frost-3 dark:text-frost-3">
-            {{ request.Host }}
+            {{ request.host }}
           </p>
         </div>
         <div v-if="showTags" class="flex-0 mt-2 text-right text-sm text-pink-500 sm:mt-0">
-          <a @click="searchTag(tag)" v-for="tag in request.Tags" :key="tag"
+          <a @click="searchTag(tag)" v-for="tag in request.tags" :key="tag"
              :class="['ml-1 rounded-full px-2.5 py-0.5 text-xs font-medium text-polar-night-1', classForTag(tag)]">
             {{ tag }}
           </a>
-          <span v-if="showResponse && request.Response">
-            <span @click="searchTag(tag)" v-for="tag in request.Response.Tags" :key="tag"
+          <span v-if="showResponse && request.response">
+            <span @click="searchTag(tag)" v-for="tag in request.response.tags" :key="tag"
                   :class="['ml-1 rounded-full px-2.5 py-0.5 text-xs font-medium text-polar-night-1', classForTag(tag)]">
               {{ tag }}
             </span>

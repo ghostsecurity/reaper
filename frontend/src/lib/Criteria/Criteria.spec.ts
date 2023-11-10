@@ -2,7 +2,7 @@ import { test, expect } from 'vitest'
 import { Criteria } from './Criteria'
 import { Comparison, JoinType, Rule, Target } from './Rule'
 import Ruleset from './Ruleset'
-import { HttpRequest } from '../Http'
+import { HttpRequest } from '../api/packaging'
 
 test.each([
   {
@@ -158,12 +158,12 @@ test.each([
   const protocol = p.protocol.replace(':', '')
   expect(
     criteria.Match(<HttpRequest>{
-      Host: p.host,
-      Path: p.pathname,
-      Scheme: protocol,
-      QueryString: p.search,
-      Method: 'GET',
-      Body: '',
+      host: p.host,
+      path: p.pathname,
+      scheme: protocol,
+      query_string: p.search,
+      method: 'GET',
+      body: '',
     }),
   ).toEqual(expected)
 })

@@ -1,4 +1,4 @@
-import { HttpRequest } from '../Http'
+import { HttpRequest } from '../api/packaging'
 
 enum Comparison {
     EQUAL = 'eq',
@@ -42,35 +42,35 @@ class Rule {
     const match = [Comparison.EQUAL, Comparison.CONTAINS, Comparison.MATCHES].includes(this.Comparison)
     switch (this.Target) {
       case Target.Scheme:
-        field = req.Scheme
+        field = req.scheme
         break
       case Target.Host:
-        field = req.Host
+        field = req.host
         break
       case Target.Path:
-        field = req.Path
+        field = req.path
         break
       case Target.Query:
-        field = req.QueryString
+        field = req.query_string
         break
       case Target.Body:
-        field = req.Body
+        field = req.body
         break
       case Target.Method:
-        field = req.Method.toLowerCase()
+        field = req.method.toLowerCase()
         this.Value = this.Value.toLowerCase()
         break
       case Target.Status:
-        if (req.Response) {
-          field = req.Response.StatusCode.toString()
+        if (req.response) {
+          field = req.response.status_code.toString()
         }
         break
       case Target.Tag:
-        if ((req.Tags.find(tag => tag === this.Value) !== undefined) === match) {
+        if ((req.tags.find(tag => tag === this.Value) !== undefined) === match) {
           return match
         }
-        if (req.Response) {
-          if ((req.Response.Tags.find(tag => tag === this.Value) !== undefined) === match) {
+        if (req.response) {
+          if ((req.response.tags.find(tag => tag === this.Value) !== undefined) === match) {
             return match
           }
         }

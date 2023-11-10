@@ -2,10 +2,10 @@
 import { PropType } from 'vue'
 import { ChevronDownIcon, Cog6ToothIcon, ArrowsRightLeftIcon } from '@heroicons/vue/20/solid'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { workspace } from '../../wailsjs/go/models'
+import { Workspace } from '../lib/api/workspace'
 
 const props = defineProps({
-  ws: { type: Object as PropType<workspace.Workspace>, required: true },
+  ws: { type: Object as PropType<Workspace>, required: true },
 })
 
 const emit = defineEmits(['switch', 'edit'])

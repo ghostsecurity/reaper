@@ -28,10 +28,10 @@ detail as possible. UI mock-ups are appreciated.
 
 ### Code Contributions
 
-Reaper is made up of two main components: the Go backend (`/backend`), and the Vue frontend (`/frontend`). The two are
-plumbed together using https://wails.io. Most features require backend and frontend changes, so please be prepared to
-make both. If you don't know both, don't worry, we can help you get started. Feel free to raise a PR with changes to a
-single component - we can try to help support the remaining development.
+Reaper is made up of two main components: the Go backend (`/backend`), and the Vue frontend (`/frontend`). Most features
+require backend and frontend changes, so please be prepared to make both. If you don't know both, don't worry, we can
+help you get started. Feel free to raise a PR with changes to a single component - we can try to help support the
+remaining development.
 
 #### Hacking Locally
 
@@ -41,8 +41,4 @@ The following steps should work across Mac, Linux and Windows:
 
 1. Clone the repo.
 2. Ensure you have Go (1.19+) and npm installed.
-3. Run `make wails` to install Wails v2.
-4. Run `wails doctor` to ensure your environment is configured correctly. Install any missing dependencies as prompted.
-5. Run `make run` to start _Reaper_.
-
-Making changes to the source will trigger a rebuild of the frontend and backend, and hot-reload the application.
+3. Run `make run` or `make docker` to start _Reaper_.

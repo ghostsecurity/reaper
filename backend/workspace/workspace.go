@@ -13,18 +13,23 @@ import (
 
 	"github.com/kirsle/configdir"
 
-	"github.com/ghostsecurity/reaper/backend/log"
 	"github.com/google/uuid"
+
+	"github.com/ghostsecurity/reaper/backend/log"
 )
 
 const (
-	configDirName         = "reaper"
+	configDirName         = ".reaper"
 	workspacesDirName     = "workspaces"
 	workspaceSettingsFile = "workspace.json"
 )
 
 func getDir() (string, error) {
-	wsDir := configdir.LocalConfig(configDirName, workspacesDirName)
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to get user home dir: %w", err)
+	}
+	wsDir := filepath.Join(home, configDirName, workspacesDirName)
 	if err := configdir.MakePath(wsDir); err != nil {
 		return "", fmt.Errorf("failed to create workspace dir: %w", err)
 	}

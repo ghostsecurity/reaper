@@ -27,15 +27,15 @@ nav_order: 5
 It is recommended to use a browser extension to manage your proxy use. Tools like this allow you to quickly switch
 between proxies and configure particular proxies for particular URLs. This means you can configure your browser to only
 use Reaper for a target web application, and route all other traffic as usual. You can use the proxy
-address `127.0.0.1:8081` to send traffic through Reaper. Finally, you should [test](test) your setup.
+address `127.0.0.1:8080` to send traffic through Reaper. Finally, you should [test](test) your setup.
 
 ### Configuring CLI Tools to use Reaper
 
-Many CLI tools support proxying through an HTTP proxy. You can use the proxy address `127.0.0.1:8081` to send traffic
+Many CLI tools support proxying through an HTTP proxy. You can use the proxy address `127.0.0.1:8080` to send traffic
 through Reaper.
 
 Many CLI tools respect the `http_proxy` and `https_proxy` environment variables (most often lower case, but it's worth
-trying both permutations). You can set these variables to the proxy address `127.0.0.1:8081` to send traffic through
+trying both permutations). You can set these variables to the proxy address `127.0.0.1:8080` to send traffic through
 Reaper.
 
 Remember to [test](test) your setup.

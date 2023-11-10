@@ -40,7 +40,7 @@ as [Proxy Switcher](https://chrome.google.com/webstore/detail/proxy-switcher/iej
 like this allow you to quickly
 switch between proxies and configure particular proxies for particular URLs. This means you can configure Chrome to
 only use Reaper for a target web application, and route all other traffic as usual. You can use the proxy
-address `127.0.0.1:8081` to send traffic through Reaper.
+address `127.0.0.1:8080` to send traffic through Reaper.
 
 Alternatively, you can configure Chrome to use Reaper directly (not recommended).
 

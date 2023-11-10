@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { PropType, ref, watch } from 'vue'
 import { TrashIcon } from '@heroicons/vue/20/solid'
-import { KeyValue } from '../lib/KeyValue'
+import { KeyValue } from '../lib/api/packaging'
 import AutocompleteInput from './Shared/AutocompleteInput.vue'
 
 const props = defineProps({
@@ -30,8 +30,8 @@ watch(
   () => props.data,
   newVal => {
     copy.value = newVal.map(kv => ({
-      Key: kv.Key,
-      Value: kv.Value,
+      key: kv.key,
+      value: kv.value,
     }))
   },
 )
@@ -40,8 +40,8 @@ const emit = defineEmits(['publish'])
 
 const copy = ref(
   props.data.map(kv => ({
-    Key: kv.Key,
-    Value: kv.Value,
+    key: kv.key,
+    value: kv.value,
   })),
 )
 
@@ -54,9 +54,9 @@ function updateKey(index: number, key: string) {
     return
   }
   if (index === copy.value.length) {
-    copy.value.push({ Key: '', Value: '' })
+    copy.value.push({ key: '', value: '' })
   }
-  copy.value[index].Key = key
+  copy.value[index].key = key
   publish()
 }
 
@@ -65,9 +65,9 @@ function updateValue(index: number, value: string) {
     return
   }
   if (index === copy.value.length) {
-    copy.value.push({ Key: '', Value: '' })
+    copy.value.push({ key: '', value: '' })
   }
-  copy.value[index].Value = value
+  copy.value[index].value = value
   publish()
 }
 
@@ -84,10 +84,10 @@ function localParams(c: KeyValue[]): KeyValue[] {
     return c
   }
   const extra: KeyValue[] = c.map(kv => ({
-    Key: kv.Key,
-    Value: kv.Value,
+    key: kv.key,
+    value: kv.value,
   }))
-  extra.push({ Key: '', Value: '' })
+  extra.push({ key: '', value: '' })
   return extra
 }
 </script>
@@ -101,7 +101,7 @@ function localParams(c: KeyValue[]): KeyValue[] {
         <td class="min-w-200 w-2/5 border border-snow-storm-3 px-3 py-2 text-left text-xs dark:border-polar-night-4">
           <AutocompleteInput
               @change="updateKey(index, $event)"
-              :value="row.Key"
+              :value="row.key"
               :readonly="readonly"
               :suggestions="keySuggestions"
               :left="true"/>
@@ -109,7 +109,7 @@ function localParams(c: KeyValue[]): KeyValue[] {
         <td class="border border-snow-storm-3 px-3 py-2 text-left text-xs dark:border-polar-night-4">
           <AutocompleteInput
               @change="updateValue(index, $event)"
-              :value="row.Value"
+              :value="row.value"
               :readonly="readonly"
               :suggestions="[]"/>
         </td>

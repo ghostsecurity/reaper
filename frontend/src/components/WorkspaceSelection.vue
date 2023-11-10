@@ -2,13 +2,13 @@
 import { PropType, reactive, ref } from 'vue'
 import { PlusCircleIcon, BriefcaseIcon, NoSymbolIcon, PlusIcon, EllipsisVerticalIcon } from '@heroicons/vue/20/solid'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { workspace } from '../../wailsjs/go/models'
 import ScopeEditor from './ScopeEditor.vue'
 import ConfirmDialog from './ConfirmDialog.vue'
+import { Scope, Workspace } from '../lib/api/workspace'
 
 const props = defineProps({
   workspaces: {
-    type: Array as PropType<workspace.Workspace[]>,
+    type: Array as PropType<Workspace[]>,
     required: true,
   },
 })
@@ -17,13 +17,13 @@ const showDelete = ref(false)
 const toDelete = ref('')
 const creating = ref(false)
 const ws = reactive(
-  new workspace.Workspace({
-    name: '',
-    scope: new workspace.Scope({
-      include: [],
-      exclude: [],
-    }),
-  }),
+    {
+      name: '',
+      scope: {
+        include: [],
+        exclude: [],
+      } as Scope,
+    } as Workspace,
 )
 
 const emit = defineEmits(['select', 'create', 'edit', 'delete'])
@@ -44,7 +44,7 @@ function selectNewWorkspace() {
   emit('create', ws)
 }
 
-function setScope(scope: workspace.Scope) {
+function setScope(scope: Scope) {
   ws.scope = scope
 }
 

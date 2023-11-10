@@ -1,27 +1,30 @@
 <script lang="ts" setup>
 import { PropType, ref, watch } from 'vue'
 import { PlusIcon, FolderIcon, BeakerIcon } from '@heroicons/vue/20/solid'
-import { workflow, workspace } from '../../../wailsjs/go/models'
+import { saveAs } from 'file-saver'
+import { useFileDialog } from '@vueuse/core/index'
+import { WorkflowM } from '../../lib/api/workflow'
+import { Workspace } from '../../lib/api/workspace'
 import List from './WorkflowList.vue'
 import InputBox from '../InputBox.vue'
 import Editor from './WorkflowEditor.vue'
-import { CreateWorkflow, ExportWorkflow, ImportWorkflow } from '../../../wailsjs/go/backend/App'
-import WorkflowM = workflow.WorkflowM;
+import Client from '../../lib/api/Client'
 
 const props = defineProps({
-  ws: { type: Object as PropType<workspace.Workspace>, required: true },
+  ws: { type: Object as PropType<Workspace>, required: true },
   selectedWorkflowId: { type: String, required: false, default: '' },
   runningWorkflowId: { type: String, required: false, default: '' },
   statuses: { type: Object as PropType<Map<string, string>>, required: true },
   stdoutLines: { type: Array as PropType<string[]>, required: true },
   stderrLines: { type: Array as PropType<string[]>, required: true },
   activityLines: { type: Array as PropType<string[]>, required: true },
+  client: { type: Object as PropType<Client>, required: true },
 })
 
-const safe = ref<workspace.Workspace>(JSON.parse(JSON.stringify(props.ws)))
+const safe = ref<Workspace>(JSON.parse(JSON.stringify(props.ws)))
 watch(() => props.ws, ws => {
   if (ws) {
-    safe.value = JSON.parse(JSON.stringify(props.ws)) as workspace.Workspace
+    safe.value = JSON.parse(JSON.stringify(props.ws)) as Workspace
   }
 })
 watch(() => props.selectedWorkflowId, id => {
@@ -42,7 +45,7 @@ const leftPanel = ref()
 const rightPanel = ref()
 
 const creating = ref(false)
-const currentFlow = ref<workflow.WorkflowM | null>(safe.value.workflows.find(
+const currentFlow = ref<WorkflowM | null>(safe.value.workflows.find(
   wf => wf.id === props.selectedWorkflowId,
 ) ?? null)
 
@@ -50,7 +53,10 @@ const emit = defineEmits(['select', 'save', 'run', 'stop', 'clean'])
 
 function addWorkflow(name: string) {
   creating.value = false
-  CreateWorkflow().then(w => {
+  props.client.CreateWorkflow().then((w: WorkflowM | null) => {
+    if (!w) {
+      return
+    }
     w.name = name
     safe.value.workflows.push(w)
     saveWorkspace(safe.value)
@@ -70,11 +76,11 @@ function deleteWorkflow(id: string) {
   saveWorkspace(safe.value)
 }
 
-function saveWorkspace(w: workspace.Workspace) {
+function saveWorkspace(w: Workspace) {
   emit('save', w)
 }
 
-function saveWorkflow(w: workflow.WorkflowM) {
+function saveWorkflow(w: WorkflowM) {
   const index = safe.value.workflows.findIndex(wf => wf.id === w.id)
   if (index === -1) {
     return
@@ -98,10 +104,20 @@ function renameWorkflow(id: string, name: string) {
 }
 
 function importWorkflow() {
-  ImportWorkflow().then((w: WorkflowM) => {
-    safe.value.workflows.push(w)
-    saveWorkspace(safe.value)
-    emit('select', w.id)
+  const { open, onChange } = useFileDialog()
+  open({ multiple: false, directory: false, accept: '.atk' })
+  onChange((files: FileList) => {
+    if (files.length === 0) {
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = function () {
+      const w: WorkflowM = JSON.parse(reader.result as string)
+      safe.value.workflows.push(w)
+      saveWorkspace(safe.value)
+      emit('select', w.id)
+    }
+    reader.readAsText(files[0])
   })
 }
 
@@ -110,9 +126,9 @@ function exportWorkflow(id: string) {
   if (!wf) {
     return
   }
-  ExportWorkflow(wf).then(() => {
-    emit('select', id)
-  })
+  const data = new TextEncoder().encode(JSON.stringify(wf))
+  saveAs(new Blob([data.buffer]), `${id}.atk`)
+  emit('select', id)
 }
 
 </script>
@@ -138,7 +154,8 @@ function exportWorkflow(id: string) {
 
     <div ref="rightPanel"
          class="mx-2 box-border h-full w-[60%] grow px-2">
-      <Editor v-if="currentFlow" :flow="currentFlow" @save="saveWorkflow($event)" @run="emit('run', $event)"
+      <Editor v-if="currentFlow" :client="client" :flow="currentFlow" @save="saveWorkflow($event)"
+              @run="emit('run', $event)"
               @stop="emit('stop', $event)"
               :running="runningWorkflowId===currentFlow.id"
               :statuses="statuses" :stdout-lines="stdoutLines" :stderr-lines="stderrLines"

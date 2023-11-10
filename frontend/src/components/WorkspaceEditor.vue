@@ -2,11 +2,11 @@
 import { HandRaisedIcon, PencilSquareIcon, ViewfinderCircleIcon } from '@heroicons/vue/20/solid'
 import { reactive, ref, PropType } from 'vue'
 import ScopeEditor from './ScopeEditor.vue'
-import { workspace } from '../../wailsjs/go/models'
+import { Workspace, Scope } from '../lib/api/workspace'
 
 const props = defineProps({
   ws: {
-    type: Object as PropType<workspace.Workspace>,
+    type: Object as PropType<Workspace>,
     required: true,
   },
 })
@@ -33,11 +33,11 @@ function setWorkspaceName(event: Event) {
   modifiedWorkspace.name = name
 }
 
-function setScope(scope: workspace.Scope) {
+function setScope(scope: Scope) {
   modifiedWorkspace.scope = scope
 }
 
-function setInterceptionScope(scope: workspace.Scope) {
+function setInterceptionScope(scope: Scope) {
   modifiedWorkspace.interception_scope = scope
 }
 

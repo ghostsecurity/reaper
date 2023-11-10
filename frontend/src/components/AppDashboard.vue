@@ -1,10 +1,8 @@
 <script lang="ts" setup>
 import { onBeforeMount, onMounted, PropType, reactive, ref, watch } from 'vue'
 import { BarsArrowDownIcon, BeakerIcon, StarIcon, HandRaisedIcon } from '@heroicons/vue/20/solid'
-import { EventsEmit, EventsOn } from '../../wailsjs/runtime'
-import { HttpRequest, HttpResponse } from '../lib/Http'
+import { HttpRequest, HttpResponse } from '../lib/api/packaging'
 import { Criteria } from '../lib/Criteria/Criteria'
-import { node, workflow, workspace } from '../../wailsjs/go/models'
 import RequestList from './Http/RequestList.vue'
 import GroupedRequestList from './Http/GroupedRequestList.vue'
 import WorkspaceMenu from './WorkspaceMenu.vue'
@@ -12,14 +10,18 @@ import Search from './SearchInput.vue'
 import IDE from './Http/IDE.vue'
 import RequestInterceptor from './RequestInterceptor.vue'
 import WorkflowGUI from './Workflow/WorkflowGUI.vue'
-import { RunWorkflow, StopWorkflow } from '../../wailsjs/go/backend/App'
+import Client from '../lib/api/Client'
+import { Workspace } from '../lib/api/workspace'
+import { WorkflowM, UpdateM } from '../lib/api/workflow'
+import { OutputM } from '../lib/api/node'
 
 const props = defineProps({
-  ws: { type: Object as PropType<workspace.Workspace>, required: true },
+  ws: { type: Object as PropType<Workspace>, required: true },
   criteria: { type: Object as PropType<Criteria>, required: true },
   proxyAddress: { type: String, required: true },
   savedRequestIds: { type: Array as PropType<string[]>, required: false, default: () => [] },
   currentWorkflowId: { type: String, required: false, default: '' },
+  client: { type: Object as PropType<Client>, required: true },
 })
 
 const emit = defineEmits([
@@ -64,6 +66,15 @@ const handle = ref()
 const resizing = ref(false)
 
 let sendingReq: HttpRequest | null = null
+
+const lsTabKey = 'appdashtab'
+
+onBeforeMount(() => {
+  const tab = localStorage.getItem(lsTabKey)
+  if (tab) {
+    switchTab(tab)
+  }
+})
 
 watch(() => props.currentWorkflowId, id => {
   workflowId.value = id
@@ -117,13 +128,13 @@ watch(
 )
 
 function compareRequests(a: HttpRequest, b: HttpRequest) {
-  if (a.Method !== b.Method) {
+  if (a.method !== b.method) {
     return false
   }
-  if (a.URL !== b.URL) {
+  if (a.url !== b.url) {
     return false
   }
-  return a.Body === b.Body
+  return a.body === b.body
 }
 
 const flowStdout = ref([] as string[])
@@ -139,19 +150,19 @@ function isFinal(status: string | undefined): boolean {
 }
 
 onBeforeMount(() => {
-  EventsOn('WorkflowStarted', (id: string) => {
+  props.client.OnEvent('WorkflowStarted', (id: string) => {
     runningWorkflowId.value = id
   })
-  EventsOn('WorkflowFinished', () => {
+  props.client.OnEvent('WorkflowFinished', () => {
     runningWorkflowId.value = ''
   })
-  EventsOn('WorkflowUpdated', (data: workflow.UpdateM) => {
+  props.client.OnEvent('WorkflowUpdated', (data: UpdateM) => {
     if (isFinal(nodeStatuses.value.get(data.node))) {
       return
     }
     nodeStatuses.value.set(data.node, data.status)
   })
-  EventsOn('WorkflowOutput', (data: node.OutputM) => {
+  props.client.OnEvent('WorkflowOutput', (data: OutputM) => {
     switch (data.channel) {
       case 'stdout':
         flowStdout.value.push(data.message)
@@ -166,32 +177,32 @@ onBeforeMount(() => {
         throw new Error(`unknown channel ${data.channel}`)
     }
   })
-  EventsOn('HttpRequest', (data: HttpRequest) => {
+  props.client?.OnEvent('HttpRequest', (data: HttpRequest) => {
     requests.value.push(data)
     // TODO: better way to identify the request we're sending
     if (sendingReq !== null && compareRequests(data, sendingReq)) {
       sendingReq = data
     }
   })
-  EventsOn('HttpResponse', (response: HttpResponse) => {
-    if (sentInterceptedRequest.value !== null && sentInterceptedRequest.value.ID === response.ID) {
-      sentInterceptedRequest.value.Response = response
+  props.client?.OnEvent('HttpResponse', (response: HttpResponse) => {
+    if (sentInterceptedRequest.value !== null && sentInterceptedRequest.value.id === response.id) {
+      sentInterceptedRequest.value.response = response
     }
     for (let i = 0; i < requests.value.length; i += 1) {
-      if (requests.value[i].ID === response.ID) {
-        requests.value[i].Response = response
+      if (requests.value[i].id === response.id) {
+        requests.value[i].response = response
         const r = requests.value[i]
-        if (sendingReq !== null && sendingReq.ID === r.ID) {
+        if (sendingReq !== null && sendingReq.id === r.id) {
           sendingReq = null
           if (req.value !== null) {
-            req.value.Response = response
+            req.value.response = response
           }
         }
         break
       }
     }
   })
-  EventsOn('InterceptedRequestQueueChange', (count: number) => {
+  props.client?.OnEvent('InterceptedRequestQueueChange', (count: number) => {
     for (let i = 0; i < tabs.value.length; i += 1) {
       if (tabs.value[i].id === 'intercepted') {
         tabs.value[i].count = count
@@ -200,7 +211,7 @@ onBeforeMount(() => {
       }
     }
   })
-  EventsOn('InterceptedRequest', (request: HttpRequest) => {
+  props.client?.OnEvent('InterceptedRequest', (request: HttpRequest) => {
     interceptedRequest.value = request
   })
 })
@@ -269,6 +280,7 @@ function switchTab(id: string) {
     updatedTab.current = updatedTab.id === id
     return updatedTab
   })
+  localStorage.setItem(lsTabKey, id)
 }
 
 function selectTab(e: Event) {
@@ -288,11 +300,11 @@ function switchWorkspace() {
   emit('switch-workspace')
 }
 
-function unsaveRequest(r: HttpRequest | workspace.Request) {
+function unsaveRequest(r: HttpRequest | Request) {
   emit('unsave-request', r)
 }
 
-function duplicateRequest(r: workspace.Request) {
+function duplicateRequest(r: Request) {
   emit('duplicate-request', r)
 }
 
@@ -300,7 +312,7 @@ function saveRequest(r: HttpRequest, groupID: string) {
   emit('save-request', r, groupID)
 }
 
-function setRequestGroup(request: workspace.Request, groupID: string, nextID: string) {
+function setRequestGroup(request: Request, groupID: string, nextID: string) {
   emit('request-group-change', request, groupID, nextID)
 }
 
@@ -325,7 +337,7 @@ function renameRequest(requestId: string, name: string) {
 }
 
 function updateRequest(e: HttpRequest) {
-  if (req.value !== null && req.value.ID === e.ID) {
+  if (req.value !== null && req.value.id === e.id) {
     req.value = e
   }
   emit('update-request', e)
@@ -336,7 +348,7 @@ function dropInterceptedRequest(request: HttpRequest) {
     return
   }
   interceptedRequest.value = null
-  EventsEmit('InterceptedRequestDrop', request)
+  props.client?.DropInterceptedRequest(request)
 }
 
 function sendInterceptedRequest(request: HttpRequest) {
@@ -345,7 +357,7 @@ function sendInterceptedRequest(request: HttpRequest) {
   }
   sentInterceptedRequest.value = request
   interceptedRequest.value = null
-  EventsEmit('InterceptedRequestChange', request)
+  props.client?.ModifyInterceptedRequest(request)
 }
 
 function closeInterceptedRequest() {
@@ -353,7 +365,7 @@ function closeInterceptedRequest() {
 }
 
 function runWorkflow(id: string) {
-  const flow = props.ws?.workflows.find(w => w.id === id)
+  const flow = props.ws?.workflows.find((w: WorkflowM) => w.id === id)
   if (flow === undefined) {
     return
   }
@@ -361,15 +373,15 @@ function runWorkflow(id: string) {
   flowStderr.value = []
   flowActivity.value = []
   nodeStatuses.value = new Map<string, string>([])
-  RunWorkflow(flow)
+  props.client.RunWorkflow(flow)
 }
 
 function stopWorkflow(id: string) {
-  const flow = props.ws?.workflows.find(w => w.id === id)
+  const flow = props.ws?.workflows.find((w: WorkflowM) => w.id === id)
   if (flow === undefined) {
     return
   }
-  StopWorkflow(flow)
+  props.client.StopWorkflow(flow)
 }
 
 function createWorkflowFromRequest(r: HttpRequest) {
@@ -425,12 +437,12 @@ function createWorkflowFromRequest(r: HttpRequest) {
           <RequestList @save-request="saveRequest" @unsave-request="unsaveRequest" :saved-request-ids="savedRequestIds"
                        :key="liveCriteria.Raw" v-if="selectedTab() === 'log'"
                        :empty-message="'Reaper is ready to receive requests at ' + proxyAddress" :requests="requests"
-                       @select="examineRequest($event, true)" :selected="req ? req.ID : ''" :criteria="liveCriteria"
+                       @select="examineRequest($event, true)" :selected="req ? req.id : ''" :criteria="liveCriteria"
                        @create-workflow-from-request="createWorkflowFromRequest" @criteria-change="onSearch"/>
           <GroupedRequestList :key="liveCriteria.Raw" v-if="selectedTab() === 'saved'"
                               :groups="ws.collection.groups ? ws.collection.groups : []"
                               @select="examineRequest($event, false)"
-                              :selected="req ? req.ID : ''" :criteria="liveCriteria" :empty-title="'No saved requests'"
+                              :selected="req ? req.id : ''" :criteria="liveCriteria" :empty-title="'No saved requests'"
                               :empty-message="'Save some requests from the log stream to access them here'"
                               :empty-icon="StarIcon"
                               @request-group-change="setRequestGroup" @request-group-create="createRequestGroup"
@@ -440,7 +452,7 @@ function createWorkflowFromRequest(r: HttpRequest) {
                               @request-group-rename="renameGroup"
                               @create-workflow-from-request="createWorkflowFromRequest" @criteria-change="onSearch"
           />
-          <WorkflowGUI v-if="selectedTab() === 'workflows'" :ws="ws" :selected-workflow-id="workflowId"
+          <WorkflowGUI v-if="selectedTab() === 'workflows'" :client="client" :ws="ws" :selected-workflow-id="workflowId"
                        :running-workflow-id="runningWorkflowId"
                        @select="workflowId = $event" @save="emit('workspace-save', $event)" @run="runWorkflow($event)"
                        @stop="stopWorkflow($event)" :statuses="nodeStatuses" :stdout-lines="flowStdout"
@@ -448,7 +460,7 @@ function createWorkflowFromRequest(r: HttpRequest) {
                        :stderr-lines="flowStderr"
                        @clean="nodeStatuses.clear()"
           />
-          <RequestInterceptor v-if="selectedTab() === 'intercepted'" :request="interceptedRequest"
+          <RequestInterceptor v-if="selectedTab() === 'intercepted'" :client="client" :request="interceptedRequest"
                               :previous="sentInterceptedRequest"
                               :count="interceptionCount"
                               @drop="dropInterceptedRequest" @send="sendInterceptedRequest"
@@ -463,7 +475,8 @@ function createWorkflowFromRequest(r: HttpRequest) {
 
     <!-- request viewer/editor -->
     <div v-if="req" ref="rightPanel" class="mx-2 box-border h-full flex-auto overflow-hidden px-2">
-      <IDE :request="req" :readonly="reqReadOnly" @action="ideAction" @close="clearRequest" :fullscreen="fullscreenIDE"
+      <IDE :client="client" :request="req" :readonly="reqReadOnly" @action="ideAction" @close="clearRequest"
+           :fullscreen="fullscreenIDE"
            @fullscreen="toggleFullscreenIDE" @request-update="updateRequest($event)"
            :actions="reqReadOnly ? readOnlyActions : writeActions"/>
     </div>

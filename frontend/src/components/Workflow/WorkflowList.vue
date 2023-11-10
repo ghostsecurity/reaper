@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import { ref, PropType } from 'vue'
-import { BeakerIcon, TrashIcon, PencilSquareIcon } from '@heroicons/vue/20/solid'
-import { workflow } from '../../../wailsjs/go/models'
+import { TrashIcon, PencilSquareIcon } from '@heroicons/vue/20/solid'
+import { WorkflowM } from '../../lib/api/workflow'
 import ConfirmDialog from '../ConfirmDialog.vue'
 import InputBox from '../InputBox.vue'
 
 const props = defineProps({
-  flows: { type: Array as PropType<workflow.WorkflowM[]>, required: true },
+  flows: { type: Array as PropType<WorkflowM[]>, required: true },
   selected: { type: String, required: true },
 })
 
@@ -37,7 +37,6 @@ function renameWorkflow(name: string) {
   <div ref="root" class="flex overflow-x-hidden">
     <div v-if="!flows || flows.length === 0" class="w-full pl-8 pt-8 text-center text-frost-3">
       <div class="flex flex-col items-center">
-        <BeakerIcon class="h-12 w-12"/>
         <h3 class="mt-2 text-sm font-bold">No Workflows</h3>
         <p class="mt-1 text-sm">Create a workflow using the '+' button above.</p>
       </div>

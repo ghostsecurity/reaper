@@ -1,7 +1,7 @@
 import { Comparison, JoinType, Rule, Target } from './Rule'
 import Ruleset from './Ruleset'
 import Reader from './Reader'
-import { HttpRequest } from '../Http'
+import { HttpRequest } from '../api/packaging'
 
 export { Criteria, Ruleset }
 

@@ -4,3 +4,5 @@ frontend/dist
 .idea
 .vscode
 docs/_site
+
+dist/

@@ -1,10 +1,10 @@
 import { JoinType, Rule } from './Rule'
-import { HttpRequest } from '../Http'
+import { HttpRequest } from '../api/packaging'
 
 export default class Ruleset {
   JoinType: JoinType = JoinType.AND
 
-  Rulesets: Ruleset[] /* eslint-disable-line */
+    Rulesets: Ruleset[] /* eslint-disable-line */
 
   Rules: Rule[]
 
