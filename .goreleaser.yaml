@@ -3,12 +3,19 @@ before:
     - go mod tidy
     - make build
 builds:
-  - env:
+  - ldflags:
+    - -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version={{.Version}}' -X 'github.com/ghostsecurity/reaper/version.Date={{.Date}}' -s -w"
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
       - windows
       - darwin
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
 
 archives:
   - format: tar.gz
