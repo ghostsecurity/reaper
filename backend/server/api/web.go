@@ -56,7 +56,7 @@ type templateInput struct {
 
 func (a *API) handleLocalRequest(request *http.Request) *http.Response {
 
-	caDownload := base64.RawURLEncoding.EncodeToString(a.userSettings.Get().CACert)
+	caDownload := base64.RawURLEncoding.EncodeToString([]byte(a.userSettings.Get().CACert))
 	caDownloadURL := fmt.Sprintf("data:application/octet-stream;base64,%s", caDownload)
 
 	return a.createReaperMessageResponse(request, fmt.Sprintf(`

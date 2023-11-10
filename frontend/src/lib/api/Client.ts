@@ -4,12 +4,12 @@
 */
 import { MessageType, WebsocketMessage } from './websocket.type'
 // %IMPORTS:START%
+import { VersionInfo } from './api'
+import { UpdateM, NodeM, WorkflowM } from './workflow'
+import { OutputM } from './node'
 import { Workspace } from './workspace'
 import { HttpRequest } from './packaging'
 import { Settings } from './settings'
-import { UpdateM, WorkflowM, NodeM } from './workflow'
-import { VersionInfo } from './api'
-import { OutputM } from './node'
 // %IMPORTS:END%
 
 export default class Client {
@@ -164,12 +164,12 @@ export default class Client {
   }
 
   // %METHODS:START%
-  BindingsOnly(a: UpdateM, b: OutputM): Promise<void> {
+  BindingsOnly(a0: UpdateM, a1: OutputM): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const receive = () => {
         resolve()
       }
-      this.callMethod('BindingsOnly', [a, b], receive, reject)
+      this.callMethod('BindingsOnly', [a0, a1], receive, reject)
     })
   }
 
@@ -182,79 +182,79 @@ export default class Client {
     })
   }
 
-  CreateNode(a: number): Promise<NodeM|null> {
+  CreateNode(a0: number): Promise<NodeM|null> {
     return new Promise<NodeM|null>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output: NodeM|null = JSON.parse(args[0])
-        resolve(output)
+        const output0: NodeM|null = JSON.parse(args[0])
+        resolve(output0)
       }
-      this.callMethod('CreateNode', [a], receive, reject)
+      this.callMethod('CreateNode', [a0], receive, reject)
     })
   }
 
   CreateWorkflow(): Promise<WorkflowM|null> {
     return new Promise<WorkflowM|null>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output: WorkflowM|null = JSON.parse(args[0])
-        resolve(output)
+        const output0: WorkflowM|null = JSON.parse(args[0])
+        resolve(output0)
       }
       this.callMethod('CreateWorkflow', [], receive, reject)
     })
   }
 
-  CreateWorkflowFromRequest(a: {[key: string]: any}): Promise<WorkflowM|null> {
+  CreateWorkflowFromRequest(a0: {[key: string]: any}): Promise<WorkflowM|null> {
     return new Promise<WorkflowM|null>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output: WorkflowM|null = JSON.parse(args[0])
-        resolve(output)
+        const output0: WorkflowM|null = JSON.parse(args[0])
+        resolve(output0)
       }
-      this.callMethod('CreateWorkflowFromRequest', [a], receive, reject)
+      this.callMethod('CreateWorkflowFromRequest', [a0], receive, reject)
     })
   }
 
-  CreateWorkspace(a: Workspace|null): Promise<Workspace|null> {
+  CreateWorkspace(a0: Workspace|null): Promise<Workspace|null> {
     return new Promise<Workspace|null>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output: Workspace|null = JSON.parse(args[0])
-        resolve(output)
+        const output0: Workspace|null = JSON.parse(args[0])
+        resolve(output0)
       }
-      this.callMethod('CreateWorkspace', [a], receive, reject)
+      this.callMethod('CreateWorkspace', [a0], receive, reject)
     })
   }
 
-  DeleteWorkspace(a: string): Promise<void> {
+  DeleteWorkspace(a0: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const receive = () => {
         resolve()
       }
-      this.callMethod('DeleteWorkspace', [a], receive, reject)
+      this.callMethod('DeleteWorkspace', [a0], receive, reject)
     })
   }
 
-  DropInterceptedRequest(a: HttpRequest): Promise<void> {
+  DropInterceptedRequest(a0: HttpRequest): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const receive = () => {
         resolve()
       }
-      this.callMethod('DropInterceptedRequest', [a], receive, reject)
+      this.callMethod('DropInterceptedRequest', [a0], receive, reject)
     })
   }
 
-  FormatCode(a: string, b: string): Promise<string> {
+  FormatCode(a0: string, a1: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output: string = JSON.parse(args[0])
-        resolve(output)
+        const output0: string = JSON.parse(args[0])
+        resolve(output0)
       }
-      this.callMethod('FormatCode', [a, b], receive, reject)
+      this.callMethod('FormatCode', [a0, a1], receive, reject)
     })
   }
 
   GenerateID(): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output: string = JSON.parse(args[0])
-        resolve(output)
+        const output0: string = JSON.parse(args[0])
+        resolve(output0)
       }
       this.callMethod('GenerateID', [], receive, reject)
     })
@@ -263,8 +263,8 @@ export default class Client {
   GetSettings(): Promise<Settings> {
     return new Promise<Settings>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output: Settings = JSON.parse(args[0])
-        resolve(output)
+        const output0: Settings = JSON.parse(args[0])
+        resolve(output0)
       }
       this.callMethod('GetSettings', [], receive, reject)
     })
@@ -273,8 +273,8 @@ export default class Client {
   GetVersionInfo(): Promise<VersionInfo> {
     return new Promise<VersionInfo>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output: VersionInfo = JSON.parse(args[0])
-        resolve(output)
+        const output0: VersionInfo = JSON.parse(args[0])
+        resolve(output0)
       }
       this.callMethod('GetVersionInfo', [], receive, reject)
     })
@@ -283,8 +283,8 @@ export default class Client {
   GetWorkspace(): Promise<Workspace|null> {
     return new Promise<Workspace|null>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output: Workspace|null = JSON.parse(args[0])
-        resolve(output)
+        const output0: Workspace|null = JSON.parse(args[0])
+        resolve(output0)
       }
       this.callMethod('GetWorkspace', [], receive, reject)
     })
@@ -293,94 +293,94 @@ export default class Client {
   GetWorkspaces(): Promise<Workspace[]> {
     return new Promise<Workspace[]>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output: Workspace[] = JSON.parse(args[0])
-        resolve(output)
+        const output0: Workspace[] = JSON.parse(args[0])
+        resolve(output0)
       }
       this.callMethod('GetWorkspaces', [], receive, reject)
     })
   }
 
-  HighlightBody(a: string, b: string): Promise<string> {
+  HighlightBody(a0: string, a1: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output: string = JSON.parse(args[0])
-        resolve(output)
+        const output0: string = JSON.parse(args[0])
+        resolve(output0)
       }
-      this.callMethod('HighlightBody', [a, b], receive, reject)
+      this.callMethod('HighlightBody', [a0, a1], receive, reject)
     })
   }
 
-  HighlightHTTP(a: string): Promise<string> {
+  HighlightHTTP(a0: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output: string = JSON.parse(args[0])
-        resolve(output)
+        const output0: string = JSON.parse(args[0])
+        resolve(output0)
       }
-      this.callMethod('HighlightHTTP', [a], receive, reject)
+      this.callMethod('HighlightHTTP', [a0], receive, reject)
     })
   }
 
-  LoadWorkspace(a: string): Promise<Workspace|null> {
+  LoadWorkspace(a0: string): Promise<Workspace|null> {
     return new Promise<Workspace|null>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output: Workspace|null = JSON.parse(args[0])
-        resolve(output)
+        const output0: Workspace|null = JSON.parse(args[0])
+        resolve(output0)
       }
-      this.callMethod('LoadWorkspace', [a], receive, reject)
+      this.callMethod('LoadWorkspace', [a0], receive, reject)
     })
   }
 
-  ModifyInterceptedRequest(a: HttpRequest): Promise<void> {
+  ModifyInterceptedRequest(a0: HttpRequest): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const receive = () => {
         resolve()
       }
-      this.callMethod('ModifyInterceptedRequest', [a], receive, reject)
+      this.callMethod('ModifyInterceptedRequest', [a0], receive, reject)
     })
   }
 
-  RunWorkflow(a: WorkflowM|null): Promise<void> {
+  RunWorkflow(a0: WorkflowM|null): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const receive = () => {
         resolve()
       }
-      this.callMethod('RunWorkflow', [a], receive, reject)
+      this.callMethod('RunWorkflow', [a0], receive, reject)
     })
   }
 
-  SaveSettings(a: Settings|null): Promise<void> {
+  SaveSettings(a0: Settings|null): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const receive = () => {
         resolve()
       }
-      this.callMethod('SaveSettings', [a], receive, reject)
+      this.callMethod('SaveSettings', [a0], receive, reject)
     })
   }
 
-  SaveWorkspace(a: Workspace|null): Promise<void> {
+  SaveWorkspace(a0: Workspace|null): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const receive = () => {
         resolve()
       }
-      this.callMethod('SaveWorkspace', [a], receive, reject)
+      this.callMethod('SaveWorkspace', [a0], receive, reject)
     })
   }
 
-  SendRequest(a: HttpRequest): Promise<void> {
+  SendRequest(a0: HttpRequest): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const receive = () => {
         resolve()
       }
-      this.callMethod('SendRequest', [a], receive, reject)
+      this.callMethod('SendRequest', [a0], receive, reject)
     })
   }
 
-  SetWorkspace(a: Workspace|null): Promise<void> {
+  SetWorkspace(a0: Workspace|null): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const receive = () => {
         resolve()
       }
-      this.callMethod('SetWorkspace', [a], receive, reject)
+      this.callMethod('SetWorkspace', [a0], receive, reject)
     })
   }
 
@@ -402,30 +402,30 @@ export default class Client {
     })
   }
 
-  StopWorkflow(a: WorkflowM|null): Promise<void> {
+  StopWorkflow(a0: WorkflowM|null): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const receive = () => {
         resolve()
       }
-      this.callMethod('StopWorkflow', [a], receive, reject)
+      this.callMethod('StopWorkflow', [a0], receive, reject)
     })
   }
 
   // %METHODS:END%
 
   /*
-                    Test(a: string): Promise<string> {
-                    let res: (value: string | PromiseLike<string>) => void;
-                    let rej: (reason?: any) => void;
-                    return new Promise<string>((resolve, reject) => {
-                        res = resolve;
-                        rej = reject;
-                        const receive = (_: string[]) => {
-                            let a: string = JSON.parse(args[0]);
-                            res(a);
-                        }
-                        this.callMethod("Test", [a], receive, rej);
-                    })
+                      Test(a: string): Promise<string> {
+                      let res: (value: string | PromiseLike<string>) => void;
+                      let rej: (reason?: any) => void;
+                      return new Promise<string>((resolve, reject) => {
+                          res = resolve;
+                          rej = reject;
+                          const receive = (_: string[]) => {
+                              let a: string = JSON.parse(args[0]);
+                              res(a);
+                          }
+                          this.callMethod("Test", [a], receive, rej);
+                      })
 
-                 */
+                   */
 }

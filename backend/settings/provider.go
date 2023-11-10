@@ -29,8 +29,8 @@ func (p *Provider) Modify(modifier func(s *Settings)) error {
 	cert := make([]byte, len(p.settings.CACert))
 	copy(cert, p.settings.CACert)
 
-	p.settings.CAKey = key
-	p.settings.CACert = cert
+	p.settings.CAKey = string(key)
+	p.settings.CACert = string(cert)
 
 	modifier(&p.settings)
 	return Save(&p.settings)

@@ -46,7 +46,7 @@ func New(userSettings *settings.Provider, logger *log.Logger) (*Proxy, error) {
 	}
 	logger.Infof("Creating proxy on %s...", addr)
 	proxy := goproxy.NewProxyHttpServer()
-	ca, err := tls.X509KeyPair(userSettings.Get().CACert, userSettings.Get().CAKey)
+	ca, err := tls.X509KeyPair([]byte(userSettings.Get().CACert), []byte(userSettings.Get().CAKey))
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,6 @@ import List from './WorkflowList.vue'
 import InputBox from '../InputBox.vue'
 import Editor from './WorkflowEditor.vue'
 import Client from '../../lib/api/Client'
-import { VarStorageM } from '../../lib/api/node'
 
 const props = defineProps({
   ws: { type: Object as PropType<Workspace>, required: true },
@@ -105,7 +104,7 @@ function renameWorkflow(id: string, name: string) {
 }
 
 function importWorkflow() {
-  const { files, open, reset, onChange } = useFileDialog()
+  const { open, onChange } = useFileDialog()
   open({ multiple: false, directory: false, accept: '.atk' })
   onChange((files: FileList) => {
     if (files.length === 0) {

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"reflect"
 	"strings"
 )
 
@@ -15,7 +14,7 @@ type TSPkg struct {
 	imports map[string]map[string]struct{} // path -> types
 }
 
-func generateTypes(types []PackageType) error {
+func generateTypes(summary Summary) error {
 
 	entries, err := os.ReadDir(basePath)
 	if err != nil {
@@ -29,42 +28,17 @@ func generateTypes(types []PackageType) error {
 		}
 	}
 
-	packageMap := make(map[string]TSPkg)
-	cache := make(map[string]struct{})
-
-	for _, typ := range types {
-		if typ.PackagePath == "" {
+	// organise types by package
+	packageMap := make(map[string][]Type)
+	for _, t := range summary.Types {
+		if !t.IsBase || t.TSPackage == "" {
 			continue
 		}
-		data, err := generateType(typ, cache)
-		if err != nil {
-			return fmt.Errorf("failed to generate type '%s': %w", typ.Go, err)
-		}
-		pkg := packageMap[typ.PackageName]
-		pkg.code = append(pkg.code, data...)
-		if pkg.imports == nil {
-			pkg.imports = make(map[string]map[string]struct{})
-		}
-		for _, dep := range typ.Deps {
-			if dep.PackagePath == "" {
-				continue
-			}
-			existing := pkg.imports[dep.PackageName]
-			if existing == nil {
-				existing = make(map[string]struct{})
-			}
-			existing[dep.Simplified] = struct{}{}
-			pkg.imports[dep.PackageName] = existing
-		}
-
-		packageMap[typ.PackageName] = pkg
+		packageMap[t.TSPackage] = append(packageMap[t.TSPackage], t)
 	}
 
-	for dir, pkg := range packageMap {
-
-		if len(pkg.code) == 0 {
-			continue
-		}
+	/// and write them
+	for dir, types := range packageMap {
 
 		if err := os.MkdirAll(basePath+dir, 0755); err != nil {
 			return fmt.Errorf("failed to create directory '%s': %w", dir, err)
@@ -72,19 +46,37 @@ func generateTypes(types []PackageType) error {
 
 		file := bytes.NewBuffer(nil)
 
-		for path, names := range pkg.imports {
-			if path == dir {
-				continue
+		// add imports
+		importMap := make(map[string]map[string]struct{})
+		for _, t := range types {
+			for _, field := range t.Fields {
+				if !field.IsBase && field.Base != nil {
+					field = *field.Base
+				}
+				if field.TSPackage == "" || field.TSPackage == dir {
+					continue
+				}
+				if _, ok := importMap[field.TSPackage]; !ok {
+					importMap[field.TSPackage] = make(map[string]struct{})
+				}
+				importMap[field.TSPackage][field.TSName] = struct{}{}
 			}
-			var typeList []string
-			for name := range names {
-				typeList = append(typeList, name)
+		}
+		// and import them
+		for pkg, types := range importMap {
+			var typeNames []string
+			for typ := range types {
+				typeNames = append(typeNames, typ)
 			}
-			_, _ = fmt.Fprintf(file, "import {%s} from \"../%s\";\n", strings.Join(typeList, ", "), path)
+			_, _ = fmt.Fprintf(file, "import { %s } from '../%s'\n", strings.Join(typeNames, ", "), pkg)
 		}
 
-		if _, err := file.Write(pkg.code); err != nil {
-			return fmt.Errorf("failed to write file '%s': %w", dir+"/index.ts", err)
+		if len(importMap) > 0 {
+			_, _ = fmt.Fprint(file, "\n")
+		}
+
+		for _, t := range types {
+			_, _ = fmt.Fprint(file, t.TSDefinition()+"\n\n")
 		}
 
 		if err := os.WriteFile(basePath+dir+"/index.ts", file.Bytes(), 0644); err != nil {
@@ -93,46 +85,4 @@ func generateTypes(types []PackageType) error {
 	}
 
 	return nil
-}
-
-func generateType(typ PackageType, cache map[string]struct{}) ([]byte, error) {
-	if _, ok := cache[typ.Go.PkgPath()+":"+typ.Go.String()]; ok {
-		return nil, nil
-	}
-	cache[typ.Go.PkgPath()+":"+typ.Go.String()] = struct{}{}
-	switch typ.Go.Kind() {
-	case reflect.Struct:
-		return generateStruct(typ, cache)
-	case reflect.Uint32:
-		return []byte(fmt.Sprintf("export type %s = number;\n\n", typ.Simplified)), nil
-	default:
-		return nil, fmt.Errorf("unsupported kind '%s'", typ.Go.Kind())
-	}
-}
-
-func generateStruct(typ PackageType, cache map[string]struct{}) ([]byte, error) {
-	buffer := bytes.NewBuffer(nil)
-	_, _ = fmt.Fprintf(buffer, "\nexport interface %s {\n", typ.Simplified)
-	for f := 0; f < typ.Go.NumField(); f++ {
-		field := typ.Go.Field(f)
-		if !field.IsExported() {
-			continue
-		}
-		jt := field.Tag.Get("json")
-		if len(jt) == 0 {
-			continue
-		}
-		parts := strings.Split(jt, ",")
-		name := parts[0]
-		if name == "-" || name == "" {
-			continue
-		}
-		tsType, err := (&converter{}).convertType(field.Type, typ.Go.PkgPath())
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert type '%s': %w", field.Type.Name(), err)
-		}
-		_, _ = fmt.Fprintf(buffer, "  %s: %s\n", name, tsType.Alias)
-	}
-	_, _ = fmt.Fprintf(buffer, "}\n\n")
-	return buffer.Bytes(), nil
 }

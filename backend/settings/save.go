@@ -24,7 +24,7 @@ func Save(s *Settings) error {
 		return fmt.Errorf("failed to encode settings: %w", err)
 	}
 
-	if saveCA(s.CACert, s.CAKey) != nil {
+	if saveCA([]byte(s.CACert), []byte(s.CAKey)) != nil {
 		return fmt.Errorf("failed to save CA: %w", err)
 	}
 

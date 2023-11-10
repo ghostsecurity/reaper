@@ -35,7 +35,8 @@ function setDarkMode(darkMode: boolean) {
 }
 
 function exportCA() {
-  saveAs(new Blob([props.settings.ca_cert.buffer]), 'cert.crt')
+  const dataURL = `data:application/x-x509-ca-cert;base64,${btoa(props.settings.ca_cert)}`
+  saveAs(dataURL, 'reaper-cert.crt')
 }
 
 /**
