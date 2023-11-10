@@ -1,4 +1,4 @@
-package backend
+package api
 
 import (
 	"bytes"
@@ -54,7 +54,7 @@ type templateInput struct {
 	Hostname string
 }
 
-func (a *App) handleLocalRequest(request *http.Request) *http.Response {
+func (a *API) handleLocalRequest(request *http.Request) *http.Response {
 
 	caDownload := base64.RawURLEncoding.EncodeToString(a.userSettings.Get().CACert)
 	caDownloadURL := fmt.Sprintf("data:application/octet-stream;base64,%s", caDownload)
@@ -69,7 +69,7 @@ func (a *App) handleLocalRequest(request *http.Request) *http.Response {
 `, caDownloadURL))
 }
 
-func (a *App) createRawMessageResponse(req *http.Request, data io.Reader, contentType string) *http.Response {
+func createRawMessageResponse(req *http.Request, data io.Reader, contentType string) *http.Response {
 	return &http.Response{
 		StatusCode: 200,
 		Proto:      "HTTP/1.1",
@@ -83,13 +83,13 @@ func (a *App) createRawMessageResponse(req *http.Request, data io.Reader, conten
 	}
 }
 
-func (a *App) createReaperMessageResponse(req *http.Request, msg string) *http.Response {
+func (a *API) createReaperMessageResponse(req *http.Request, msg string) *http.Response {
 	buf := bytes.NewBuffer(nil)
 	if err := brandedTemplate.Execute(buf, templateInput{
 		Msg:      template.HTML(msg),
 		Hostname: a.userSettings.Get().ProxyHost,
 	}); err != nil {
-		return a.createRawMessageResponse(req, strings.NewReader(msg), "text/plain")
+		return createRawMessageResponse(req, strings.NewReader(msg), "text/plain")
 	}
-	return a.createRawMessageResponse(req, buf, "text/html")
+	return createRawMessageResponse(req, buf, "text/html")
 }

@@ -1,13 +1,14 @@
 <script lang="ts" setup>
-import { computed, PropType, ref, watch } from 'vue'
-import { XMarkIcon, FolderIcon } from '@heroicons/vue/20/solid'
-import { node, workflow } from '../../../wailsjs/go/models'
-import { NodeType, ParentType, NodeTypeName, ChildType } from '../../lib/Workflows'
+import {useFileDialog} from '@vueuse/core'
+import {computed, PropType, ref, watch} from 'vue'
+import {XMarkIcon, FolderIcon} from '@heroicons/vue/20/solid'
+import {NodeM} from '../../lib/api/workflow'
+import {TransmissionM, Connector, VarStorageM} from '../../lib/api/node'
+import {NodeType, ParentType, NodeTypeName, ChildType} from '../../lib/Workflows'
 import IDE from '../Http/IDE.vue'
-import { HttpRequest } from '../../lib/Http'
 import KeyValEditor from '../KeyValEditor.vue'
-import { KeyValue } from '../../lib/KeyValue'
-import { SelectFile } from '../../../wailsjs/go/backend/App'
+import Client from "../../lib/api/Client";
+import {HttpRequest, KeyValue} from "../../lib/api/packaging";
 
 interface IMap<T> {
   [index: string]: T;
@@ -19,10 +20,11 @@ interface Choice {
 }
 
 const props = defineProps({
-  node: { type: Object as PropType<workflow.NodeM>, required: true },
+  node: {type: Object as PropType<NodeM>, required: true},
+  client: {type: Object as PropType<Client>, required: true},
 })
 
-const safe = ref<workflow.NodeM>(safeCopy(props.node))
+const safe = ref<NodeM>(safeCopy(props.node))
 watch(() => props.node, n => {
   if (n) {
     safe.value = safeCopy(n)
@@ -31,8 +33,8 @@ watch(() => props.node, n => {
 
 const emit = defineEmits(['update', 'close'])
 
-function safeCopy(n: workflow.NodeM): workflow.NodeM {
-  const c = JSON.parse(JSON.stringify(n)) as workflow.NodeM
+function safeCopy(n: NodeM): NodeM {
+  const c = JSON.parse(JSON.stringify(n)) as NodeM
   if (!c.name) {
     c.name = NodeTypeName(c.type as NodeType)
   }
@@ -43,7 +45,7 @@ function publish() {
   emit('update', safe.value)
 }
 
-const staticInputs = computed(() => safe.value?.vars?.inputs?.filter(input => {
+const staticInputs = computed(() => safe.value?.vars?.inputs?.filter((input: Connector) => {
   switch (input.type) {
     case ParentType.STRING:
       return true
@@ -60,7 +62,7 @@ const staticInputs = computed(() => safe.value?.vars?.inputs?.filter(input => {
   }
 }) || [])
 
-function updateStringField(field: node.Connector, event: Event) {
+function updateStringField(field: Connector, event: Event) {
   if (!safe.value?.vars?.static) {
     return
   }
@@ -68,7 +70,7 @@ function updateStringField(field: node.Connector, event: Event) {
   publish()
 }
 
-function updateIntField(field: node.Connector, event: Event) {
+function updateIntField(field: Connector, event: Event) {
   if (!safe.value?.vars?.static) {
     return
   }
@@ -81,7 +83,7 @@ function updateIntField(field: node.Connector, event: Event) {
   publish()
 }
 
-function isFieldChildType(field: node.Connector, type: ChildType) {
+function isFieldChildType(field: Connector, type: ChildType) {
   const actual = safe.value.vars?.static[field.name]?.internal
   if (!actual) {
     return false
@@ -89,16 +91,16 @@ function isFieldChildType(field: node.Connector, type: ChildType) {
   return actual === type
 }
 
-function updateListType(field: node.Connector, ev: Event) {
+function updateListType(field: Connector, ev: Event) {
   if (!safe.value || !safe.value.vars?.static[field.name]) {
     return
   }
   const newType = parseInt((ev.target as HTMLSelectElement).value, 10)
-  safe.value.vars.static[field.name] = new node.TransmissionM({
+  safe.value.vars.static[field.name] = {
     type: ParentType.LIST,
     internal: newType,
     data: createDefaultListData(newType),
-  })
+  } as TransmissionM
   publish()
 }
 
@@ -113,7 +115,7 @@ function createDefaultListData(t: ChildType) {
   }
 }
 
-function updateNumericRangeStart(field: node.Connector, ev: Event) {
+function updateNumericRangeStart(field: Connector, ev: Event) {
   if (!safe.value || !safe.value.vars?.static[field.name]) {
     return
   }
@@ -122,7 +124,7 @@ function updateNumericRangeStart(field: node.Connector, ev: Event) {
   publish()
 }
 
-function updateNumericRangeEnd(field: node.Connector, ev: Event) {
+function updateNumericRangeEnd(field: Connector, ev: Event) {
   if (!safe.value || !safe.value.vars?.static[field.name]) {
     return
   }
@@ -133,7 +135,7 @@ function updateNumericRangeEnd(field: node.Connector, ev: Event) {
 
 const requestActions = new Map<string, string>([])
 
-function updateRequestField(field: node.Connector, req: HttpRequest) {
+function updateRequestField(field: Connector, req: HttpRequest) {
   if (!safe.value || !safe.value.vars?.static[field.name]) {
     return
   }
@@ -141,41 +143,41 @@ function updateRequestField(field: node.Connector, req: HttpRequest) {
   publish()
 }
 
-function updateMapField(field: node.Connector, kvs: KeyValue[]) {
+function updateMapField(field: Connector, kvs: KeyValue[]) {
   if (!safe.value || !safe.value.vars?.static[field.name]) {
     return
   }
   const m = new Map<string, string>([])
   kvs.forEach(kv => {
-    m.set(kv.Key, kv.Value)
+    m.set(kv.key, kv.value)
   })
   safe.value.vars.static[field.name].data = Object.fromEntries(m)
   publish()
 }
 
-function keyValsFromMap(field: node.Connector): KeyValue[] {
+function keyValsFromMap(field: Connector): KeyValue[] {
   const data = safe.value.vars?.static[field.name]?.data
   if (data) {
     return Object.entries(data).map(([k, v]) => ({
-      Key: k,
-      Value: v,
+      key: k,
+      value: v,
     } as KeyValue))
   }
   return []
 }
 
-function keyValsFromChoice(field: node.Connector): KeyValue[] {
+function keyValsFromChoice(field: Connector): KeyValue[] {
   const data = (safe.value.vars?.static[field.name]?.data as Choice).options
   if (data) {
     return Object.entries(data).map(([k, v]) => ({
-      Key: k,
-      Value: v,
+      key: k,
+      value: v,
     } as KeyValue)).sort()
   }
   return []
 }
 
-function updateBooleanField(field: node.Connector, ev: Event) {
+function updateBooleanField(field: Connector, ev: Event) {
   if (!safe.value || !safe.value.vars?.static[field.name]) {
     return
   }
@@ -184,7 +186,7 @@ function updateBooleanField(field: node.Connector, ev: Event) {
   publish()
 }
 
-function updateChoiceField(field: node.Connector, ev: Event) {
+function updateChoiceField(field: Connector, ev: Event) {
   if (!safe.value || !safe.value.vars?.static[field.name]) {
     return
   }
@@ -193,7 +195,7 @@ function updateChoiceField(field: node.Connector, ev: Event) {
   publish()
 }
 
-function getLabel(field: node.Connector) {
+function getLabel(field: Connector) {
   const label = field.name.replace(/_/g, ' ')
   if (!field.description) {
     return label
@@ -201,30 +203,27 @@ function getLabel(field: node.Connector) {
   return `${label} (${field.description})`
 }
 
-function getBase(path: string): string {
-  const parts = path.split('/')
-  return parts.pop() as string
-}
-
-function updateWordList(field: node.Connector) {
+function updateWordList(field: Connector) {
   if (!safe.value || !safe.value.vars) {
     return
   }
-  SelectFile('Select wordlist').then(
-    (path: string) => {
-      if (!path) {
-        return
-      }
+
+  const {files, open, reset, onChange} = useFileDialog()
+  open({multiple: false, directory: false})
+  onChange((files: FileList) => {
+    if (files.length === 0) {
+      return
+    }
+    const reader = new FileReader();
+    reader.onload = function () {
       if (!safe.value.vars) {
-        safe.value.vars = new node.VarStorageM({})
+        safe.value.vars = {} as VarStorageM
       }
-      safe.value.vars.static[field.name].data = path
+      safe.value.vars.static[field.name].data = reader.result
       publish()
-    },
-    (err: Error) => {
-      throw err
-    },
-  )
+    };
+    reader.readAsText(files[0])
+  })
 }
 
 </script>
@@ -348,9 +347,7 @@ function updateWordList(field: node.Connector) {
                 </button>
                 <div class="grow cursor-pointer pt-1" @click="updateWordList(field)">
                   <p
-                      v-if="safe.vars?.static[field.name].data">{{
-                      getBase(safe.vars?.static[field.name].data)
-                    }}</p>
+                      v-if="safe.vars?.static[field.name].data">Wordlist Data</p>
                   <p class="italic" v-else>No file selected</p>
                 </div>
               </div>
@@ -397,16 +394,16 @@ function updateWordList(field: node.Connector) {
             <select :id="field.name" :name="field.name" @change="updateChoiceField(field, $event)"
                     class="flex-1 border-0 bg-polar-night-2 px-2 py-1.5 text-snow-storm-1 focus:ring-0 sm:text-sm sm:leading-6">
               <option
-                  v-bind:key="option.Key"
+                  v-bind:key="option.key"
                   v-for="option in keyValsFromChoice(field)"
-                  :value="option.Key"
-                  :selected="(safe.vars?.static[field.name].data as Choice).key === option.Key">{{ option.Value }}
+                  :value="option.key"
+                  :selected="(safe.vars?.static[field.name].data as Choice).key === option.key">{{ option.value }}
               </option>
             </select>
           </div>
         </div>
         <div v-else-if="field.type === ParentType.REQUEST" class="sm:col-span-4">
-          <IDE :request="safe.vars?.static[field.name].data" :actions="requestActions"
+          <IDE :client="client" :request="safe.vars?.static[field.name].data" :actions="requestActions"
                :readonly="false" :show-buttons="false"
                @request-update="updateRequestField(field, $event)"/>
         </div>

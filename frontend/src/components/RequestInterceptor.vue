@@ -1,39 +1,41 @@
 <script lang="ts" setup>
-import { PropType, ref, watch } from 'vue'
-import { HandRaisedIcon } from '@heroicons/vue/20/solid'
-import { HttpRequest } from '../lib/Http'
+import {PropType, ref, watch} from 'vue'
+import {HandRaisedIcon} from '@heroicons/vue/20/solid'
 import IDE from './Http/IDE.vue'
+import Client from "../lib/api/Client";
+import {HttpRequest} from "../lib/api/packaging";
 
 const props = defineProps(
-  {
-    emptyTitle: { type: String, required: false, default: 'Nothing intercepted yet.' },
-    emptyMessage: {
-      type: String,
-      required: false,
-      default: 'Configure your interception rules and start intercepting requests.',
+    {
+      emptyTitle: {type: String, required: false, default: 'Nothing intercepted yet.'},
+      emptyMessage: {
+        type: String,
+        required: false,
+        default: 'Configure your interception rules and start intercepting requests.',
+      },
+      emptyIcon: {type: Object, required: false, default: HandRaisedIcon},
+      request: {type: Object as PropType<HttpRequest | null>, required: false, default: null},
+      previous: {type: Object as PropType<HttpRequest | null>, required: false, default: null},
+      count: {type: Number, required: false, default: 0},
+      client: {type: Object as PropType<Client>, required: true},
     },
-    emptyIcon: { type: Object, required: false, default: HandRaisedIcon },
-    request: { type: Object as PropType<HttpRequest | null>, required: false, default: null },
-    previous: { type: Object as PropType<HttpRequest | null>, required: false, default: null },
-    count: { type: Number, required: false, default: 0 },
-  },
 )
 
 const req = ref<HttpRequest | null>(props.request)
 const previous = ref<HttpRequest | null>(props.previous)
 
 watch(
-  () => props.request,
-  () => {
-    req.value = props.request
-  },
+    () => props.request,
+    () => {
+      req.value = props.request
+    },
 )
 
 watch(
-  () => props.previous,
-  () => {
-    previous.value = props.previous
-  },
+    () => props.previous,
+    () => {
+      previous.value = props.previous
+    },
 )
 
 const writeActions = new Map<string, string>([
@@ -83,11 +85,11 @@ function closePrevious() {
 
 <template>
   <div class="h-full w-full">
-    <IDE v-if="!!previous" :request="previous" :readonly="true"
+    <IDE v-if="!!previous" :client="client" :request="previous" :readonly="true"
          :actions="readActions"
          @action="action"
          @close="closePrevious"/>
-    <IDE v-else-if="!!req" :request="req" :readonly="false"
+    <IDE v-else-if="!!req" :client="client" :request="req" :readonly="false"
          :actions="writeActions"
          @action="action"
          @request-update="update($event)"

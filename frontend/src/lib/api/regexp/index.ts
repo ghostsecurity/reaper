@@ -1,4 +1,4 @@
 
-export interface Regexp {
+export interface RegExp {
 }
 

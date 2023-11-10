@@ -1,24 +1,25 @@
 <script lang="ts" setup>
-import { reactive, ref, PropType } from 'vue'
-import { CheckIcon, XMarkIcon, PencilIcon, TrashIcon } from '@heroicons/vue/20/solid'
-import { workspace } from '../../wailsjs/go/models'
+import {reactive, ref, PropType} from 'vue'
+import {CheckIcon, XMarkIcon, PencilIcon, TrashIcon} from '@heroicons/vue/20/solid'
+import {Rule} from '../lib/api/workspace'
 
 const props = defineProps({
-  rule: { type: Object as PropType<workspace.Rule>, required: true },
-  saved: { type: Boolean, required: false, default: false },
+  rule: {type: Object as PropType<Rule>, required: true},
+  saved: {type: Boolean, required: false, default: false},
 })
 
 const emit = defineEmits(['save', 'cancel', 'remove'])
 
-const modifiedRule = reactive({ ...props.rule })
+const modifiedRule = reactive({...props.rule})
 const editing = ref(!props.saved)
 const savedLocally = ref(props.saved)
 
 function startEdit() {
   editing.value = true
 }
+
 function save() {
-  emit('save', { ...modifiedRule })
+  emit('save', {...modifiedRule})
   editing.value = false
   savedLocally.value = true
 }
@@ -26,11 +27,11 @@ function save() {
 function cancel() {
   editing.value = false
   Object.assign(modifiedRule, props.rule)
-  emit('cancel', { ...props.rule }, savedLocally.value)
+  emit('cancel', {...props.rule}, savedLocally.value)
 }
 
 function remove() {
-  emit('remove', { ...modifiedRule })
+  emit('remove', {...modifiedRule})
 }
 
 function portsString(): string {
@@ -44,9 +45,9 @@ function changePorts(e: Event) {
     return
   }
   modifiedRule.ports = raw
-    .split(',')
-    .map(port => parseInt(port.trim(), 10))
-    .filter(port => !Number.isNaN(port))
+      .split(',')
+      .map(port => parseInt(port.trim(), 10))
+      .filter(port => !Number.isNaN(port))
 }
 </script>
 
@@ -62,14 +63,14 @@ function changePorts(e: Event) {
             </label>
             <div class="mt-1 sm:col-span-1 sm:mt-0">
               <input
-                autocomplete="off"
-                autocapitalize="off"
-                spellcheck="false"
-                v-model="modifiedRule.host"
-                type="text"
-                name="first-name"
-                id="first-name"
-                class="block w-full max-w-lg rounded-md bg-polar-night-4 text-sm shadow-sm focus:border-frost-1 focus:ring-frost-1" />
+                  autocomplete="off"
+                  autocapitalize="off"
+                  spellcheck="false"
+                  v-model="modifiedRule.host"
+                  type="text"
+                  name="first-name"
+                  id="first-name"
+                  class="block w-full max-w-lg rounded-md bg-polar-night-4 text-sm shadow-sm focus:border-frost-1 focus:ring-frost-1"/>
             </div>
           </div>
 
@@ -80,14 +81,14 @@ function changePorts(e: Event) {
             </label>
             <div class="mt-1 sm:col-span-1 sm:mt-0">
               <input
-                autocomplete="off"
-                autocapitalize="off"
-                spellcheck="false"
-                v-model="modifiedRule.path"
-                type="text"
-                name="last-name"
-                id="last-name"
-                class="block w-full max-w-lg rounded-md bg-polar-night-4 text-sm shadow-sm focus:border-frost-1 focus:ring-frost-1" />
+                  autocomplete="off"
+                  autocapitalize="off"
+                  spellcheck="false"
+                  v-model="modifiedRule.path"
+                  type="text"
+                  name="last-name"
+                  id="last-name"
+                  class="block w-full max-w-lg rounded-md bg-polar-night-4 text-sm shadow-sm focus:border-frost-1 focus:ring-frost-1"/>
             </div>
           </div>
 
@@ -98,15 +99,15 @@ function changePorts(e: Event) {
             </label>
             <div class="mt-1 sm:col-span-1 sm:mt-0">
               <input
-                autocomplete="off"
-                autocapitalize="off"
-                spellcheck="false"
-                id="email"
-                name="email"
-                type="text"
-                :value="portsString()"
-                @change="changePorts"
-                class="block w-full max-w-lg rounded-md bg-polar-night-4 text-sm shadow-sm focus:border-frost-1 focus:ring-frost-1" />
+                  autocomplete="off"
+                  autocapitalize="off"
+                  spellcheck="false"
+                  id="email"
+                  name="email"
+                  type="text"
+                  :value="portsString()"
+                  @change="changePorts"
+                  class="block w-full max-w-lg rounded-md bg-polar-night-4 text-sm shadow-sm focus:border-frost-1 focus:ring-frost-1"/>
             </div>
           </div>
 
@@ -114,10 +115,10 @@ function changePorts(e: Event) {
             <label for="username" class="block text-sm font-medium sm:mt-px sm:pt-2">Protocol</label>
             <div class="mt-1 sm:col-span-1 sm:mt-0">
               <select
-                v-model="modifiedRule.protocol"
-                id="location"
-                name="location"
-                class="block w-full  max-w-lg rounded-md bg-polar-night-4 text-sm shadow-sm focus:border-frost-1 focus:ring-frost-1">
+                  v-model="modifiedRule.protocol"
+                  id="location"
+                  name="location"
+                  class="block w-full  max-w-lg rounded-md bg-polar-night-4 text-sm shadow-sm focus:border-frost-1 focus:ring-frost-1">
                 <option value="">any</option>
                 <option value="http">http://</option>
                 <option value="https">https://</option>
@@ -128,16 +129,16 @@ function changePorts(e: Event) {
       </div>
       <div class="mt-6 text-right">
         <button
-          type="button"
-          @click="save"
-          class="inline-flex items-center rounded-md border border-transparent bg-aurora-4 p-1 text-sm font-medium leading-4 text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-          <CheckIcon class="h-4 w-4" aria-hidden="true" />
+            type="button"
+            @click="save"
+            class="inline-flex items-center rounded-md border border-transparent bg-aurora-4 p-1 text-sm font-medium leading-4 text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+          <CheckIcon class="h-4 w-4" aria-hidden="true"/>
         </button>
         <button
-          type="button"
-          @click="cancel"
-          class="ml-1 inline-flex items-center rounded-md border border-transparent bg-aurora-1 p-1 text-sm font-medium leading-4 text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-          <XMarkIcon class="h-4 w-4" aria-hidden="true" />
+            type="button"
+            @click="cancel"
+            class="ml-1 inline-flex items-center rounded-md border border-transparent bg-aurora-1 p-1 text-sm font-medium leading-4 text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+          <XMarkIcon class="h-4 w-4" aria-hidden="true"/>
         </button>
       </div>
     </div>
@@ -159,10 +160,10 @@ function changePorts(e: Event) {
         </div>
         <div class="col-span-1 truncate text-right">
           <button
-            type="button"
-            @click="startEdit"
-            class="inline-flex items-center rounded-md border border-transparent bg-frost-3 p-1 text-sm font-medium leading-4 text-white shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-            <PencilIcon class="h-4 w-4" aria-hidden="true" />
+              type="button"
+              @click="startEdit"
+              class="inline-flex items-center rounded-md border border-transparent bg-frost-3 p-1 text-sm font-medium leading-4 text-white shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+            <PencilIcon class="h-4 w-4" aria-hidden="true"/>
           </button>
         </div>
       </div>
@@ -183,10 +184,10 @@ function changePorts(e: Event) {
         </div>
         <div class="col-span-1 truncate text-right">
           <button
-            type="button"
-            @click="remove"
-            class="inline-flex items-center rounded-md border border-transparent bg-aurora-1 p-1 text-sm font-medium leading-4 text-white shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-            <TrashIcon class="h-4 w-4" aria-hidden="true" />
+              type="button"
+              @click="remove"
+              class="inline-flex items-center rounded-md border border-transparent bg-aurora-1 p-1 text-sm font-medium leading-4 text-white shadow-sm hover:bg-aurora-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+            <TrashIcon class="h-4 w-4" aria-hidden="true"/>
           </button>
         </div>
       </div>

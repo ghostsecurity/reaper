@@ -1,38 +1,45 @@
-import {VarStorageM} from "../node";
+import {VarStorageM, Connector} from "../node";
+
+export interface WorkflowM {
+  id: string
+  name: string
+  nodes: NodeM[]
+  links: LinkM[]
+  positioning: {[key: string]: Position}
+}
+
 
 export interface NodeM {
-Id: string
-Name: string
-Type: number
-Vars: VarStorageM|null
-ReadOnly: boolean
+  id: string
+  name: string
+  type: number
+  vars: VarStorageM|null
+  readonly: boolean
 }
 
 
 export interface LinkDirectionM {
-Node: string
-Connector: string
+  node: string
+  connector: string
 }
 
 
 export interface Position {
-X: number
-Y: number
-}
-
-
-export interface WorkflowM {
-ID: string
-Name: string
-Nodes: NodeM[]
-Links: LinkM[]
-Positioning: {[key: string]: Position}
+  x: number
+  y: number
 }
 
 
 export interface LinkM {
-From: LinkDirectionM
-To: LinkDirectionM
-Annotation: string
+  from: LinkDirectionM
+  to: LinkDirectionM
+  annotation: string
+}
+
+
+export interface UpdateM {
+  node: string
+  status: string
+  message: string
 }
 

@@ -8,14 +8,6 @@ import (
 	"github.com/liamg/tml"
 )
 
-/*
-	This logger is kind of a weird shape purely so it can implement the different Logger interfaces required by the proxy module and wails.
-
-	Low throughput means performance isn't a consideration here.
-
-	Will be tidied up soon...
-*/
-
 type Level int
 
 const (

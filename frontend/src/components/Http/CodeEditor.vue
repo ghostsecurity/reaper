@@ -1,15 +1,15 @@
 <script lang="ts" setup>
-import { watch, ref, onMounted } from 'vue'
+import {watch, ref, onMounted, PropType} from 'vue'
 
-import { DocumentDuplicateIcon, SparklesIcon, ArrowPathRoundedSquareIcon } from '@heroicons/vue/24/outline'
-import { HighlightHTTP, HighlightBody, FormatCode } from '../../../wailsjs/go/backend/App'
-import { ClipboardSetText } from '../../../wailsjs/runtime'
+import {DocumentDuplicateIcon, SparklesIcon, ArrowPathRoundedSquareIcon} from '@heroicons/vue/24/outline'
+import Client from "../../lib/api/Client";
 
 const props = defineProps({
-  code: { type: String, required: true },
-  readonly: { type: Boolean, required: true },
-  http: { type: Boolean, default: false },
-  mime: { type: String, default: 'text/plain' },
+  code: {type: String, required: true},
+  readonly: {type: Boolean, required: true},
+  http: {type: Boolean, default: false},
+  mime: {type: String, default: 'text/plain'},
+  client: {type: Object as PropType<Client>, required: true}
 })
 
 const buffer = ref(props.code)
@@ -22,13 +22,13 @@ const pre = ref()
 const emit = defineEmits(['change'])
 
 watch(
-  () => props.code,
-  () => {
-    buffer.value = props.code
-    const element = textarea.value as HTMLTextAreaElement
-    element.value = buffer.value
-    updateCode()
-  },
+    () => props.code,
+    () => {
+      buffer.value = props.code
+      const element = textarea.value as HTMLTextAreaElement
+      element.value = buffer.value
+      updateCode()
+    },
 )
 
 onMounted(() => {
@@ -58,11 +58,11 @@ function updateCode() {
   }
 
   if (props.http) {
-    HighlightHTTP(sent.value).then((hl: string) => {
+    props.client.HighlightHTTP(sent.value).then((hl: string) => {
       setHighlighted(hl)
     })
   } else {
-    HighlightBody(sent.value, props.mime).then((hl: string) => {
+    props.client.HighlightBody(sent.value, props.mime).then((hl: string) => {
       setHighlighted(hl)
     })
   }
@@ -83,7 +83,7 @@ function indent() {
   const element = textarea.value as HTMLTextAreaElement
   const start = element.selectionStart
   const end = element.selectionEnd
-  const { value } = element
+  const {value} = element
   const before = value.substring(0, start)
   const after = value.substring(end)
   const insert = '  '
@@ -95,11 +95,11 @@ function indent() {
 }
 
 function copyToClipboard() {
-  ClipboardSetText(buffer.value)
+  navigator.clipboard.writeText(buffer.value)
 }
 
 function formatCode() {
-  FormatCode(buffer.value, props.mime).then((formatted: string) => {
+  props.client.FormatCode(buffer.value, props.mime).then((formatted: string) => {
     buffer.value = formatted
     updateCode()
   })
@@ -141,16 +141,16 @@ function transformCode() {
     <button class="rounded px-1 text-snow-storm-1/70 hover:bg-polar-night-3 hover:text-snow-storm-1"
             @click="copyToClipboard">
       <DocumentDuplicateIcon class="h-6 w-6"
-                             aria-hidden="true" />
+                             aria-hidden="true"/>
     </button>
     <button class="rounded px-1 text-snow-storm-1/70 hover:bg-polar-night-3 hover:text-snow-storm-1"
             @click="formatCode">
-      <SparklesIcon class="h-6 w-6" aria-hidden="true" />
+      <SparklesIcon class="h-6 w-6" aria-hidden="true"/>
     </button>
     <button class="rounded px-1 text-snow-storm-1/70 hover:bg-polar-night-3 hover:text-snow-storm-1"
             @click="transformCode">
       <ArrowPathRoundedSquareIcon class="h-6 w-6"
-                                  aria-hidden="true" />
+                                  aria-hidden="true"/>
     </button>
   </div>
   <div class="h-full w-full border border-polar-night-3 bg-neutral-800/50 p-8 px-1 pb-2">

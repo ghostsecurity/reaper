@@ -1,21 +1,21 @@
 <script lang="ts" setup>
-import { HandRaisedIcon, PencilSquareIcon, ViewfinderCircleIcon } from '@heroicons/vue/20/solid'
-import { reactive, ref, PropType } from 'vue'
+import {HandRaisedIcon, PencilSquareIcon, ViewfinderCircleIcon} from '@heroicons/vue/20/solid'
+import {reactive, ref, PropType} from 'vue'
 import ScopeEditor from './ScopeEditor.vue'
-import { workspace } from '../../wailsjs/go/models'
+import {Workspace, Scope} from '../lib/api/workspace'
 
 const props = defineProps({
   ws: {
-    type: Object as PropType<workspace.Workspace>,
+    type: Object as PropType<Workspace>,
     required: true,
   },
 })
 
 const openTab = ref('overview')
 const tabs = [
-  { name: 'Overview', icon: PencilSquareIcon, id: 'overview' },
-  { name: 'Scope', icon: ViewfinderCircleIcon, id: 'scope' },
-  { name: 'Interception', icon: HandRaisedIcon, id: 'interception' },
+  {name: 'Overview', icon: PencilSquareIcon, id: 'overview'},
+  {name: 'Scope', icon: ViewfinderCircleIcon, id: 'scope'},
+  {name: 'Interception', icon: HandRaisedIcon, id: 'interception'},
 ]
 const modifiedWorkspace = reactive(props.ws)
 
@@ -33,11 +33,11 @@ function setWorkspaceName(event: Event) {
   modifiedWorkspace.name = name
 }
 
-function setScope(scope: workspace.Scope) {
+function setScope(scope: Scope) {
   modifiedWorkspace.scope = scope
 }
 
-function setInterceptionScope(scope: workspace.Scope) {
+function setInterceptionScope(scope: Scope) {
   modifiedWorkspace.interception_scope = scope
 }
 

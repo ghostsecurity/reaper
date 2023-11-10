@@ -1,8 +1,13 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"os"
+	"os/signal"
+	"strings"
+	"syscall"
 
 	"github.com/ghostsecurity/reaper/backend/server"
 	"github.com/ghostsecurity/reaper/frontend"
@@ -27,15 +32,44 @@ func main() {
 	}
 
 	logger.SetLevel(level)
-	logger.SetLevel(log.LevelDebug)
+	//logger.SetLevel(log.LevelDebug)
 
 	logger.Info("User settings loaded...")
-	logger.Infof("Log level is %s", level)
+	logger.Printf(level, "Log level is set (see left)")
 
-	if err := server.New(frontend.Static).Start(); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "Error starting server: %s\n", err)
-		os.Exit(1)
+	ctx := context.Background()
+	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
+	defer cancel()
+
+	srv := server.New(ctx, frontend.Static, logger, userSettings)
+
+	addr := "localhost:31337"
+	printAddr := addr
+	if _, err := os.Stat("/.dockerenv"); err == nil {
+		addr = ":31337"
+	}
+
+	message([]string{
+		"Welcome to Reaper!",
+		"",
+		"GUI running at http://" + printAddr,
+	})
+
+	if err := srv.Start(addr); err != nil {
+		if !errors.Is(err, context.Canceled) {
+			_, _ = fmt.Fprintf(os.Stderr, "Error starting server: %s\n", err)
+			os.Exit(1)
+		}
 	}
 
 	logger.Info("Exited cleanly.")
+}
+
+func message(lines []string) {
+	w := 60
+	fmt.Println("┌" + strings.Repeat("─", w-2) + "┐")
+	for _, line := range lines {
+		fmt.Println("│ " + line + strings.Repeat(" ", w-4-len(line)) + " │")
+	}
+	fmt.Println("└" + strings.Repeat("─", w-2) + "┘")
 }

@@ -1,19 +1,20 @@
 <script lang="ts" setup>
-import { PropType } from 'vue'
-import { RocketLaunchIcon, MagnifyingGlassCircleIcon, StarIcon } from '@heroicons/vue/20/solid'
-import { StarIcon as EmptyStarIcon } from '@heroicons/vue/24/outline'
-import { HttpRequest, MethodClass, StatusClass } from '../../lib/Http'
-import { Criteria } from '../../lib/Criteria/Criteria'
+import {PropType} from 'vue'
+import {RocketLaunchIcon, MagnifyingGlassCircleIcon, StarIcon} from '@heroicons/vue/20/solid'
+import {StarIcon as EmptyStarIcon} from '@heroicons/vue/24/outline'
+import {HttpRequest} from '../../lib/api/packaging'
+import {MethodClass, StatusClass} from "../../lib/http";
+import {Criteria} from '../../lib/Criteria/Criteria'
 import RequestItemSummary from './RequestItemSummary.vue'
 
 const props = defineProps({
-  requests: { type: Array as PropType<HttpRequest[]>, required: true },
-  selected: { type: String },
-  criteria: { type: Object as PropType<Criteria>, required: true },
-  emptyTitle: { type: String, required: false, default: 'All Systems Go!' },
-  emptyMessage: { type: String, required: false, default: 'Reaper is ready to receive requests!' },
-  emptyIcon: { type: Object, required: false, default: RocketLaunchIcon },
-  savedRequestIds: { type: Array as PropType<string[]>, required: false, default: () => [] },
+  requests: {type: Array as PropType<HttpRequest[]>, required: true},
+  selected: {type: String},
+  criteria: {type: Object as PropType<Criteria>, required: true},
+  emptyTitle: {type: String, required: false, default: 'All Systems Go!'},
+  emptyMessage: {type: String, required: false, default: 'Reaper is ready to receive requests!'},
+  emptyIcon: {type: Object, required: false, default: RocketLaunchIcon},
+  savedRequestIds: {type: Array as PropType<string[]>, required: false, default: () => []},
 })
 
 const emit = defineEmits([
@@ -23,7 +24,7 @@ function getActions(request: HttpRequest): Map<string, string> {
   const actions = new Map<string, string>([
     ['create-workflow-from-request', 'Create workflow...'],
   ])
-  if (isSaved(request.ID)) {
+  if (isSaved(request.id)) {
     actions.set('unsave', 'Unsave')
   } else {
     actions.set('save', 'Save')
@@ -99,27 +100,27 @@ function onSearch(crit: Criteria) {
     <div v-else>
       <ul role="list" class="space-y-1">
         <li class="bg-snow-storm-2 dark:bg-polar-night-1a" v-for="request in filterRequests(requests)"
-            :key="request.ID">
+            :key="request.id">
           <a @click="selectRequest(request)" :class="[
             'relative  block px-4 ',
-            request.ID == selected
+            request.id == selected
               ? 'bg-snow-storm-1 dark:bg-polar-night-3'
               : 'hover:bg-snow-storm-1 dark:hover:bg-polar-night-2',
           ]">
-            <div @click="searchMethod(request.Method)" :class="
+            <div @click="searchMethod(request.method)" :class="
               'left ending text-xs font-semibold text-snow-storm dark:text-polar-night ' + MethodClass(request)
             ">
-              {{ request.Method }}
+              {{ request.method }}
             </div>
-            <div @click="request.Response ?searchStatus(request.Response.StatusCode):null" :class="
+            <div @click="request.response ?searchStatus(request.response.status_code):null" :class="
               'right ending text-xs font-semibold text-snow-storm dark:text-polar-night ' + StatusClass(request)
             ">
-              {{ request.Response ? request.Response.StatusCode : '&nbsp;' }}
+              {{ request.response ? request.response.status_code : '&nbsp;' }}
             </div>
             <div class="px-2 py-1 sm:px-4 sm:py-2">
               <div class="flex">
                 <div class="flex-0 m-auto pl-0 pr-4">
-                  <a v-if="isSaved(request.ID)" class="group cursor-pointer" @click.stop="unsaveRequest(request)">
+                  <a v-if="isSaved(request.id)" class="group cursor-pointer" @click.stop="unsaveRequest(request)">
                     <StarIcon class="h-5 w-5 text-aurora-3 group-hover:text-gray-400"/>
                   </a>
                   <a v-else class="group cursor-pointer" @click.stop="saveRequest(request, '')">

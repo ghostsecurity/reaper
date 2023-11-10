@@ -1,21 +1,14 @@
-package backend
+package api
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/ghostsecurity/reaper/backend/packaging"
 	"github.com/ghostsecurity/reaper/backend/proxy"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-func (a *App) StopProxy() {
-	if err := a.stopProxy(); err != nil {
-		a.logger.Errorf("Failed to stop proxy: %s", err)
-	}
-}
-
-func (a *App) stopProxy() error {
+// StopProxy stops the proxy (can be restarted later)
+func (a *API) StopProxy() error {
 	if a.proxy != nil {
 		a.logger.Infof("Stopping proxy...")
 		if err := a.proxy.Close(); err != nil {
@@ -28,11 +21,11 @@ func (a *App) stopProxy() error {
 	return nil
 }
 
-func (a *App) StartProxy() {
+func (a *API) StartProxy() {
 	go a.startProxy()
 }
 
-func (a *App) startProxy() {
+func (a *API) startProxy() {
 
 	a.proxyMu.Lock()
 	defer a.proxyMu.Unlock()
@@ -41,10 +34,9 @@ func (a *App) startProxy() {
 	// errors should be emitted using proxy status events
 
 	if a.proxy != nil {
-		if err := a.stopProxy(); err != nil {
+		if err := a.StopProxy(); err != nil {
 			a.logger.Errorf("Failed to stop proxy: %s", err)
-			a.notifyUser("Failed to stop proxy: "+err.Error(), runtime.ErrorDialog)
-			a.Shutdown(context.Background())
+			a.notify("Failed to stop proxy: %s", err.Error())
 			return
 		}
 	}
@@ -76,13 +68,13 @@ func (a *App) startProxy() {
 		if packaged, err := packaging.PackageHttpRequest(request, a.proxy.ID(), id); err != nil {
 			a.logger.Errorf("Error packaging request: %s", err)
 		} else {
-			runtime.EventsEmit(a.ctx, EventHttpRequest, packaged)
+			_ = a.eventTrigger(EventHttpRequest, packaged)
 		}
 		// update workspace tree
 		tree, changed := a.workspace.UpdateTree(request)
 
 		if changed { // TODO: do we really want to save changes after every tree change?
-			runtime.EventsEmit(a.ctx, EventTreeUpdate, tree.Structure())
+			_ = a.eventTrigger(EventTreeUpdate, tree.Structure())
 			if err := a.workspace.Save(); err != nil {
 				a.logger.Errorf("Failed to save workspace after tree change: %s", err)
 			}
@@ -105,7 +97,7 @@ func (a *App) startProxy() {
 		if packaged, err := packaging.PackageHttpResponse(response, a.proxy.ID(), id); err != nil {
 			a.logger.Errorf("Error packaging response: %s", err)
 		} else {
-			runtime.EventsEmit(a.ctx, EventHttpResponse, packaged)
+			_ = a.eventTrigger(EventHttpResponse, packaged)
 		}
 		return response
 	})
@@ -122,8 +114,12 @@ func (a *App) startProxy() {
 	a.logger.Infof("Proxy shut down cleanly.")
 }
 
-func (a *App) restartProxy() error {
-	if err := a.stopProxy(); err != nil {
+func (a *API) emitProxyStatus(status bool, addr, message string) {
+	_ = a.eventTrigger(EventProxyStatus, status, addr, message)
+}
+
+func (a *API) restartProxy() error {
+	if err := a.StopProxy(); err != nil {
 		return err
 	}
 	go a.startProxy()

@@ -9,4 +9,5 @@ has_children: true
 
 We are currently working on adding support for your favourite package manager.
 
-In the meantime, please [build from source](/reaper/getting-started/installation/source).
+In the meantime, please [build from source](/reaper/getting-started/installation/source)
+or [use docker](/reaper/getting-started/installation/docker).

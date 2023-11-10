@@ -1,36 +1,42 @@
 <script lang="ts" setup>
-import { InformationCircleIcon, PaintBrushIcon, ServerStackIcon, ShieldCheckIcon } from '@heroicons/vue/20/solid'
-import { Switch, SwitchDescription, SwitchGroup, SwitchLabel } from '@headlessui/vue'
-import { PropType, reactive, ref } from 'vue'
+import {InformationCircleIcon, PaintBrushIcon, ServerStackIcon, ShieldCheckIcon} from '@heroicons/vue/20/solid'
+import {Switch, SwitchDescription, SwitchGroup, SwitchLabel} from '@headlessui/vue'
+import {PropType, reactive, ref} from 'vue'
 import cowbell from '../assets/images/cowbell.png'
+import {saveAs} from 'file-saver';
 
-import { BrowserOpenURL, EventsEmit } from '../../wailsjs/runtime' // eslint-disable-line import/no-unresolved
-import Settings from '../lib/Settings'
+import {Settings} from '../lib/api/settings'
 
 import ButtonConfirm from './Shared/ButtonConfirm.vue'
 import ButtonCancel from './Shared/ButtonCancel.vue'
 import ButtonNetrual from './Shared/ButtonNeutral.vue'
-import { backend } from '../../wailsjs/go/models'
-import VersionInfo = backend.VersionInfo;
+import {VersionInfo} from "../lib/api/api";
+import Client from "../lib/api/Client";
+import * as string_decoder from "string_decoder";
 
 const props = defineProps({
-  settings: { type: Settings, required: true },
-  version: { type: Object as PropType<VersionInfo | null>, required: true },
+  settings: {type: Object as PropType<Settings>, required: true},
+  version: {type: Object as PropType<VersionInfo | null>, required: true},
+  client: {type: Object as PropType<Client>, required: true},
 })
 
 const tabs = [
-  { name: 'Display', icon: PaintBrushIcon, id: 'display' },
-  { name: 'Certificates', icon: ShieldCheckIcon, id: 'certs' },
-  { name: 'Proxy', icon: ServerStackIcon, id: 'proxy' },
-  { name: 'About', icon: InformationCircleIcon, id: 'about' },
+  {name: 'Display', icon: PaintBrushIcon, id: 'display'},
+  {name: 'Certificates', icon: ShieldCheckIcon, id: 'certs'},
+  {name: 'Proxy', icon: ServerStackIcon, id: 'proxy'},
+  {name: 'About', icon: InformationCircleIcon, id: 'about'},
 ]
 const openTab = ref('display')
 const modifiedSettings = reactive(props.settings)
 const emit = defineEmits(['save', 'cancel'])
 
 function setDarkMode(darkMode: boolean) {
-  modifiedSettings.DarkMode = darkMode
+  modifiedSettings.dark_mode = darkMode
   toggleDarkMode()
+}
+
+function exportCA() {
+  saveAs(new Blob([props.settings.ca_cert.buffer]), 'cert.crt');
 }
 
 /**
@@ -38,9 +44,7 @@ function setDarkMode(darkMode: boolean) {
  */
 function toggleDarkMode() {
   // toggle class="dark" on top level html element
-  const isDarkMode = document.documentElement.classList.toggle('dark')
-
-  window.localStorage.darkMode = isDarkMode
+  window.localStorage.darkMode = document.documentElement.classList.toggle('dark')
 }
 
 function saveSettings() {
@@ -55,13 +59,8 @@ function toggleTab(tabId: string) {
   openTab.value = tabId
 }
 
-function exportCA() {
-  EventsEmit('CAExport')
-}
-
 function setProxyPort(event: Event) {
-  const port = parseInt((event.target as HTMLInputElement).value, 10)
-  modifiedSettings.ProxyPort = port
+  modifiedSettings.proxy_port = parseInt((event.target as HTMLInputElement).value, 10)
 }
 </script>
 
@@ -107,24 +106,24 @@ function setProxyPort(event: Event) {
                     <SwitchGroup as="li" class="flex items-center justify-between py-4">
                       <div class="flex flex-col">
                         <SwitchLabel as="p" class="text-sm font-bold">
-                          {{ modifiedSettings.DarkMode ? `Dark` : `Light` }} Mode
+                          {{ modifiedSettings.dark_mode ? `Dark` : `Light` }} Mode
                         </SwitchLabel>
                         <SwitchDescription class="text-xs">
-                          {{ modifiedSettings.DarkMode ? `Unruin` : `Ruin` }} your eyes
+                          {{ modifiedSettings.dark_mode ? `Unruin` : `Ruin` }} your eyes
                         </SwitchDescription>
                       </div>
                       <Switch
                           @update:modelValue="setDarkMode"
-                          v-model="modifiedSettings.DarkMode"
+                          v-model="modifiedSettings.dark_mode"
                           :class="[
-                          modifiedSettings.DarkMode ? 'bg-frost-4' : 'bg-polar-night-4/50',
+                          modifiedSettings.dark_mode ? 'bg-frost-4' : 'bg-polar-night-4/50',
                           'relative ml-4 inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full',
                           'border-2 border-transparent transition-colors duration-200 ease-in-out',
                         ]">
                         <span
                             aria-hidden="true"
                             :class="[
-                            modifiedSettings.DarkMode ? 'translate-x-5' : 'translate-x-0',
+                            modifiedSettings.dark_mode ? 'translate-x-5' : 'translate-x-0',
                             'inline-block h-5 w-5 rounded-full bg-white shadow ring-0',
                             'transition duration-200 ease-in-out',
                           ]"/>
@@ -151,7 +150,7 @@ function setProxyPort(event: Event) {
                           name="port"
                           id="port"
                           class="block w-20 rounded-md bg-snow-storm-1 focus:border-frost-4 focus:outline-none focus:ring-frost-4 dark:bg-polar-night-4 sm:text-sm"
-                          :value="modifiedSettings.ProxyPort"
+                          :value="modifiedSettings.proxy_port"
                           aria-invalid="true"
                           aria-describedby="port-error"
                           maxlength="5"/>
@@ -180,7 +179,7 @@ function setProxyPort(event: Event) {
                     <h2 class="text-lg font-bold leading-6">About</h2>
                     <p class="mt-1 text-sm">See <a
                         class="text-decoration-underline cursor-pointer text-frost-1"
-                        @click="BrowserOpenURL('https://github.com/ghostsecurity/reaper')">
+                        href="https://github.com/ghostsecurity/reaper">
                       https://github.com/ghostsecurity/reaper
                     </a>
                       for more information.</p>
@@ -205,7 +204,7 @@ function setProxyPort(event: Event) {
                       <h2 class="text-lg font-bold leading-6">Version</h2>
                       <p class="mt-1 text-sm" v-if="version">
                         <a class="text-decoration-underline cursor-pointer text-frost-1"
-                           @click="version ? BrowserOpenURL(version.url) : null">{{
+                           :href="version ? version.url : ''">{{
                             version.version
                           }}</a>{{ version.date ? " - Built " + version.date : "" }}</p>
                       <p v-else class="mt-1 text-sm">

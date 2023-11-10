@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { PropType, reactive, ref } from 'vue'
+import {PropType, reactive, ref} from 'vue'
 import {
   MagnifyingGlassCircleIcon,
   Bars3Icon,
@@ -11,23 +11,22 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
 } from '@heroicons/vue/20/solid'
-import { FolderIcon, FolderOpenIcon } from '@heroicons/vue/24/outline'
-import { HttpRequest, MethodClass } from '../../lib/Http'
-import { Criteria } from '../../lib/Criteria/Criteria'
-import { workspace } from '../../../wailsjs/go/models'
-import Group = workspace.Group
-import Request = workspace.Request
+import {FolderIcon, FolderOpenIcon} from '@heroicons/vue/24/outline'
+import {HttpRequest} from '../../lib/api/packaging'
+import {MethodClass} from "../../lib/http";
+import {Criteria} from '../../lib/Criteria/Criteria'
 
 import InputBox from '../InputBox.vue'
 import RequestItemSummary from './RequestItemSummary.vue'
+import {Group, Request} from "../../lib/api/workspace";
 
 const props = defineProps({
-  groups: { type: Array as PropType<Group[]>, required: true },
-  selected: { type: String },
-  criteria: { type: Object as PropType<Criteria>, required: true },
-  emptyTitle: { type: String, required: false, default: 'Nothing found' },
-  emptyMessage: { type: String, required: false, default: 'There are no requests/groups yet' },
-  emptyIcon: { type: Function, required: false, default: QuestionMarkCircleIcon },
+  groups: {type: Array as PropType<Group[]>, required: true},
+  selected: {type: String},
+  criteria: {type: Object as PropType<Criteria>, required: true},
+  emptyTitle: {type: String, required: false, default: 'Nothing found'},
+  emptyMessage: {type: String, required: false, default: 'There are no requests/groups yet'},
+  emptyIcon: {type: Function, required: false, default: QuestionMarkCircleIcon},
 })
 
 const emit = defineEmits([
@@ -268,7 +267,7 @@ function createGroup(name: string) {
 function findCurrentName() {
   let name = ''
   props.groups.forEach(g => {
-    g.requests.forEach(r => {
+    g.requests.forEach((r: Request) => {
       if (r.id === renamingRequest.value) {
         name = r.name
       }
@@ -328,17 +327,17 @@ function actionRequest(action: string, request: Request) {
     <div class="flex-auto overflow-y-hidden">
       <div class="max-h-full">
         <div v-if="props.groups.length === 0">
-          <div class="pl-8 pt-8 text-center">
+          <div class="pl-8 pt-8 text-center text-frost-3">
             <component :is="props.emptyIcon" class="mx-auto h-12 w-12"/>
             <h3 class="mt-2 text-sm font-medium">{{ props.emptyTitle }}</h3>
-            <p class="mt-1 text-sm text-snow-storm-1">{{ props.emptyMessage }}</p>
+            <p class="mt-1 text-sm">{{ props.emptyMessage }}</p>
           </div>
         </div>
         <div v-else-if="filterGroups(props.groups).length === 0">
-          <div class="pl-8 pt-8 text-center">
+          <div class="pl-8 pt-8 text-center text-frost-3">
             <MagnifyingGlassCircleIcon class="mx-auto h-12 w-12"/>
             <h3 class="mt-2 text-sm font-medium">No Results</h3>
-            <p class="mt-1 text-sm text-snow-storm-1">No requests match your search criteria</p>
+            <p class="mt-1 text-sm">No requests match your search criteria</p>
           </div>
         </div>
         <div v-else class="h-full sm:rounded-md">
@@ -394,9 +393,9 @@ function actionRequest(action: string, request: Request) {
                       outer.id === selected ? 'bg-polar-night-3' : 'hover:bg-gray-50 dark:hover:bg-polar-night-2',
                       draggingRequest && dropRequest === outer.id ? 'border-b-2 border-aurora-5' : '',
                     ]" @click="selectRequest(outer.inner)">
-                      <a @click.prevent="searchMethod(outer.inner.Method)"
+                      <a @click.prevent="searchMethod(outer.inner.method)"
                          :class="['left ending truncate text-xs font-semibold text-snow-storm dark:text-polar-night', MethodClass(outer.inner)]">
-                        {{ outer.inner.Method }}
+                        {{ outer.inner.method }}
                       </a>
                       <div class="px-2 py-1">
                         <div class="flex">

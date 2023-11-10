@@ -2,9 +2,10 @@ package transmission
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"os"
+	"io"
 	"strings"
 )
 
@@ -78,28 +79,28 @@ func (n *numericRangeIterator) UnmarshalJSON(data []byte) error {
 }
 
 type wordlistIterator struct {
-	filename string
-	f        *os.File
 	scanner  *bufio.Scanner
 	complete bool
+	reader   io.ReadSeeker
 }
 
-func NewWordlistIterator(filename string) *wordlistIterator {
+func NewWordlistIterator(content string) *wordlistIterator {
 	return &wordlistIterator{
-		filename: filename,
+		reader: strings.NewReader(content),
 	}
 }
 
 func (w *wordlistIterator) Clone() Lister {
+	all, _ := io.ReadAll(w.reader)
 	return &wordlistIterator{
-		filename: w.filename,
+		reader: bytes.NewReader(all),
 	}
 }
 
 func (w *wordlistIterator) Reset() {
 	w.complete = false
 	w.scanner = nil
-	w.f = nil
+	_, _ = w.reader.Seek(0, io.SeekStart)
 }
 
 func (w *wordlistIterator) Next() (string, bool) {
@@ -107,12 +108,7 @@ func (w *wordlistIterator) Next() (string, bool) {
 		return "", false
 	}
 	if w.scanner == nil {
-		f, err := os.Open(w.filename)
-		if err != nil {
-			return "", false
-		}
-		w.f = f
-		w.scanner = bufio.NewScanner(f)
+		w.scanner = bufio.NewScanner(w.reader)
 	}
 
 	for {
@@ -126,7 +122,6 @@ func (w *wordlistIterator) Next() (string, bool) {
 	}
 
 	w.complete = true
-	_ = w.f.Close()
 	return "", false
 }
 
@@ -143,11 +138,20 @@ func (w *wordlistIterator) Type() Type {
 }
 
 func (w *wordlistIterator) MarshalJSON() ([]byte, error) {
-	return json.Marshal(w.filename)
+	content, err := io.ReadAll(w.reader)
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(string(content))
 }
 
 func (w *wordlistIterator) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, &w.filename)
+	var content string
+	if err := json.Unmarshal(data, &content); err != nil {
+		return err
+	}
+	w.reader = strings.NewReader(content)
+	return nil
 }
 
 type csvIterator struct {

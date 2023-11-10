@@ -28,34 +28,9 @@ jobs:
           cache: true
           cache-dependency-path: go.sum
 
-      - name: Install wails
-        run: make wails && wails doctor
-
-      - name: Install amd64 deps
-        if: matrix.os == 'ubuntu-latest' && matrix.arch == 'amd64'
-        run: |
-          sudo sed -i 's/htt[p|ps]:\/\/azure.archive.ubuntu.com\/ubuntu\//https:\/\/mirror.bytemark.co.uk\/ubuntu\//g' /etc/apt/sources.list
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y libgtk-3-dev libwebkit2gtk-4.0-dev libc6-dev-i386
-      - name: Install arm64 deps
-        if: matrix.os == 'ubuntu-latest' && matrix.arch == 'arm64'
-        run: |
-          sudo sed -i 's/htt[p|ps]:\/\/azure.archive.ubuntu.com\/ubuntu\//https:\/\/mirror.bytemark.co.uk\/ubuntu\//g' /etc/apt/sources.list
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y libgtk-3-dev libwebkit2gtk-4.0-dev libc6-dev-i386 gcc-aarch64-linux-gnu libc6-dev-arm64-cross libc6-dev-i386
-
       - name: dist
         run: mkdir -p dist
 
-      - name: prep compiler (windows)
-        if: matrix.os == 'windows-latest' && matrix.arch == 'arm64'
-        run: |
-          choco install mingw
-          echo 'CC="x86_64-w64-mingw32-gcc"' >> $env:GITHUB_ENV
-      - name: prep compiler (linux)
-        if: matrix.os == 'ubuntu-latest' && matrix.arch == 'arm64'
-        run: |
-          echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
       - name: set arch
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -69,6 +44,8 @@ jobs:
           echo "W_ARCH=${{ matrix.arch }}" >> $env:GITHUB_ENV
           echo "W_PLATFORM=windows/${{ matrix.arch }}" >> $env:GITHUB_ENV
           echo "W_VERSION=$(git describe --always --tags)" >> $env:GITHUB_ENV
+          echo "W_BIN=reaper.exe" >> $env:GITHUB_ENV
+
       - name: prep vars
         if: matrix.os != 'windows-latest'
         run: |
@@ -79,24 +56,17 @@ jobs:
           echo W_ARCH=${{ matrix.arch }} >> $GITHUB_ENV
           echo "W_PLATFORM=${OS}/${{ matrix.arch }}" >> $GITHUB_ENV
           echo "W_VERSION=$(git describe --always --tags)" >> $GITHUB_ENV
+          echo "W_BIN=reaper" >> $GITHUB_ENV
 
       - name: build
         run: |
-          # create universal bindings
-          wails build -compiler=echo -noPackage
-          # create platform-specific build
-          wails build -skipbindings -platform="${{ env.W_PLATFORM }}" -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${W_VERSION}' -X 'github.com/ghostsecurity/reaper/version.Date=$(date)' -s -w" | tee build.log
+          make build-bindings
+          go build -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version=${W_VERSION}' -X 'github.com/ghostsecurity/reaper/version.Date=$(date)' -s -w" -o ${W_BIN}
 
-      - name: grab filename
-        if: matrix.os != 'windows-latest'
-        run: echo $(grep '^Built ''' build.log | tail -n1 | sed "s/^Built '\(.*\)'.*$/RFILE=\1/g") >> $GITHUB_ENV
-      - name: grab filename
-        if: matrix.os == 'windows-latest'
-        run: echo $(grep '^Built ''' build.log | tail -n1 | sed "s/^Built '\(.*\)'.*$/RFILE=\1/g") >> $env:GITHUB_ENV
       - name: move artifact
         run: |
           mkdir -p release
-          cp '${{ env.RFILE }}' release/$(basename '${{ env.RFILE }}' | sed s/reaper/reaper-${{ env.W_OS }}-${{ env.W_ARCH }}/g)
+          cp '${{ env.W_BIN }}' release/$(basename '${{ env.W_BIN }}' | sed s/reaper/reaper-${{ env.W_OS }}-${{ env.W_ARCH }}/g)
           ls release/
       - name: cache artifact
         uses: actions/upload-artifact@v3

@@ -40,12 +40,12 @@ It is recommended to use a Firefox extension to manage your proxy use, such
 as [FoxyProxy](https://addons.mozilla.org/en-US/firefox/addon/foxyproxy-standard/). Tools like this allow you to quickly
 switch between proxies and configure particular proxies for particular URLs. This means you can configure Firefox to
 only use Reaper for a target web application, and route all other traffic as usual. You can use the proxy
-address `127.0.0.1:8081` to send traffic through Reaper.
+address `127.0.0.1:8080` to send traffic through Reaper.
 
 Alternatively, you can configure Firefox to use Reaper directly (not recommended):
 
 1. Launch Firefox and open the Settings menu (`⌘,` on Mac).
 2. Navigate to `General` and scroll down to `Network Settings`.
 3. Select `Settings` and select `Manual proxy configuration`.
-4. Enter proxy `127.0.0.1` and port `8081` for `HTTP Proxy` and check the `Also use this proxy for HTTPS` box.
+4. Enter proxy `127.0.0.1` and port `8080` for `HTTP Proxy` and check the `Also use this proxy for HTTPS` box.
 5. [Test](test) your setup.

@@ -45,6 +45,7 @@ func generateClient() ([]PackageType, error) {
 		markerMethodsEnd,
 		afterMethods,
 	}, []byte{})
+
 	return types, os.WriteFile(clientPath, generated, 0644)
 }
 
@@ -66,7 +67,7 @@ func generateClientMethods() ([]byte, []byte, []PackageType, error) {
 		var callArgs []string
 		for j := 1; j < method.Type.NumIn(); j++ {
 			arg := method.Type.In(j)
-			baseType, err := conv.convertType(arg)
+			baseType, err := conv.convertType(arg, apiType.PkgPath())
 			if err != nil {
 				return nil, nil, nil, fmt.Errorf("failed to convert argument type: %w", err)
 			}
@@ -76,15 +77,21 @@ func generateClientMethods() ([]byte, []byte, []PackageType, error) {
 			callArgs = append(callArgs, fmt.Sprintf("%c", argName))
 		}
 		var numOut int
-		for i := 0; i < method.Type.NumOut(); i++ {
-			if method.Type.Out(i).String() == "error" {
+		for ii := 0; ii < method.Type.NumOut(); ii++ {
+			if method.Type.Out(ii).String() == "error" {
 				continue
 			}
 			numOut++
 		}
 		if numOut == 0 {
-			_, _ = fmt.Fprintf(buffer, `    %s(%s): void {
-        this.callMethod("%[1]s", [%[3]s], (args: string[]) => void {}, (reason?: any) => void {});
+
+			_, _ = fmt.Fprintf(buffer, `    %s(%s): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            const receive = (args: string[]) => {
+                resolve();
+            }
+            this.callMethod("%[1]s", [%[3]s], receive, reject);
+        })
     }
 
 `,
@@ -93,7 +100,7 @@ func generateClientMethods() ([]byte, []byte, []PackageType, error) {
 				strings.Join(callArgs, ", "),
 			)
 		} else if numOut == 1 {
-			baseType, err := conv.convertType(method.Type.Out(0))
+			baseType, err := conv.convertType(method.Type.Out(0), apiType.PkgPath())
 			if err != nil {
 				return nil, nil, nil, fmt.Errorf("failed to convert return type: %w", err)
 			}
@@ -143,12 +150,15 @@ func generateClientMethods() ([]byte, []byte, []PackageType, error) {
 func flattenDeps(importMap map[string]PackageType) map[string]PackageType {
 	flat := make(map[string]PackageType)
 	for _, pType := range importMap {
-		flat[pType.Name] = pType
-		if len(pType.Deps) == 0 {
-			continue
+		if pType.PackageName != "" {
+			flat[pType.Name] = pType
 		}
 		for _, e := range pType.Deps {
-			flat[e.Name] = e
+			if e.PackageName != "" {
+				if _, ok := flat[e.Name]; !ok {
+					flat[e.Name] = e
+				}
+			}
 			if len(e.Deps) == 0 {
 				continue
 			}
@@ -156,7 +166,9 @@ func flattenDeps(importMap map[string]PackageType) map[string]PackageType {
 				e.Name: e,
 			})
 			for _, s := range sub {
-				flat[s.Name] = s
+				if _, ok := flat[s.Name]; !ok {
+					flat[s.Name] = s
+				}
 			}
 		}
 	}
@@ -173,19 +185,15 @@ type PackageType struct {
 	Deps        []PackageType
 }
 
-type converter struct {
-	cache    map[reflect.Type]PackageType
-	depCache map[reflect.Type]struct{}
+func (p PackageType) String() string {
+	return fmt.Sprintf("%s:%s", p.PackagePath, p.Name)
 }
 
-func (c *converter) convertType(t reflect.Type) (*PackageType, error) {
+type converter struct {
+	depCache map[reflect.Type][]PackageType
+}
 
-	if c.cache == nil {
-		c.cache = make(map[reflect.Type]PackageType)
-	}
-	if pt, ok := c.cache[t]; ok {
-		return &pt, nil
-	}
+func (c *converter) convertType(t reflect.Type, parentPkgPath string) (*PackageType, error) {
 
 	var suffix string
 
@@ -201,7 +209,7 @@ func (c *converter) convertType(t reflect.Type) (*PackageType, error) {
 		}
 		parts := strings.Split(t.String(), ".")
 		typeName := parts[len(parts)-1]
-		sub, err := c.convertType(t.Elem())
+		sub, err := c.convertType(t.Elem(), parentPkgPath)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert map type: %w", err)
 		}
@@ -219,35 +227,50 @@ func (c *converter) convertType(t reflect.Type) (*PackageType, error) {
 	parts := strings.Split(t.String(), ".")
 	typeName := parts[len(parts)-1]
 
+	switch typeName {
+	case "Regexp":
+		typeName = "RegExp"
+	}
+
 	pt := PackageType{
 		Name: typeName,
 		Go:   t,
 	}
-	if t.PkgPath() != "" {
+
+	if t.Kind() == reflect.Struct {
+		path := t.PkgPath()
+		if path == "" {
+			path = parentPkgPath
+		}
 		pt.PackageName = parts[len(parts)-2]
-		pt.PackagePath = t.PkgPath()
+		pt.PackagePath = path
 		pt.Alias = typeName + suffix
 		pt.Simplified = typeName
 		pt.Deps = c.findDeps(t)
 		return &pt, nil
 	}
-	switch typeName {
-	case "interface {}":
-		pt.Simplified = "any"
-	case "string":
+
+	switch t.Kind() {
+	case reflect.String:
 		pt.Simplified = "string"
-	case "int", "int64", "int32", "int16", "int8", "uint", "uint64", "uint32", "uint16", "uint8", "float32", "float64":
+	case reflect.Uint8:
 		pt.Simplified = "number"
-	case "bool":
+		if suffix == "[]" {
+			suffix = ""
+			pt.Simplified = "Uint8Array"
+		}
+	case reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Int8, reflect.Float32, reflect.Float64:
+		pt.Simplified = "number"
+	case reflect.Bool:
 		pt.Simplified = "boolean"
-	case "Regexp":
-		pt.Simplified = "string"
+	case reflect.Interface:
+		pt.Simplified = "any"
 	default:
-		return nil, fmt.Errorf("unsupported Go type '%s'", t)
+		return nil, fmt.Errorf("unsupported Go type '%s' (%s)", t, t.Kind())
 	}
+
 	pt.Alias = pt.Simplified + suffix
 
-	c.cache[t] = pt
 	return &pt, nil
 }
 
@@ -266,12 +289,12 @@ func simplifyType(t reflect.Type) reflect.Type {
 func (c *converter) findDeps(t reflect.Type) []PackageType {
 
 	if c.depCache == nil {
-		c.depCache = make(map[reflect.Type]struct{})
+		c.depCache = make(map[reflect.Type][]PackageType)
 	}
-	if _, ok := c.depCache[t]; ok {
-		return nil
+	if deps, ok := c.depCache[t]; ok {
+		return deps
 	}
-	c.depCache[t] = struct{}{}
+	c.depCache[t] = nil
 
 	t = simplifyType(t)
 	if t.Kind() != reflect.Struct {
@@ -283,12 +306,16 @@ func (c *converter) findDeps(t reflect.Type) []PackageType {
 		if !field.IsExported() {
 			continue
 		}
-		ft, err := c.convertType(field.Type)
+		if t == field.Type {
+			continue
+		}
+		ft, err := c.convertType(field.Type, t.PkgPath())
 		if err != nil {
 			continue
 		}
 		deps = append(deps, *ft)
 		deps = append(deps, c.findDeps(field.Type)...)
 	}
+	c.depCache[t] = deps
 	return deps
 }

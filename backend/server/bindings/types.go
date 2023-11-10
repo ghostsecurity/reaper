@@ -40,7 +40,6 @@ func generateTypes(types []PackageType) error {
 		if err != nil {
 			return fmt.Errorf("failed to generate type '%s': %w", typ.Go, err)
 		}
-		fmt.Println(typ.Simplified)
 		pkg := packageMap[typ.PackageName]
 		pkg.code = append(pkg.code, data...)
 		if pkg.imports == nil {
@@ -104,9 +103,10 @@ func generateType(typ PackageType, cache map[string]struct{}) ([]byte, error) {
 	switch typ.Go.Kind() {
 	case reflect.Struct:
 		return generateStruct(typ, cache)
+	case reflect.Uint32:
+		return []byte(fmt.Sprintf("export type %s = number;\n\n", typ.Simplified)), nil
 	default:
-		return nil, nil
-		//return nil, nil, fmt.Errorf("unsupported kind '%s'", typ.Go.Kind())
+		return nil, fmt.Errorf("unsupported kind '%s'", typ.Go.Kind())
 	}
 }
 
@@ -118,11 +118,21 @@ func generateStruct(typ PackageType, cache map[string]struct{}) ([]byte, error) 
 		if !field.IsExported() {
 			continue
 		}
-		tsType, err := (&converter{}).convertType(field.Type)
+		jt := field.Tag.Get("json")
+		if len(jt) == 0 {
+			continue
+		}
+		parts := strings.Split(jt, ",")
+		name := field.Name
+		name = parts[0]
+		if name == "-" {
+			continue
+		}
+		tsType, err := (&converter{}).convertType(field.Type, typ.Go.PkgPath())
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert type '%s': %w", field.Type.Name(), err)
 		}
-		_, _ = fmt.Fprintf(buffer, "%s: %s\n", field.Name, tsType.Alias)
+		_, _ = fmt.Fprintf(buffer, "  %s: %s\n", name, tsType.Alias)
 	}
 	_, _ = fmt.Fprintf(buffer, "}\n\n")
 	return buffer.Bytes(), nil

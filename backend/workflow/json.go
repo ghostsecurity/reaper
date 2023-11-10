@@ -3,13 +3,14 @@ package workflow
 import (
 	"encoding/json"
 
-	"github.com/ghostsecurity/reaper/backend/workflow/node"
 	"github.com/google/uuid"
+
+	"github.com/ghostsecurity/reaper/backend/workflow/node"
 )
 
 /*
 	NOTE:
-	A lot of the strangeness in here exists to help wails create js bindings.
+	A lot of the strangeness in here existed to help wails create js bindings - we can start to simplify this now...
 */
 
 type WorkflowM struct {

@@ -1,4 +1,4 @@
-import { HttpRequest } from '../Http'
+import {HttpRequest} from '../api/packaging'
 
 enum Comparison {
     EQUAL = 'eq',
@@ -25,76 +25,76 @@ enum JoinType {
 }
 
 class Rule {
-  Target: Target
+    Target: Target
 
-  Comparison: Comparison
+    Comparison: Comparison
 
-  Value: string
+    Value: string
 
-  constructor(target: Target, comparison: Comparison, value: string) {
-    this.Target = target
-    this.Comparison = comparison
-    this.Value = value
-  }
-
-  Match(req: HttpRequest): boolean {
-    let field = ''
-    const match = [Comparison.EQUAL, Comparison.CONTAINS, Comparison.MATCHES].includes(this.Comparison)
-    switch (this.Target) {
-      case Target.Scheme:
-        field = req.Scheme
-        break
-      case Target.Host:
-        field = req.Host
-        break
-      case Target.Path:
-        field = req.Path
-        break
-      case Target.Query:
-        field = req.QueryString
-        break
-      case Target.Body:
-        field = req.Body
-        break
-      case Target.Method:
-        field = req.Method.toLowerCase()
-        this.Value = this.Value.toLowerCase()
-        break
-      case Target.Status:
-        if (req.Response) {
-          field = req.Response.StatusCode.toString()
-        }
-        break
-      case Target.Tag:
-        if ((req.Tags.find(tag => tag === this.Value) !== undefined) === match) {
-          return match
-        }
-        if (req.Response) {
-          if ((req.Response.Tags.find(tag => tag === this.Value) !== undefined) === match) {
-            return match
-          }
-        }
-        return false
-      default:
-        return false
+    constructor(target: Target, comparison: Comparison, value: string) {
+        this.Target = target
+        this.Comparison = comparison
+        this.Value = value
     }
-    switch (this.Comparison) {
-      case Comparison.EQUAL:
-        return field === this.Value
-      case Comparison.NOT_EQUAL:
-        return field !== this.Value
-      case Comparison.CONTAINS:
-        return field.indexOf(this.Value) > -1
-      case Comparison.MATCHES:
-        try {
-          return field.match(this.Value) !== null
-        } catch (e) {
-          return false
+
+    Match(req: HttpRequest): boolean {
+        let field = ''
+        const match = [Comparison.EQUAL, Comparison.CONTAINS, Comparison.MATCHES].includes(this.Comparison)
+        switch (this.Target) {
+            case Target.Scheme:
+                field = req.scheme
+                break
+            case Target.Host:
+                field = req.host
+                break
+            case Target.Path:
+                field = req.path
+                break
+            case Target.Query:
+                field = req.query_string
+                break
+            case Target.Body:
+                field = req.body
+                break
+            case Target.Method:
+                field = req.method.toLowerCase()
+                this.Value = this.Value.toLowerCase()
+                break
+            case Target.Status:
+                if (req.response) {
+                    field = req.response.status_code.toString()
+                }
+                break
+            case Target.Tag:
+                if ((req.tags.find(tag => tag === this.Value) !== undefined) === match) {
+                    return match
+                }
+                if (req.response) {
+                    if ((req.response.tags.find(tag => tag === this.Value) !== undefined) === match) {
+                        return match
+                    }
+                }
+                return false
+            default:
+                return false
         }
-      default:
-        return false
+        switch (this.Comparison) {
+            case Comparison.EQUAL:
+                return field === this.Value
+            case Comparison.NOT_EQUAL:
+                return field !== this.Value
+            case Comparison.CONTAINS:
+                return field.indexOf(this.Value) > -1
+            case Comparison.MATCHES:
+                try {
+                    return field.match(this.Value) !== null
+                } catch (e) {
+                    return false
+                }
+            default:
+                return false
+        }
     }
-  }
 }
 
-export { Comparison, Target, JoinType, Rule }
+export {Comparison, Target, JoinType, Rule}

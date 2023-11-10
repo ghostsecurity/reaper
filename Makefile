@@ -41,6 +41,10 @@ build-bindings: clean
 .PHONY: build
 build: clean build-bindings build-js
 
+.PHONY: install
+install: build
+	go install .
+
 .PHONY: run
 run: build
 	go run .
@@ -53,7 +57,6 @@ fix:
 docs:
 	cd docs && bundle install && bundle exec jekyll serve --livereload
 
-.PHONY: install
-install: build
-	@./scripts/install.sh
-
+docker:
+	docker build -t "reaper" .
+	docker run -v $$HOME/.reaper:/.reaper -p 8080:8080 -p 31337:31337 reaper

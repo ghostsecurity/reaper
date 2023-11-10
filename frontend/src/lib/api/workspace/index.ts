@@ -1,63 +1,62 @@
-import {HttpRequest} from "../packaging";
+import {RegExp} from "../regexp";
 import {WorkflowM, NodeM, LinkM} from "../workflow";
-
-export interface StructureNode {
-ID: string
-Name: string
-Children: StructureNode[]
-}
-
-
-export interface Group {
-ID: string
-Name: string
-Requests: Request[]
-}
-
-
-export interface Request {
-ID: string
-Name: string
-Inner: HttpRequest
-PreScript: string
-PostScript: string
-}
-
-
-export interface Tree {
-Root: StructureNode
-}
-
-
-export interface Scope {
-Include: Rule[]
-Exclude: Rule[]
-}
-
-
-export interface Rule {
-ID: number
-Protocol: string
-HostRegexRaw: string
-HostRegex: Regexp|null
-PathRegexRaw: string
-PathRegex: Regexp|null
-Ports: number[]
-}
-
+import {HttpResponse, HttpRequest, KeyValue} from "../packaging";
 
 export interface Workspace {
-ID: string
-Name: string
-Scope: Scope
-InterceptionScope: Scope
-Collection: Collection
-Tree: Tree
-Workflows: WorkflowM[]
+  id: string
+  name: string
+  scope: Scope
+  interception_scope: Scope
+  collection: Collection
+  tree: Tree
+  workflows: WorkflowM[]
 }
 
 
 export interface Collection {
-Groups: Group[]
+  groups: Group[]
+}
+
+
+export interface Scope {
+  include: Rule[]
+  exclude: Rule[]
+}
+
+
+export interface Tree {
+  root: StructureNode
+}
+
+
+export interface Rule {
+  id: number
+  protocol: string
+  host: string
+  path: string
+  ports: number[]
+}
+
+
+export interface Request {
+  id: string
+  name: string
+  inner: HttpRequest
+  pre_script: string
+  post_script: string
+}
+
+
+export interface StructureNode {
+  id: string
+  name: string
+  children: StructureNode[]
+}
+
+
+export interface Group {
+  id: string
+  name: string
+  requests: Request[]
 }
 

@@ -12,8 +12,8 @@ type Rule struct {
 	Protocol     string         `json:"protocol"` // e.g. http, https
 	HostRegexRaw string         `json:"host"`
 	HostRegex    *regexp.Regexp `json:"-"`
-	PathRegexRaw string         `json:"-"`
-	PathRegex    *regexp.Regexp `json:"path"`
+	PathRegexRaw string         `json:"path"`
+	PathRegex    *regexp.Regexp `json:"-"`
 	Ports        PortList       `json:"ports"`
 }
 

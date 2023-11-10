@@ -1,22 +1,29 @@
 
+export interface Connector {
+  name: string
+  type: number
+  linkable: boolean
+  description: string
+}
+
+
 export interface VarStorageM {
-Inputs: Connector[]
-Outputs: Connector[]
-Static: {[key: string]: TransmissionM}
+  inputs: Connector[]
+  outputs: Connector[]
+  static: {[key: string]: TransmissionM}
 }
 
 
 export interface TransmissionM {
-ParentType: number
-ChildType: number
-Data: any
+  type: number
+  internal: number
+  data: any
 }
 
 
-export interface Connector {
-Name: string
-Type: ParentType
-Linkable: boolean
-Description: string
+export interface OutputM {
+  node: string
+  channel: string
+  message: string
 }
 

@@ -5,33 +5,44 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"log"
+	"net"
 	"net/http"
 	"reflect"
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"golang.org/x/net/context"
 
+	"github.com/ghostsecurity/reaper/backend/log"
 	"github.com/ghostsecurity/reaper/backend/server/api"
+	"github.com/ghostsecurity/reaper/backend/settings"
 )
 
 type Server struct {
-	staticFS fs.FS
-	upgrade  websocket.Upgrader
-	connMu   sync.Mutex
-	conns    []*threadSafeWriter
-	api      *api.API
+	staticFS         fs.FS
+	upgrade          websocket.Upgrader
+	connMu           sync.Mutex
+	conns            []*threadSafeWriter
+	api              *api.API
+	logger           *log.Logger
+	ctx              context.Context
+	settingsProvider *settings.Provider
 }
 
-func New(staticFS fs.FS) *Server {
-	return &Server{
+func New(ctx context.Context, staticFS fs.FS, logger *log.Logger, settingsProvider *settings.Provider) *Server {
+	srv := &Server{
 		staticFS: staticFS,
 		upgrade: websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 		},
-		api: api.New(),
+		logger:           logger,
+		ctx:              ctx,
+		settingsProvider: settingsProvider,
 	}
+	srv.api = api.New(ctx, logger, settingsProvider, srv.TriggerEvent)
+	return srv
+
 }
 
 type dir string
@@ -42,10 +53,10 @@ const (
 )
 
 func (s *Server) log(d dir, format string, args ...interface{}) {
-	log.Printf("%s %s", d, fmt.Sprintf(format, args...))
+	s.logger.Debugf("%s %s", d, fmt.Sprintf(format, args...))
 }
 
-func (s *Server) Start() error {
+func (s *Server) Start(addr string) error {
 
 	dist, err := fs.Sub(s.staticFS, "dist")
 	if err != nil {
@@ -56,10 +67,38 @@ func (s *Server) Start() error {
 	mux.Handle("/", http.FileServer(http.FS(dist)))
 	mux.HandleFunc("/ws/", s.websocketHandler)
 
-	err = http.ListenAndServe("127.0.0.1:31337", mux)
+	listener, err := net.Listen("tcp", addr)
+	if err != nil {
+		return fmt.Errorf("failed to listen: %w", err)
+	}
+	s.logger.Infof("Listening on %s...", listener.Addr())
+
+	srv := &http.Server{
+		BaseContext: func(ln net.Listener) context.Context {
+			return s.ctx
+		},
+		Handler: mux,
+	}
+
+	var closing bool
+	go func() {
+		<-s.ctx.Done()
+		closing = true
+		s.logger.Infof("Signal received, shutting down...")
+		_ = listener.Close()
+		_ = srv.Close()
+	}()
+
+	s.logger.Infof("Starting server...")
+	err = srv.Serve(listener)
+
 	if err != nil {
 		if errors.Is(err, http.ErrServerClosed) {
 			return nil
+		}
+		if closing {
+			s.logger.Infof("Server closed")
+			return s.ctx.Err()
 		}
 		return fmt.Errorf("failed to start server: %w", err)
 	}
@@ -116,7 +155,7 @@ type websocketMessage struct {
 func (s *Server) websocketHandler(w http.ResponseWriter, r *http.Request) {
 	unsafeConn, err := s.upgrade.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
+		s.logger.Errorf("failed to upgrade websocket connection: %s", err)
 		return
 	}
 	// Close the connection when the for-loop operation is finished.
@@ -142,7 +181,7 @@ func (s *Server) websocketHandler(w http.ResponseWriter, r *http.Request) {
 		MessageType: MessageTypePing,
 		Identifier:  "server",
 	}); err != nil {
-		log.Println(err)
+		s.logger.Errorf("failed to write ping: %s", err)
 		return
 	}
 
@@ -151,10 +190,10 @@ func (s *Server) websocketHandler(w http.ResponseWriter, r *http.Request) {
 		// the first message is "connected"
 		_, raw, err := conn.ReadMessage()
 		if err != nil {
-			log.Println(err)
+			s.logger.Errorf("failed to read message: %s", err)
 			break
 		} else if err := json.Unmarshal(raw, &message); err != nil {
-			log.Println(err)
+			s.logger.Errorf("failed to unmarshal message: %s", err)
 			break
 		}
 		s.log(dirIn, "%s:%s", message.MessageType, message.Identifier)
@@ -162,7 +201,7 @@ func (s *Server) websocketHandler(w http.ResponseWriter, r *http.Request) {
 		if reply != nil {
 			s.log(dirOut, "%s:%s", reply.MessageType, reply.Identifier)
 			if err := conn.WriteJSON(reply); err != nil {
-				log.Println(err)
+				s.logger.Errorf("failed to write message: %s", err)
 				return
 			}
 		}
@@ -228,7 +267,7 @@ func (s *Server) subscribeEvent(event string) {
 	}
 }
 
-func (s *Server) triggerEvent(event string, args ...interface{}) error {
+func (s *Server) TriggerEvent(event string, args ...interface{}) error {
 	s.connMu.Lock()
 	defer s.connMu.Unlock()
 	for _, conn := range s.conns {

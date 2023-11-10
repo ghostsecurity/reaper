@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onActivated, onBeforeUpdate, onMounted, onUpdated, PropType, ref, watch } from 'vue'
+import {onActivated, onBeforeUpdate, onMounted, onUpdated, PropType, ref, watch} from 'vue'
 import {
   PlayIcon,
   PlusIcon,
@@ -15,21 +15,23 @@ import {
   XCircleIcon,
   ArrowUpOnSquareIcon,
 } from '@heroicons/vue/20/solid'
-import { uuid } from 'vue-uuid'
-import { workflow } from '../../../wailsjs/go/models'
-import { CreateNode } from '../../../wailsjs/go/backend/App'
+import {uuid} from 'vue-uuid'
+import {WorkflowM, NodeM, Position, LinkM, LinkDirectionM} from '../../lib/api/workflow'
 import NodeEditor from './NodeEditor.vue'
-import { NodeType, NodeTypeName } from '../../lib/Workflows'
+import {NodeType, NodeTypeName} from '../../lib/Workflows'
 import Spinner from '../Shared/LoadingSpinner.vue'
 import ScrollingOutput from '../Shared/ScrollingOutput.vue'
+import Client from "../../lib/api/Client";
+import {Connector, VarStorageM} from "../../lib/api/node";
 
 const props = defineProps({
-  flow: { type: Object as PropType<workflow.WorkflowM>, required: true },
-  running: { type: Boolean, required: false, default: false },
-  statuses: { type: Object as PropType<Map<string, string>>, required: true },
-  stdoutLines: { type: Array as PropType<string[]>, required: true },
-  stderrLines: { type: Array as PropType<string[]>, required: true },
-  activityLines: { type: Array as PropType<string[]>, required: true },
+  flow: {type: Object as PropType<WorkflowM>, required: true},
+  running: {type: Boolean, required: false, default: false},
+  statuses: {type: Object as PropType<Map<string, string>>, required: true},
+  stdoutLines: {type: Array as PropType<string[]>, required: true},
+  stderrLines: {type: Array as PropType<string[]>, required: true},
+  activityLines: {type: Array as PropType<string[]>, required: true},
+  client: {type: Object as PropType<Client>, required: true},
 })
 
 const availableNodeTypes = ref(<NodeType[]>[
@@ -47,16 +49,16 @@ const availableNodeTypes = ref(<NodeType[]>[
 
 const linkColour = '#444444'
 const linkStrokeWidth = '3'
-const editingNode = ref(<workflow.NodeM | null>null)
+const editingNode = ref(<NodeM | null>null)
 const menuMode = ref('')
 // used to prevent click + drag events overlapping
 const mouseMoved = ref(false)
 
-const safe = ref<workflow.WorkflowM>(JSON.parse(JSON.stringify(props.flow)))
+const safe = ref<WorkflowM>(JSON.parse(JSON.stringify(props.flow)))
 let initial = true
 watch(() => props.flow, flow => {
   if (flow) {
-    safe.value = JSON.parse(JSON.stringify(props.flow)) as workflow.WorkflowM
+    safe.value = JSON.parse(JSON.stringify(props.flow)) as WorkflowM
     redraw()
   }
 })
@@ -77,15 +79,15 @@ const paths = ref(<string[]>[])
 
 const emit = defineEmits(['save', 'run', 'stop', 'clean', 'export'])
 
-function saveWorkflow(f: workflow.WorkflowM) {
+function saveWorkflow(f: WorkflowM) {
   emit('save', f)
   redraw()
 }
 
 const tabs = ref([
-  { name: 'Stdout', id: 'stdout', icon: BarsArrowDownIcon, current: true },
-  { name: 'Stderr', id: 'stderr', icon: BarsArrowDownIcon, current: false },
-  { name: 'Activity', id: 'activity', icon: BoltIcon, current: false },
+  {name: 'Stdout', id: 'stdout', icon: BarsArrowDownIcon, current: true},
+  {name: 'Stderr', id: 'stderr', icon: BarsArrowDownIcon, current: false},
+  {name: 'Activity', id: 'activity', icon: BoltIcon, current: false},
 ])
 
 function selectedTab(): string {
@@ -117,7 +119,7 @@ function redraw() {
 
   const newPaths: string[] = []
   let ok = false
-  safe.value.links.forEach(link => {
+  safe.value.links.forEach((link: LinkM) => {
     const fromNode = movers.value.get(link.from.node) as HTMLElement
     const toNode = movers.value.get(link.to.node) as HTMLElement
     if (!fromNode || !toNode) {
@@ -141,11 +143,11 @@ function redraw() {
       y: (toConn.offsetTop + toConn.offsetHeight / 2) + toNode.offsetTop,
     }
     const path = `M${
-      posA.x},${posA.y} `
+            posA.x},${posA.y} `
         + `C${
-          posA.x + curveOffset.value},${posA.y} ${
-          posB.x - curveOffset.value},${posB.y} ${
-          posB.x},${posB.y}`
+            posA.x + curveOffset.value},${posA.y} ${
+            posB.x - curveOffset.value},${posB.y} ${
+            posB.x},${posB.y}`
     newPaths.push(path)
   })
   if (!ok) {
@@ -189,10 +191,10 @@ function setPosition(id: string, x: number, y: number) {
   if (!safe.value.positioning) {
     safe.value.positioning = {}
   }
-  safe.value.positioning[id] = new workflow.Position({
+  safe.value.positioning[id] = {
     x,
     y,
-  })
+  } as Position
   saveWorkflow(safe.value)
 }
 
@@ -200,7 +202,10 @@ function addNode(t: number) {
   if (!safe.value) {
     return
   }
-  CreateNode(t).then(n => {
+  props.client.CreateNode(t).then((n: NodeM | null) => {
+    if (!n) {
+      return
+    }
     safe.value.nodes.push(n)
     editingNode.value = n
     menuMode.value = ''
@@ -283,7 +288,7 @@ onBeforeUpdate(() => {
   movers.value = new Map<string, Element | HTMLElement | null>()
 })
 
-let currentLink: workflow.LinkM | null = null
+let currentLink: LinkM | null = null
 let currentLinkNode = ''
 let currentLinkConnector = ''
 
@@ -296,33 +301,33 @@ function startLinkFromInput(nodeId: string, conn: string) {
   linkSearchMode = 'output'
   currentLinkNode = nodeId
   currentLinkConnector = conn
-  const existing = safe.value.links.find(l => l.to.node === nodeId && l.to.connector === conn)
+  const existing = safe.value.links.find((l: LinkM) => l.to.node === nodeId && l.to.connector === conn)
   unlinkAnyFromInput(nodeId, conn)
   if (existing) {
     linkSearchMode = 'input'
     currentLinkNode = existing.from.node
     currentLinkConnector = existing.from.connector
-    currentLink = new workflow.LinkM({
-      from: new workflow.LinkDirectionM({
+    currentLink = {
+      from: {
         node: existing.from.node,
         connector: existing.from.connector,
-      }),
-      to: new workflow.LinkDirectionM({
+      } as LinkDirectionM,
+      to: {
         node: '',
         connector: '',
-      }),
-    })
+      } as LinkDirectionM,
+    } as LinkM
   } else {
-    currentLink = new workflow.LinkM({
-      from: new workflow.LinkDirectionM({
+    currentLink = {
+      from: {
         node: '',
         connector: '',
-      }),
-      to: new workflow.LinkDirectionM({
+      } as LinkDirectionM,
+      to: {
         node: nodeId,
         connector: conn,
-      }),
-    })
+      } as LinkDirectionM,
+    } as LinkM
   }
 }
 
@@ -333,33 +338,33 @@ function startLinkFromOutput(nodeId: string, conn: string) {
   linkSearchMode = 'input'
   currentLinkNode = nodeId
   currentLinkConnector = conn
-  const existing = safe.value.links.find(l => l.from.node === nodeId && l.from.connector === conn)
+  const existing = safe.value.links.find((l: LinkM) => l.from.node === nodeId && l.from.connector === conn)
   unlinkAnyFromOutput(nodeId, conn)
   if (existing) {
     linkSearchMode = 'output'
     currentLinkNode = existing.to.node
     currentLinkConnector = existing.to.connector
-    currentLink = new workflow.LinkM({
-      from: new workflow.LinkDirectionM({
+    currentLink = {
+      from: {
         node: '',
         connector: '',
-      }),
-      to: new workflow.LinkDirectionM({
+      } as LinkDirectionM,
+      to: {
         node: existing.to.node,
         connector: existing.to.connector,
-      }),
-    })
+      } as LinkDirectionM,
+    } as LinkM
   } else {
-    currentLink = new workflow.LinkM({
-      from: new workflow.LinkDirectionM({
+    currentLink = {
+      from: {
         node: nodeId,
         connector: conn,
-      }),
-      to: new workflow.LinkDirectionM({
+      } as LinkDirectionM,
+      to: {
         node: '',
         connector: '',
-      }),
-    })
+      } as LinkDirectionM,
+    } as LinkM
   }
 }
 
@@ -457,38 +462,36 @@ function moveLink(ev: MouseEvent) {
   }
 
   const dStr = `M${
-    posA.x},${posA.y} `
+          posA.x},${posA.y} `
       + `C${
-        posA.x + curveOffset.value},${posA.y} ${
-        posB.x - curveOffset.value},${posB.y} ${
-        posB.x},${posB.y}`
+          posA.x + curveOffset.value},${posA.y} ${
+          posB.x - curveOffset.value},${posB.y} ${
+          posB.x},${posB.y}`
   connector.value.setAttribute('d', dStr)
   if (!connectorB) {
     connector.value.setAttribute('stroke', 'blue')
   }
 }
 
-function canLink(link: workflow.LinkM): boolean {
+function canLink(link: LinkM): boolean {
   if (!safe.value) {
     return false
   }
   if (link.from.node === link.to.node) {
     return false
   }
-  const fromNode = safe.value.nodes.find(n => n.id === link.from.node)
-  const toNode = safe.value.nodes.find(n => n.id === link.to.node)
+  const fromNode = safe.value.nodes.find((n: NodeM) => n.id === link.from.node)
+  const toNode = safe.value.nodes.find((n: NodeM) => n.id === link.to.node)
   if (!fromNode || !toNode || !fromNode.vars || !toNode.vars) {
     return false
   }
-  const output = fromNode.vars.outputs.find(o => o.name === link.from.connector)
-  const input = toNode.vars.inputs.find(i => i.name === link.to.connector)
+  const output = fromNode.vars.outputs.find((o: Connector) => o.name === link.from.connector)
+  const input = toNode.vars.inputs.find((i: Connector) => i.name === link.to.connector)
   if (!output || !input) {
     return false
   }
-  if ((input.type & output.type) !== input.type) {
-    return false
-  }
-  return true
+  return (input.type & output.type) === input.type;
+
 }
 
 function endLinking() {
@@ -511,7 +514,7 @@ function unlinkAnyFromOutput(node: string, conn: string) {
   if (!safe.value) {
     return
   }
-  const index = safe.value.links.findIndex(l => l.from.node === node && (l.from.connector === conn || conn === ''))
+  const index = safe.value.links.findIndex((l: LinkM) => l.from.node === node && (l.from.connector === conn || conn === ''))
   if (index >= 0) {
     safe.value.links.splice(index, 1)
     saveWorkflow(safe.value)
@@ -522,7 +525,7 @@ function unlinkAnyFromInput(node: string, conn: string) {
   if (!safe.value) {
     return
   }
-  const index = safe.value.links.findIndex(l => l.to.node === node && (l.to.connector === conn || conn === ''))
+  const index = safe.value.links.findIndex((l: LinkM) => l.to.node === node && (l.to.connector === conn || conn === ''))
   if (index >= 0) {
     safe.value.links.splice(index, 1)
     saveWorkflow(safe.value)
@@ -530,7 +533,7 @@ function unlinkAnyFromInput(node: string, conn: string) {
 }
 
 function editNode(id: string) {
-  editingNode.value = safe.value.nodes.find(n => n.id === id) as workflow.NodeM
+  editingNode.value = safe.value.nodes.find((n: NodeM) => n.id === id) as NodeM
   menuMode.value = ''
 }
 
@@ -538,11 +541,11 @@ function duplicateNode(id: string) {
   if (!safe.value) {
     return
   }
-  const node = safe.value.nodes.find(n => n.id === id)
+  const node = safe.value.nodes.find((n: NodeM) => n.id === id)
   if (!node) {
     return
   }
-  const newNode = JSON.parse(JSON.stringify(node)) as workflow.NodeM
+  const newNode = JSON.parse(JSON.stringify(node)) as NodeM
   newNode.id = uuid.v4()
   safe.value.nodes.push(newNode)
   editingNode.value = newNode
@@ -556,7 +559,7 @@ function deleteNode(id: string) {
   if (editingNode.value && editingNode.value.id === id) {
     editingNode.value = null
   }
-  const index = safe.value.nodes.findIndex(n => n.id === id)
+  const index = safe.value.nodes.findIndex((n: NodeM) => n.id === id)
   if (index < 0) {
     return
   }
@@ -566,11 +569,11 @@ function deleteNode(id: string) {
   saveWorkflow(safe.value)
 }
 
-function updateNode(n: workflow.NodeM) {
+function updateNode(n: NodeM) {
   if (!safe.value) {
     return
   }
-  const index = safe.value.nodes.findIndex(node => node.id === n.id)
+  const index = safe.value.nodes.findIndex((node: NodeM) => node.id === n.id)
   if (index < 0) {
     return
   }
@@ -637,12 +640,12 @@ function trackMover(id: string, el: any) {
              class="mover absolute"
              :ref="(el) => trackMover(node.id, el)"
              :style="getPosition(node.id, i)"
-             draggable="true" @mousedown="dragStart(node.id, $event)"
+             @mousedown="dragStart(node.id, $event)"
         >
           <div class="flex items-center text-sm">
             <div class="flex-shrink">
               <div @mousedown.prevent.stop="startLinkFromInput(node.id, input.name)"
-                   v-for="input in node.vars?.inputs?.filter((inp) => inp.linkable)"
+                   v-for="input in node.vars?.inputs?.filter((inp: Connector) => inp.linkable)"
                    :key="input.name"
                    class="group my-0 flex items-center py-0 pr-2 leading-4">
                 <div id="input-label" class="mr-2 flex-grow text-right font-medium text-green-300 opacity-60">
@@ -713,7 +716,7 @@ function trackMover(id: string, el: any) {
           </button>
         </div>
         <div v-if="editingNode" class="pointer-events-none mt-1 h-full overflow-y-hidden">
-          <NodeEditor :node="editingNode" @update="updateNode" @close="clearNode"/>
+          <NodeEditor :client="client" :node="editingNode" @update="updateNode" @close="clearNode"/>
         </div>
         <div v-else-if="menuMode==='add'"
              class="pointer-events-auto relative mt-1 rounded border border-snow-storm-1 bg-polar-night-2">

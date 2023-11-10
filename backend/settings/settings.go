@@ -3,16 +3,16 @@ package settings
 import "github.com/ghostsecurity/reaper/backend/log"
 
 const (
-	settingsFilename = "config.0.json"
+	settingsFilename = "config.1.json"
 )
 
 type Settings struct {
-	CACert    []byte
-	CAKey     []byte
-	ProxyPort int
-	ProxyHost string
-	LogLevel  log.Level
-	DarkMode  bool
+	CACert    []byte    `json:"ca_cert"`
+	CAKey     []byte    `json:"ca_key"`
+	ProxyPort int       `json:"proxy_port"`
+	ProxyHost string    `json:"proxy_host"`
+	LogLevel  log.Level `json:"log_level"`
+	DarkMode  bool      `json:"dark_mode"`
 }
 
 var defaultSettings = Settings{

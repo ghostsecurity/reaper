@@ -15,6 +15,9 @@
   "dependencies": {
     "@headlessui/vue": "^1.7.5",
     "@heroicons/vue": "^2.0.13",
+    "@types/file-saver": "^2.0.7",
+    "@vueuse/core": "^10.6.0",
+    "file-saver": "^2.0.5",
     "popper.js": "^1.16.1",
     "vitest": "^0.26.3",
     "vue": "^3.2.37",

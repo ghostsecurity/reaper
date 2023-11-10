@@ -189,7 +189,7 @@ func (n *ExtractorNode) extract(response *packaging.HttpResponse, eType string, 
 	case ExtractSession:
 		var cookies []string
 		for _, cookie := range response.Cookies {
-			cookies = append(cookies, cookie.String())
+			cookies = append(cookies, fmt.Sprintf("%s=%s", cookie.Key, cookie.Value))
 		}
 		return strings.Join(cookies, "; "), nil
 	default:

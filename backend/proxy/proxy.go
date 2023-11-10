@@ -3,13 +3,16 @@ package proxy
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/google/uuid"
 
 	"github.com/elazarl/goproxy"
+
 	"github.com/ghostsecurity/reaper/backend/log"
 	"github.com/ghostsecurity/reaper/backend/settings"
 )
@@ -37,8 +40,10 @@ type ProxyResponseFunc func(*http.Response, int64) *http.Response
 
 func New(userSettings *settings.Provider, logger *log.Logger) (*Proxy, error) {
 
-	// TODO: allow user to specify which ip to bind to
 	addr := fmt.Sprintf("127.0.0.1:%d", userSettings.Get().ProxyPort)
+	if _, err := os.Stat("/.dockerenv"); err == nil {
+		addr = fmt.Sprintf(":%d", userSettings.Get().ProxyPort)
+	}
 	logger.Infof("Creating proxy on %s...", addr)
 	proxy := goproxy.NewProxyHttpServer()
 	ca, err := tls.X509KeyPair(userSettings.Get().CACert, userSettings.Get().CAKey)
@@ -134,7 +139,7 @@ func (p *Proxy) OnResponse(f ProxyResponseFunc) *Proxy {
 func (p *Proxy) Run() error {
 	p.logger.Infof("Listening on %s...", p.server.Addr)
 	if err := p.server.ListenAndServe(); err != nil {
-		if err != http.ErrServerClosed {
+		if !errors.Is(err, http.ErrServerClosed) {
 			return err
 		}
 	}

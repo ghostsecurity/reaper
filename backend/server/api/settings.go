@@ -1,15 +1,11 @@
-package backend
+package api
 
 import (
-	"context"
-	"fmt"
-
 	"github.com/ghostsecurity/reaper/backend/settings"
 	"github.com/ghostsecurity/reaper/version"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-func (a *App) GetSettings() settings.Settings {
+func (a *API) GetSettings() settings.Settings {
 	return a.userSettings.Get()
 }
 
@@ -19,7 +15,7 @@ type VersionInfo struct {
 	URL     string `json:"url"`
 }
 
-func (a *App) GetVersionInfo() VersionInfo {
+func (a *API) GetVersionInfo() VersionInfo {
 	return VersionInfo{
 		Version: version.Version,
 		Date:    version.Date,
@@ -27,10 +23,10 @@ func (a *App) GetVersionInfo() VersionInfo {
 	}
 }
 
-func (a *App) SaveSettings(newSettings *settings.Settings) {
+func (a *API) SaveSettings(newSettings *settings.Settings) {
 
 	if err := settings.Save(newSettings); err != nil {
-		a.notifyUser(fmt.Sprintf("Failed to save settings (save failed): %s", err), runtime.ErrorDialog)
+		a.notify("Failed to save settings (save failed): %s", err)
 		return
 	}
 
@@ -39,7 +35,7 @@ func (a *App) SaveSettings(newSettings *settings.Settings) {
 	if err := a.userSettings.Modify(func(s *settings.Settings) {
 		*s = *newSettings
 	}); err != nil {
-		a.notifyUser(fmt.Sprintf("Failed to update settings for current session: %s", err), runtime.ErrorDialog)
+		a.notify("Failed to update settings for current session: %s", err)
 		return
 	}
 
@@ -47,8 +43,7 @@ func (a *App) SaveSettings(newSettings *settings.Settings) {
 		a.logger.Infof("Proxy settings have changed, restarting proxy...")
 		if err := a.restartProxy(); err != nil {
 			a.logger.Errorf("Failed to restart proxy: %s", err)
-			a.notifyUser(fmt.Sprintf("Failed to restart proxy: %s", err), runtime.ErrorDialog)
-			a.Shutdown(context.Background())
+			a.notify("Failed to restart proxy: %s", err)
 			return
 		}
 	} else {

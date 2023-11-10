@@ -1,18 +1,19 @@
 <script lang="ts" setup>
-import { PropType } from 'vue'
-import { TransitionChild, TransitionRoot, Dialog, DialogPanel } from '@headlessui/vue'
+import {PropType} from 'vue'
+import {TransitionChild, TransitionRoot, Dialog, DialogPanel} from '@headlessui/vue'
 import SettingsComponent from './SettingsEditor.vue'
-import Settings from '../lib/Settings'
-import { backend } from '../../wailsjs/go/models'
-import VersionInfo = backend.VersionInfo;
+import {Settings} from "../lib/api/settings";
+import {VersionInfo} from "../lib/api/api";
+import Client from "../lib/api/Client";
 
 const props = defineProps({
   show: {
     type: Boolean,
     required: true,
   },
-  settings: { type: Object as PropType<Settings>, required: true },
-  version: { type: Object as PropType<VersionInfo | null>, required: true },
+  settings: {type: Object as PropType<Settings>, required: true},
+  version: {type: Object as PropType<VersionInfo | null>, required: true},
+  client: {type: Object as PropType<Client>, required: true},
 })
 
 const emit = defineEmits(['save', 'close'])
@@ -51,7 +52,7 @@ function saveSettings(settings: Settings) {
               leave-from="opacity-100 translate-y-0 sm:scale-100"
               leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
             <DialogPanel class="relative overflow-hidden text-left transition-all">
-              <SettingsComponent @save="saveSettings" @cancel="close" :settings="props.settings"
+              <SettingsComponent :client="client" @save="saveSettings" @cancel="close" :settings="props.settings"
                                  :version="props.version"/>
             </DialogPanel>
           </TransitionChild>
