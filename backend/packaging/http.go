@@ -175,7 +175,7 @@ func PackageHttpResponse(response *http.Response, proxyID string, reqID int64) (
 	// restore original body for entire response write
 	response.Body = io.NopCloser(backup)
 
-	var cookies []KeyValue
+	cookies := make([]KeyValue, 0)
 	for _, cookie := range response.Cookies() {
 		cookies = append(cookies, KeyValue{
 			Key:   cookie.Name,
