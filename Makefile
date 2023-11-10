@@ -1,6 +1,11 @@
 
 default: build
 
+.PHONY: harness
+harness:
+	mkdir -p frontend/dist
+	touch frontend/dist/index.html
+
 .PHONY: clean
 clean:
 	rm -rf build/bin || true
@@ -10,7 +15,7 @@ clean:
 test: test-go test-js
 
 .PHONY: test-go
-test-go:
+test-go: harness
 	go clean -testcache
 	go test ./... -race
 
@@ -26,7 +31,7 @@ lint-js:
 	cd frontend && npm install && npm run lint
 
 .PHONY: lint-go
-lint-go:
+lint-go: harness
 	which golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.50.1
 	golangci-lint run --timeout 3m --verbose
 
