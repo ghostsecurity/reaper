@@ -5,7 +5,7 @@ before:
 builds:
   - main: ./cmd/reaper
     ldflags:
-    - -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version={{.Version}}' -X 'github.com/ghostsecurity/reaper/version.Date={{.Date}}' -s -w"
+    - -X 'github.com/ghostsecurity/reaper/version.Version={{.Version}}' -X 'github.com/ghostsecurity/reaper/version.Date={{.Date}}' -s -w
     env:
       - CGO_ENABLED=0
     goos:
