@@ -32,6 +32,7 @@ export interface Position {
 
 export interface WorkflowM {
   id: string;
+  version: number;
   name: string;
   nodes: NodeM[];
   links: LinkM[];

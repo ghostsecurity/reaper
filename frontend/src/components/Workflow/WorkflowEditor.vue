@@ -14,6 +14,7 @@ import {
   EyeSlashIcon,
   XCircleIcon,
   ArrowUpOnSquareIcon,
+  BoltSlashIcon,
 } from '@heroicons/vue/20/solid'
 import { uuid } from 'vue-uuid'
 import { WorkflowM, NodeM, Position, LinkM, LinkDirectionM } from '../../lib/api/workflow'
@@ -605,6 +606,8 @@ function getStatusClass(id: string): string {
       return 'border-aurora-1'
     case 'aborted':
       return 'border-aurora-5'
+    case 'disconnected':
+      return 'border-aurora-3'
     case 'success':
       return 'border-aurora-4'
     default:
@@ -678,6 +681,8 @@ function trackMover(id: string, el: any) {
                                      class="mr-2 h-4 w-4 text-aurora-3"/>
                     <ExclamationCircleIcon v-else-if="props.statuses.get(node.id) === 'aborted'"
                                            class="mr-2 h-4 w-4 text-gray-400"/>
+                    <BoltSlashIcon v-else-if="props.statuses.get(node.id) === 'disconnected'"
+                                   class="mr-2 h-4 w-4 text-aurora-3"/>
                   </div>
                 </div>
                 <div v-if="!node.readonly && !dragId" @mousedown.prevent.stop

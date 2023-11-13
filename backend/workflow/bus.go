@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/ghostsecurity/reaper/backend/workflow/transmission"
 
@@ -152,39 +151,66 @@ func (b *Bus) Run(ctx context.Context, output chan<- node.Output) error {
 	var firstNodeError error
 	var errMu sync.Mutex
 
+	// create an input channel for each node
 	for _, n := range b.nodes {
 		b.inputs[n.ID()] = make(chan node.Input)
 	}
 
+	// build routes by creating a map of node:output to node:input
 	b.buildRoutes()
 
+	// for each node...
 	for _, n := range b.nodes {
 
-		var hasInputConnected bool
-		for _, l := range b.links {
-			if l.To.Node == n.ID() {
-				hasInputConnected = true
-				break
+		// ignoring the start node, check if the node is eventually linked back to the start node
+		// if not, we can mark it as complete as it will never be triggered
+		if b.start.ID() != n.ID() {
+			previous := b.getChainedInputNodes(n.ID(), nil)
+			var linkedToStart bool
+			for _, p := range previous {
+				if p == b.start.ID() {
+					linkedToStart = true
+					break
+				}
+			}
+
+			var linkable bool
+			for _, input := range n.GetInputs() {
+				if input.Linkable {
+					linkable = true
+					break
+				}
+			}
+
+			// we need to ignore nodes which have no inputs though, like requests, vars etc.
+			if !linkedToStart && linkable {
+				b.updateStatus(ctx, Update{
+					Node:    n.ID(),
+					Name:    n.Name(),
+					Status:  NodeStatusDisconnected,
+					Message: "Disconnected",
+				})
+				b.closeNodeInput(n)
+				continue
 			}
 		}
-		if !hasInputConnected && b.start.ID() != n.ID() {
-			b.updateStatus(ctx, Update{
-				Node:    n.ID(),
-				Name:    n.Name(),
-				Status:  NodeStatusSuccess,
-				Message: "Success (no inputs)",
-			})
-			b.closeNodeInput(n)
-			continue
-		}
 
+		// grab the input channel for this node
 		b.inputsMu.RLock()
 		in := b.inputs[n.ID()]
 		b.inputsMu.RUnlock()
+
+		// create an output channel for this node
 		out := make(chan node.OutputInstance, 100)
+
+		// count 2 jobs for the node - main execution and output handling
 		wg.Add(2)
+
+		// start the main work routine for the node
 		go func(n node.Node, in chan node.Input, out chan node.OutputInstance) {
 			defer wg.Done()
+
+			// inject any static inputs
 			if len(n.GetInjections()) > 0 {
 				b.updateStatus(ctx, Update{
 					Node:    n.ID(),
@@ -200,7 +226,10 @@ func (b *Bus) Run(ctx context.Context, output chan<- node.Output) error {
 					Message: "Waiting for input(s)...",
 				})
 			}
+
 			defer close(out)
+
+			// start work
 			if err := n.Start(ctx, in, out, output); err != nil {
 				if errors.Is(err, context.Canceled) {
 					if !b.isAborted() {
@@ -232,9 +261,10 @@ func (b *Bus) Run(ctx context.Context, output chan<- node.Output) error {
 			}
 
 		}(n, in, out)
+
+		// start the output handling routine for the node
 		go func(n node.Node, out chan node.OutputInstance) {
 			defer wg.Done()
-			defer b.checkDeadlock(n.ID())
 			defer b.closeNodeOutput(n)
 			for {
 				msg, ok := <-out
@@ -290,12 +320,11 @@ func (b *Bus) Run(ctx context.Context, output chan<- node.Output) error {
 						}
 					}()
 				}
-
-				b.checkDeadlock(n.ID())
 			}
 		}(n, out)
 	}
 
+	// grab the input channel for the start node
 	b.inputsMu.RLock()
 	startInput, ok := b.inputs[b.start.ID()]
 	if !ok {
@@ -305,12 +334,15 @@ func (b *Bus) Run(ctx context.Context, output chan<- node.Output) error {
 		return fmt.Errorf("start node not found")
 	}
 
+	// flag the start node as running
 	b.updateStatus(ctx, Update{
 		Node:    b.start.ID(),
 		Name:    b.start.Name(),
 		Status:  NodeStatusRunning,
 		Message: "Running...",
 	})
+
+	// write to the start node to kick off the workflow
 	select {
 	case <-ctx.Done():
 		b.inputsMu.RUnlock()
@@ -323,43 +355,9 @@ func (b *Bus) Run(ctx context.Context, output chan<- node.Output) error {
 		b.inputsMu.RUnlock()
 	}
 
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-SAFETY:
-	for {
-		select {
-		case <-func() chan struct{} {
-			c := make(chan struct{})
-			go func() {
-				defer close(c)
-				wg.Wait()
-			}()
-			return c
-		}():
-			break SAFETY
-		case <-ticker.C:
-			var remaining []uuid.UUID
-			b.inputsMu.RLock()
-			for n := range b.inputs {
-				remaining = append(remaining, n)
-			}
-			b.inputsMu.RUnlock()
-			for _, r := range remaining {
-				b.checkDeadlock(r)
-			}
-		}
-	}
-
 	for _, n := range b.nodes {
-		if old, ok := b.statuses[n.ID()]; !ok || (old.Status != NodeStatusSuccess && old.Status != NodeStatusError && old.Status != NodeStatusAborted) {
-			if firstNodeError == nil {
-				b.updateStatus(ctx, Update{
-					Node:    n.ID(),
-					Name:    n.Name(),
-					Status:  NodeStatusSuccess,
-					Message: "Success (defaulted)",
-				})
-			} else {
+		if old, ok := b.statuses[n.ID()]; !ok || (old.Status.IsFinal()) {
+			if firstNodeError != nil {
 				b.updateStatus(ctx, Update{
 					Node:    n.ID(),
 					Name:    n.Name(),
@@ -389,99 +387,12 @@ func (b *Bus) updateStatus(_ context.Context, update Update) {
 	b.updateChan <- update
 }
 
-func (b *Bus) checkDeadlock(fromOutputNode uuid.UUID) {
-
-	b.inputsMu.RLock()
-	defer b.inputsMu.RUnlock()
-
-	// first let's grab our remaining nodes which are running
-	var remainingNodes []uuid.UUID
-	for _, n := range b.nodes {
-		var linked bool
-		for _, link := range b.links {
-			if link.From.Node == fromOutputNode && link.To.Node == n.ID() {
-				linked = true
-				break
-			}
-		}
-		if !linked {
-			continue
-		}
-		if _, ok := b.inputs[n.ID()]; ok {
-			remainingNodes = append(remainingNodes, n.ID())
-		}
-	}
-
-	if len(remainingNodes) == 0 {
-		return
-	}
-
-	// we need to look for circular dependencies which are strangled from all other inputs
-	for _, n := range remainingNodes {
-		chained, circ := b.getChainedInputNodes(n, nil)
-		if !circ || len(chained) == 0 {
-			continue
-		}
-		// we have a circular dependency, let's see if it's strangled
-		strangled := true
-		for _, chain := range chained {
-			if !b.isCircular(chain) {
-				if _, ok := b.inputs[chain]; ok {
-					// this chain is not strangled
-					strangled = false
-					break
-				}
-			}
-		}
-		if strangled {
-			b.inputsMu.RUnlock()
-			b.shutDownChain(chained)
-			b.inputsMu.RLock()
-			return
-		}
-	}
-
-}
-
-func (b *Bus) shutDownChain(chain []uuid.UUID) {
-
-	var nodes []node.Node
-
-	// check if anything in the chain is busy - if not, we can probably shut it down
-	for _, id := range chain {
-		var n node.Node
-		for _, no := range b.nodes {
-			if no.ID() == id {
-				n = no
-				break
-			}
-		}
-		if n == nil {
-			continue
-		}
-		if n.Busy() {
-			return
-		}
-		nodes = append(nodes, n)
-	}
-
-	for _, n := range nodes {
-		b.closeNodeInput(n)
-	}
-}
-
-func (b *Bus) isCircular(n uuid.UUID) bool {
-	_, circular := b.getChainedInputNodes(n, nil)
-	return circular
-}
-
 // returns all input nodes to a given node, and all input nodes to those nodes, and so on
-func (b *Bus) getChainedInputNodes(from uuid.UUID, used []uuid.UUID) ([]uuid.UUID, bool) {
+func (b *Bus) getChainedInputNodes(from uuid.UUID, used []uuid.UUID) []uuid.UUID {
 	nodes := []uuid.UUID{
 		from,
 	}
 	used = append(used, from)
-	var circular bool
 	for _, link := range b.links {
 		if link.To.Node == from {
 			// node has completed, not interested
@@ -496,13 +407,11 @@ func (b *Bus) getChainedInputNodes(from uuid.UUID, used []uuid.UUID) ([]uuid.UUI
 				}
 			}
 			if exists {
-				circular = true
 				continue
 			}
-			chained, circ := b.getChainedInputNodes(link.From.Node, used)
-			circular = circular || circ
+			chained := b.getChainedInputNodes(link.From.Node, used)
 			nodes = append(nodes, chained...)
 		}
 	}
-	return nodes, circular
+	return nodes
 }

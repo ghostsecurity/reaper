@@ -119,10 +119,14 @@ type RequestResponsePairWithMap struct {
 }
 
 func NewRequestResponsePairWithMap(req packaging.HttpRequest, resp packaging.HttpResponse, params map[string]string) *RequestResponsePairWithMap {
+	clone := make(map[string]string, len(params))
+	for k, v := range params {
+		clone[k] = v
+	}
 	return &RequestResponsePairWithMap{
 		request:  Request(req),
 		response: Response(resp),
-		params:   params,
+		params:   clone,
 	}
 }
 

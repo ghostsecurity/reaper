@@ -2,6 +2,7 @@ package workflow
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/google/uuid"
 
@@ -13,12 +14,19 @@ import (
 	A lot of the strangeness in here existed to help wails create js bindings - we can start to simplify this now...
 */
 
+const jsonVersion = 1
+
 type WorkflowM struct {
 	ID          string              `json:"id"`
+	Version     int                 `json:"version"`
 	Name        string              `json:"name"`
 	Nodes       []NodeM             `json:"nodes"`
 	Links       []LinkM             `json:"links"`
 	Positioning map[string]Position `json:"positioning"`
+}
+
+func (w WorkflowM) IsCurrentVersion() bool {
+	return w.Version == jsonVersion
 }
 
 type LinkDirectionM struct {
@@ -45,6 +53,7 @@ func (w *Workflow) Pack() (*WorkflowM, error) {
 
 	return &WorkflowM{
 		ID:          w.ID.String(),
+		Version:     jsonVersion,
 		Name:        w.Name,
 		Nodes:       mNodes,
 		Links:       toLinkMs(w.Links),
@@ -84,6 +93,9 @@ func toUUIDOrNil(u string) uuid.UUID {
 }
 
 func (m *WorkflowM) Unpack() (*Workflow, error) {
+	if m.Version != jsonVersion {
+		return nil, fmt.Errorf("workflow version mismatch: %d != %d", m.Version, jsonVersion)
+	}
 	w := Workflow{
 		ID:          toUUIDOrNil(m.ID),
 		Name:        m.Name,

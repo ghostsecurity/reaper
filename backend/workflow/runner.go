@@ -4,9 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ghostsecurity/reaper/backend/workflow/node"
 	"github.com/google/uuid"
 	"golang.org/x/net/context"
+
+	"github.com/ghostsecurity/reaper/backend/workflow/node"
 )
 
 type runner struct {
@@ -47,12 +48,17 @@ var ChildNodeError = errors.New("child node error")
 type NodeStatus string
 
 const (
-	NodeStatusPending NodeStatus = "pending"
-	NodeStatusRunning NodeStatus = "running"
-	NodeStatusSuccess NodeStatus = "success"
-	NodeStatusError   NodeStatus = "error"
-	NodeStatusAborted NodeStatus = "aborted"
+	NodeStatusPending      NodeStatus = "pending"
+	NodeStatusRunning      NodeStatus = "running"
+	NodeStatusSuccess      NodeStatus = "success"
+	NodeStatusError        NodeStatus = "error"
+	NodeStatusAborted      NodeStatus = "aborted"
+	NodeStatusDisconnected NodeStatus = "disconnected"
 )
+
+func (s NodeStatus) IsFinal() bool {
+	return s == NodeStatusSuccess || s == NodeStatusError || s == NodeStatusAborted || s == NodeStatusDisconnected
+}
 
 func (r *runner) Run(updateChan chan<- Update, output chan<- node.Output) error {
 
