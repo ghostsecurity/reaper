@@ -3,4 +3,3 @@ export interface VersionInfo {
   date: string;
   url: string;
 }
-

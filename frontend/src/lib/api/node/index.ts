@@ -24,4 +24,3 @@ export interface VarStorageM {
   outputs: Connector[];
   static: {[key: string]: TransmissionM};
 }
-

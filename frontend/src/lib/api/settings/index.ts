@@ -8,4 +8,3 @@ export interface Settings {
   log_level: Level;
   dark_mode: boolean;
 }
-
