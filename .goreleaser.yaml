@@ -3,8 +3,9 @@ before:
     - go mod tidy
     - make build
 builds:
-  - ldflags:
-    - -ldflags="-X 'github.com/ghostsecurity/reaper/version.Version={{.Version}}' -X 'github.com/ghostsecurity/reaper/version.Date={{.Date}}' -s -w"
+  - main: ./cmd/reaper
+    ldflags:
+    - -X 'github.com/ghostsecurity/reaper/version.Version={{.Version}}' -X 'github.com/ghostsecurity/reaper/version.Date={{.Date}}' -s -w
     env:
       - CGO_ENABLED=0
     goos:

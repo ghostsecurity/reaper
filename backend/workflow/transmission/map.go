@@ -7,7 +7,11 @@ var _ Transmission = (*Map)(nil)
 type Map map[string]string
 
 func NewMap(data map[string]string) *Map {
-	m := Map(data)
+	clone := make(map[string]string, len(data))
+	for k, v := range data {
+		clone[k] = v
+	}
+	m := Map(clone)
 	return &m
 }
 
@@ -19,7 +23,7 @@ func (t *Map) Map() map[string]string {
 	if t == nil {
 		return nil
 	}
-	return map[string]string(*t)
+	return *t
 }
 
 func (t *Map) MarshalJSON() ([]byte, error) {

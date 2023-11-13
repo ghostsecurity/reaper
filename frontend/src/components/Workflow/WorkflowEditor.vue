@@ -14,6 +14,7 @@ import {
   EyeSlashIcon,
   XCircleIcon,
   ArrowUpOnSquareIcon,
+  BoltSlashIcon,
 } from '@heroicons/vue/20/solid'
 import { uuid } from 'vue-uuid'
 import { WorkflowM, NodeM, Position, LinkM, LinkDirectionM } from '../../lib/api/workflow'
@@ -294,7 +295,7 @@ let currentLinkConnector = ''
 
 let linkSearchMode = ''
 
-function startLinkFromInput(nodeId: string, conn: string) {
+function startLinkFromInput(event: MouseEvent, nodeId: string, conn: string) {
   if (!safe.value) {
     return
   }
@@ -302,8 +303,8 @@ function startLinkFromInput(nodeId: string, conn: string) {
   currentLinkNode = nodeId
   currentLinkConnector = conn
   const existing = safe.value.links.find((l: LinkM) => l.to.node === nodeId && l.to.connector === conn)
-  unlinkAnyFromInput(nodeId, conn)
-  if (existing) {
+  if (existing && !event.shiftKey) {
+    unlinkAnyFromInput(nodeId, conn)
     linkSearchMode = 'input'
     currentLinkNode = existing.from.node
     currentLinkConnector = existing.from.connector
@@ -331,7 +332,7 @@ function startLinkFromInput(nodeId: string, conn: string) {
   }
 }
 
-function startLinkFromOutput(nodeId: string, conn: string) {
+function startLinkFromOutput(event: MouseEvent, nodeId: string, conn: string) {
   if (!safe.value) {
     return
   }
@@ -339,8 +340,8 @@ function startLinkFromOutput(nodeId: string, conn: string) {
   currentLinkNode = nodeId
   currentLinkConnector = conn
   const existing = safe.value.links.find((l: LinkM) => l.from.node === nodeId && l.from.connector === conn)
-  unlinkAnyFromOutput(nodeId, conn)
-  if (existing) {
+  if (existing && !event.shiftKey) {
+    unlinkAnyFromOutput(nodeId, conn)
     linkSearchMode = 'output'
     currentLinkNode = existing.to.node
     currentLinkConnector = existing.to.connector
@@ -605,6 +606,8 @@ function getStatusClass(id: string): string {
       return 'border-aurora-1'
     case 'aborted':
       return 'border-aurora-5'
+    case 'disconnected':
+      return 'border-aurora-3'
     case 'success':
       return 'border-aurora-4'
     default:
@@ -644,7 +647,7 @@ function trackMover(id: string, el: any) {
         >
           <div class="flex items-center text-sm">
             <div class="flex-shrink">
-              <div @mousedown.prevent.stop="startLinkFromInput(node.id, input.name)"
+              <div @mousedown.prevent.stop="startLinkFromInput($event, node.id, input.name)"
                    v-for="input in node.vars?.inputs?.filter((inp: Connector) => inp.linkable)"
                    :key="input.name"
                    class="group my-0 flex items-center py-0 pr-2 leading-4">
@@ -678,6 +681,8 @@ function trackMover(id: string, el: any) {
                                      class="mr-2 h-4 w-4 text-aurora-3"/>
                     <ExclamationCircleIcon v-else-if="props.statuses.get(node.id) === 'aborted'"
                                            class="mr-2 h-4 w-4 text-gray-400"/>
+                    <BoltSlashIcon v-else-if="props.statuses.get(node.id) === 'disconnected'"
+                                   class="mr-2 h-4 w-4 text-aurora-3"/>
                   </div>
                 </div>
                 <div v-if="!node.readonly && !dragId" @mousedown.prevent.stop
@@ -692,7 +697,7 @@ function trackMover(id: string, el: any) {
               </div>
             </div>
             <div class="flex-shrink text-sm">
-              <div @mousedown.prevent.stop="startLinkFromOutput(node.id, output.name)"
+              <div @mousedown.prevent.stop="startLinkFromOutput($event, node.id, output.name)"
                    v-for="output in node.vars?.outputs"
                    :key="output.name"
                    class="group my-0 flex items-center py-0 pl-2 leading-4">

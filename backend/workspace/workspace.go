@@ -139,9 +139,13 @@ func loadFile(file string) (*Workspace, error) {
 		return nil, fmt.Errorf("failed to decode workspace: %w", err)
 	}
 
-	if workspace.Workflows == nil {
-		workspace.Workflows = []workflow.WorkflowM{}
+	filtered := make([]workflow.WorkflowM, 0)
+	for _, w := range workspace.Workflows {
+		if w.IsCurrentVersion() {
+			filtered = append(filtered, w)
+		}
 	}
+	workspace.Workflows = filtered
 
 	return &workspace, nil
 }

@@ -381,7 +381,7 @@ function stopWorkflow(id: string) {
   if (flow === undefined) {
     return
   }
-  props.client.StopWorkflow(flow)
+  props.client.StopWorkflow()
 }
 
 function createWorkflowFromRequest(r: HttpRequest) {
