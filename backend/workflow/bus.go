@@ -356,7 +356,12 @@ func (b *Bus) Run(ctx context.Context, output chan<- node.Output) error {
 	}
 
 	for _, n := range b.nodes {
-		if old, ok := b.statuses[n.ID()]; !ok || (old.Status.IsFinal()) {
+
+		b.statusMu.Lock()
+		old, ok := b.statuses[n.ID()]
+		b.statusMu.Unlock()
+
+		if !ok || (old.Status.IsFinal()) {
 			if firstNodeError != nil {
 				b.updateStatus(ctx, Update{
 					Node:    n.ID(),
