@@ -4,12 +4,12 @@
 */
 import { MessageType, WebsocketMessage } from './websocket.type'
 // %IMPORTS:START%
-import { Settings } from './settings'
-import { VersionInfo } from './api'
 import { NodeM, WorkflowM, UpdateM } from './workflow'
 import { OutputM } from './node'
 import { Workspace } from './workspace'
 import { HttpRequest } from './packaging'
+import { Settings } from './settings'
+import { VersionInfo } from './api'
 // %IMPORTS:END%
 
 export default class Client {
