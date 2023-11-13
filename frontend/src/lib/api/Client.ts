@@ -4,7 +4,7 @@
 */
 import { MessageType, WebsocketMessage } from './websocket.type'
 // %IMPORTS:START%
-import { NodeM, WorkflowM, UpdateM } from './workflow'
+import { WorkflowM, UpdateM, NodeM } from './workflow'
 import { OutputM } from './node'
 import { Workspace } from './workspace'
 import { HttpRequest } from './packaging'
