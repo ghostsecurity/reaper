@@ -404,7 +404,10 @@ func (b *Bus) getChainedInputNodes(from uuid.UUID, used []uuid.UUID) []uuid.UUID
 	for _, link := range b.links {
 		if link.To.Node == from {
 			// node has completed, not interested
-			if _, ok := b.inputs[link.From.Node]; !ok {
+			b.inputsMu.Lock()
+			_, ok := b.inputs[link.From.Node]
+			b.inputsMu.Unlock()
+			if !ok {
 				continue
 			}
 			var exists bool
