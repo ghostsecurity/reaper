@@ -182,40 +182,40 @@ export default class Client {
     })
   }
 
-  CreateNode(a0: number): Promise<NodeM|null> {
-    return new Promise<NodeM|null>((resolve, reject) => {
+  CreateNode(a0: number): Promise<NodeM | null> {
+    return new Promise<NodeM | null>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output0: NodeM|null = JSON.parse(args[0])
+        const output0: NodeM | null = JSON.parse(args[0])
         resolve(output0)
       }
       this.callMethod('CreateNode', [a0], receive, reject)
     })
   }
 
-  CreateWorkflow(): Promise<WorkflowM|null> {
-    return new Promise<WorkflowM|null>((resolve, reject) => {
+  CreateWorkflow(): Promise<WorkflowM | null> {
+    return new Promise<WorkflowM | null>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output0: WorkflowM|null = JSON.parse(args[0])
+        const output0: WorkflowM | null = JSON.parse(args[0])
         resolve(output0)
       }
       this.callMethod('CreateWorkflow', [], receive, reject)
     })
   }
 
-  CreateWorkflowFromRequest(a0: {[key: string]: any}): Promise<WorkflowM|null> {
-    return new Promise<WorkflowM|null>((resolve, reject) => {
+  CreateWorkflowFromRequest(a0: { [key: string]: any }): Promise<WorkflowM | null> {
+    return new Promise<WorkflowM | null>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output0: WorkflowM|null = JSON.parse(args[0])
+        const output0: WorkflowM | null = JSON.parse(args[0])
         resolve(output0)
       }
       this.callMethod('CreateWorkflowFromRequest', [a0], receive, reject)
     })
   }
 
-  CreateWorkspace(a0: Workspace|null): Promise<Workspace|null> {
-    return new Promise<Workspace|null>((resolve, reject) => {
+  CreateWorkspace(a0: Workspace | null): Promise<Workspace | null> {
+    return new Promise<Workspace | null>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output0: Workspace|null = JSON.parse(args[0])
+        const output0: Workspace | null = JSON.parse(args[0])
         resolve(output0)
       }
       this.callMethod('CreateWorkspace', [a0], receive, reject)
@@ -280,10 +280,10 @@ export default class Client {
     })
   }
 
-  GetWorkspace(): Promise<Workspace|null> {
-    return new Promise<Workspace|null>((resolve, reject) => {
+  GetWorkspace(): Promise<Workspace | null> {
+    return new Promise<Workspace | null>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output0: Workspace|null = JSON.parse(args[0])
+        const output0: Workspace | null = JSON.parse(args[0])
         resolve(output0)
       }
       this.callMethod('GetWorkspace', [], receive, reject)
@@ -320,10 +320,10 @@ export default class Client {
     })
   }
 
-  LoadWorkspace(a0: string): Promise<Workspace|null> {
-    return new Promise<Workspace|null>((resolve, reject) => {
+  LoadWorkspace(a0: string): Promise<Workspace | null> {
+    return new Promise<Workspace | null>((resolve, reject) => {
       const receive = (args: string[]) => {
-        const output0: Workspace|null = JSON.parse(args[0])
+        const output0: Workspace | null = JSON.parse(args[0])
         resolve(output0)
       }
       this.callMethod('LoadWorkspace', [a0], receive, reject)
@@ -339,7 +339,7 @@ export default class Client {
     })
   }
 
-  RunWorkflow(a0: WorkflowM|null): Promise<void> {
+  RunWorkflow(a0: WorkflowM | null): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const receive = () => {
         resolve()
@@ -348,7 +348,7 @@ export default class Client {
     })
   }
 
-  SaveSettings(a0: Settings|null): Promise<void> {
+  SaveSettings(a0: Settings | null): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const receive = () => {
         resolve()
@@ -357,7 +357,7 @@ export default class Client {
     })
   }
 
-  SaveWorkspace(a0: Workspace|null): Promise<void> {
+  SaveWorkspace(a0: Workspace | null): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const receive = () => {
         resolve()
@@ -375,7 +375,7 @@ export default class Client {
     })
   }
 
-  SetWorkspace(a0: Workspace|null): Promise<void> {
+  SetWorkspace(a0: Workspace | null): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const receive = () => {
         resolve()
@@ -422,20 +422,4 @@ export default class Client {
   }
 
   // %METHODS:END%
-
-  /*
-                          Test(a: string): Promise<string> {
-                          let res: (value: string | PromiseLike<string>) => void;
-                          let rej: (reason?: any) => void;
-                          return new Promise<string>((resolve, reject) => {
-                              res = resolve;
-                              rej = reject;
-                              const receive = (_: string[]) => {
-                                  let a: string = JSON.parse(args[0]);
-                                  res(a);
-                              }
-                              this.callMethod("Test", [a], receive, rej);
-                          })
-
-                       */
 }
