@@ -362,6 +362,7 @@ func (b *Bus) Run(ctx context.Context, output chan<- node.Output) error {
 		b.statusMu.Unlock()
 
 		if !ok || (old.Status.IsFinal()) {
+			errMu.Lock()
 			if firstNodeError != nil {
 				b.updateStatus(ctx, Update{
 					Node:    n.ID(),
@@ -370,9 +371,11 @@ func (b *Bus) Run(ctx context.Context, output chan<- node.Output) error {
 					Message: "Aborted",
 				})
 			}
+			errMu.Unlock()
 		}
 	}
 
+	wg.Wait()
 	return firstNodeError
 }
 
