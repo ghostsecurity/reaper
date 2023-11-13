@@ -42,6 +42,7 @@ func generateClient(summary Summary) error {
 		markerMethodsStart,
 		{'\n'},
 		methods,
+		{' ', ' '},
 		markerMethodsEnd,
 		afterMethods,
 	}, []byte{})
@@ -64,14 +65,14 @@ func generateClientMethods(summary Summary) ([]byte, []byte, error) {
 		}
 		if len(method.OutTypes) == 0 {
 
-			_, _ = fmt.Fprintf(buffer, `    %s(%s): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            const receive = () => {
-                resolve();
-            }
-            this.callMethod("%[1]s", [%[3]s], receive, reject);
-        })
-    }
+			_, _ = fmt.Fprintf(buffer, `  %s(%s): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const receive = () => {
+        resolve()
+      }
+      this.callMethod('%[1]s', [%[3]s], receive, reject)
+    })
+  }
 
 `,
 				method.Name,
@@ -88,20 +89,19 @@ func generateClientMethods(summary Summary) ([]byte, []byte, error) {
 					panic(fmt.Sprintf("method %s has empty output type", method.Name))
 				}
 				promiseTypes = append(promiseTypes, outType.TSProp())
-				outputs += fmt.Sprintf("\n                let output%d: %s = JSON.parse(args[%d])", i, outType.TSProp(), i)
+				outputs += fmt.Sprintf("\n        const output%d: %s = JSON.parse(args[%d])", i, outType.TSProp(), i)
 				outputList = append(outputList, fmt.Sprintf("output%d", i))
 			}
 			promiseType := strings.Join(promiseTypes, ", ")
 
-			_, _ = fmt.Fprintf(buffer, `    %s(%s): Promise<%s> {
-        return new Promise<%[3]s>((resolve, reject) => {
-            const receive = (args: string[]) => {
-				%s
-                resolve(%s);
-            }
-            this.callMethod("%[1]s", [%[6]s], receive, reject);
-        })
-    }
+			_, _ = fmt.Fprintf(buffer, `  %s(%s): Promise<%s> {
+    return new Promise<%[3]s>((resolve, reject) => {
+      const receive = (args: string[]) => {%s
+        resolve(%s)
+      }
+      this.callMethod('%[1]s', [%[6]s], receive, reject)
+    })
+  }
 
 `,
 				method.Name,

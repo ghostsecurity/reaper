@@ -38,3 +38,4 @@ export interface WorkflowM {
   links: LinkM[];
   positioning: {[key: string]: Position};
 }
+

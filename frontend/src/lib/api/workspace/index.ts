@@ -51,3 +51,4 @@ export interface Workspace {
   tree: Tree;
   workflows: WorkflowM[];
 }
+

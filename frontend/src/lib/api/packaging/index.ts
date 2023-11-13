@@ -30,3 +30,4 @@ export interface HttpRequest {
   tags: string[];
   response: HttpResponse|null;
 }
+
