@@ -17,6 +17,10 @@ import (
 )
 
 func (a *API) RunWorkflow(w *workflow.WorkflowM) {
+	go a.runWorkflow(w)
+}
+
+func (a *API) runWorkflow(w *workflow.WorkflowM) {
 	a.workflowMu.Lock()
 	defer a.workflowMu.Unlock()
 	if a.runningWorkflowID != uuid.Nil {
@@ -38,7 +42,6 @@ func (a *API) RunWorkflow(w *workflow.WorkflowM) {
 	go func() {
 		for update := range updateChan {
 			_ = a.eventTrigger(EventWorkflowUpdate, update.Pack())
-
 			if n, err := flow.FindNode(update.Node); err == nil {
 				_ = a.eventTrigger(EventWorkflowOutput, node.OutputM{
 					Node:    update.Node.String(),
@@ -66,9 +69,12 @@ func (a *API) RunWorkflow(w *workflow.WorkflowM) {
 	}
 }
 
-func (a *API) StopWorkflow(w *workflow.WorkflowM) {
+func (a *API) StopWorkflow() {
 	if a.workflowContextCancel != nil {
+		a.logger.Info("Stopping workflow!")
 		a.workflowContextCancel()
+	} else {
+		a.logger.Info("No workflow to stop!")
 	}
 }
 

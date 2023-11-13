@@ -71,9 +71,13 @@ func generateTypes(summary Summary) error {
 			_, _ = fmt.Fprint(file, "\n")
 		}
 
-		for _, t := range types {
-			_, _ = fmt.Fprint(file, t.TSDefinition()+"\n\n")
+		for i, t := range types {
+			if i > 0 {
+				_, _ = fmt.Fprint(file, "\n\n")
+			}
+			_, _ = fmt.Fprint(file, t.TSDefinition())
 		}
+		_, _ = fmt.Fprint(file, "\n")
 
 		if err := os.WriteFile(filepath.Join(basePath, dir, "index.ts"), file.Bytes(), 0644); err != nil {
 			return fmt.Errorf("failed to write file '%s': %w", filepath.Join(dir, "index.ts"), err)
