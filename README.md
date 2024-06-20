@@ -13,4 +13,3 @@ distributable workflows.
 
 For further documentation on installation, configuration and usage, check out
 the [docs](https://ghostsecurity.github.io/reaper).
-
