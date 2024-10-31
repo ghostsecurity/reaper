@@ -1,0 +1,47 @@
+name: "🐞 Bug Report"
+description: "Report a reproducible bug."
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: | 
+	      A clear and concise summary of what the bug is.
+      placeholder: |
+	      Example bug report:
+	      When I click the "Scan" button, nothing happens.
+    validations:
+      required: true
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      description: |
+        What page(s) did you encounter this bug on?
+      placeholder: |
+        Explore
+    validations:
+      required: true  
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: |
+	      Please provide any additional details about the bug.
+		placeholder: |
+        Example details:
+        The "Submit" button is unresponsive. I've tried refreshing the page and using a different browser, but the issue persists.
+    validations:
+      required: false
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Email
+      description: |
+	      How can we get in touch with you if we need more info?
+      placeholder: |
+	      ex. email@example.com
+    validations:
+      required: false
