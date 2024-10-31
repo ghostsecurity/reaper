@@ -1,6 +1,6 @@
 **
 
-!dist
+!dist/
 !go.mod
 !go.sum
 !internal
