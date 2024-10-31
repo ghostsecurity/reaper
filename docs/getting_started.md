@@ -40,7 +40,7 @@ The first step in reconnaissance is enumerating the available targets for a give
 
 ## Explore
 
-✨ *Learn how to set up Reaper's proxy [using this guide](docs/proxy_certs.md).*
+✨ *Learn how to set up Reaper's proxy [using this guide](proxy_certs.md).*
 
 Capture traffic by following these steps:
 1. Switch the `Proxy on` toggle at the top of the page Explore page in Reaper.
@@ -48,7 +48,7 @@ Capture traffic by following these steps:
 3. Browse through your target app, targeting any interactions or workflows you want to test for vulnerabilities.
 4. The Explore page in Reaper will show an inventory of hosts and endpoints captured by the proxy.
 
-*If you're having issues with the proxy, check the [guide](docs/proxy_certs.md). If the issue persists, please let us know what's haunting you at reaper@ghost.security.*
+*If you're having issues with the proxy, check the [guide](proxy_certs.md). If the issue persists, please let us know what's haunting you at reaper@ghost.security.*
 
 ## Replay
 
@@ -71,5 +71,3 @@ The AI Agent capability is the basis for a natural language interaction with one
 ## Reports
 
 To view reports generated and saved via the `/api/reports` `POST` endpoint, select the desired report.  Stay tuned as we continue to develop this capability.  In the meantime, your feedback is welcomed and encouraged!
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
