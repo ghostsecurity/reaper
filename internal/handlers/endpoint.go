@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log/slog"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -67,7 +68,12 @@ func (h *Handler) CreateAttack(c *fiber.Ctx) error {
 
 	// TODO: get domain from endpoint
 	domain := "ghostbank.net"
-	go fuzz.CreateAttack(domain, atk.ExcludedKeys, h.pool, h.db, 100, 1000, 10)
+	go func() {
+		err := fuzz.CreateAttack(domain, atk.ExcludedKeys, h.pool, h.db, 100, 1000, 10)
+		if err != nil {
+			slog.Error("[create attack]", "msg", "error creating attack", "error", err)
+		}
+	}()
 
 	return c.JSON(fiber.Map{"status": "ok"})
 }

@@ -42,7 +42,7 @@ func Connect() *gorm.DB {
 func Migrate() {
 	db := Connect()
 
-	db.AutoMigrate(
+	_ = db.AutoMigrate(
 		&models.User{},
 		&models.Setting{},
 		&models.Project{},
@@ -67,7 +67,7 @@ func Migrate() {
 		Where(&models.User{Role: types.UserRoleAgent}).
 		First(&models.User{})
 	if res.RowsAffected == 0 {
-		service.CreateAgentUser(db)
+		_, _ = service.CreateAgentUser(db)
 	}
 
 	adminToken, _ := service.GetSettingByKey("admin_token", db)
