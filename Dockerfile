@@ -7,7 +7,9 @@ COPY . .
 
 RUN go mod download
 
-RUN GOOS=linux go build -o reaper
+ENV GOOS=linux
+
+RUN go build -ldflags="-s -w" -o reaper ./cmd/reaper
 
 # Run layer
 FROM ubuntu:latest

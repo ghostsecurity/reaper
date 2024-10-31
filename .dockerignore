@@ -1,0 +1,8 @@
+**
+
+!dist
+!go.mod
+!go.sum
+!internal
+!tls/
+!cmd/
