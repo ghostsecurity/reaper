@@ -34,7 +34,11 @@ Built for orchestration by both humans and AI, Reaper transforms appsec testing 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## 💿 Getting Started
 
+Follow [the installation and getting started guide](docs/getting_started.md) for getting Reaper up and running on your machine.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTRIBUTING -->
 ## Contributing
