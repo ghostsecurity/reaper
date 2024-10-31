@@ -50,6 +50,6 @@ Reaper is distributed under the [Apache 2.0 License](LICENSE). All Reaper contri
 <!-- ACKNOWLEDGMENTS -->
 ## 👏 Acknowledgments
 
-We want to tip our hats to our friends at [ProjectDiscovery](https://github.com/projectdiscovery), who produce a suite of open source tools tailored for offensive security practitioners, security engineers, bug bounty hunters, and red teamers. ProjectDiscovery are the creators of [subfinder](https://github.com/projectdiscovery/subfinder), [katana](https://github.com/projectdiscovery/katana), [nuclei](https://github.com/projectdiscovery/nuclei), and many other great tools.
+We want to tip our hats to our friends at [ProjectDiscovery](https://github.com/projectdiscovery), who produce a suite of open source tools tailored for offensive security practitioners, security engineers, bug bounty hunters, and red teamers. ProjectDiscovery is the creator of [subfinder](https://github.com/projectdiscovery/subfinder), [katana](https://github.com/projectdiscovery/katana), [nuclei](https://github.com/projectdiscovery/nuclei), and many other great tools.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
