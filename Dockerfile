@@ -16,6 +16,8 @@ FROM ubuntu:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+RUN apt-get update && apt-get install -y ca-certificates && update-ca-certificates
+
 RUN useradd -m -d /app -s /bin/bash app
 
 WORKDIR /app
