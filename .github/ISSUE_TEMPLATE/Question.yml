@@ -1,0 +1,26 @@
+name: "❓Question"
+description: "Ask a conceptual or usage question about Reaper."
+title: "[Question]: "
+labels: ["type: question"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: |
+        A clear and concise question about how Reaper works or how to use it.
+      placeholder: |
+        Example:
+        How do I run a Nuclei template in Reaper?
+    validations:
+      required: true
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Email
+      description: |
+	      How can we get in touch with you if we need more info?
+      placeholder: |
+	      ex. email@example.com
+    validations:
+      required: false
