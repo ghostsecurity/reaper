@@ -26,7 +26,7 @@
 !config.yaml
 !sample.env
 !dist/*/*
-!docs/*
+!docs/**
 !tls/*
 
 .DS_Store
