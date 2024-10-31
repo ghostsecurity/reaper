@@ -7,7 +7,7 @@ Reaper by [Ghost Security](https://ghost.security) is a modern, lightweight, and
 <br />
 <div align="center">
   <i>Watch the demo video!</i><br/>
-  <a href="https://www.youtube.com/watch?v=ULpCO1-oDFI"><img src="docs/img/logo-reaper-only.png"></a>
+  <a href="https://www.youtube.com/watch?v=ULpCO1-oDFI"><img src="docs/img/video-thumbnail.png"></a>
 </div>
 
 > :warning:
