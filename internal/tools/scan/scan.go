@@ -30,6 +30,3 @@ func updateDomainHostCount(domain *models.Domain, db *gorm.DB) error {
 	db.Model(&domain).Updates(domain)
 	return nil
 }
-
-func updateHost(host models.Host, db *gorm.DB) {
-}

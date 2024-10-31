@@ -143,7 +143,10 @@ func CreateAttack(domain string, excludeKeys []string, ws *websocket.Pool, db *g
 func createFuzzedRequest(originalReq *models.Request, key string, value int) *http.Request {
 	// Parse the original body
 	var body map[string]interface{}
-	json.Unmarshal([]byte(originalReq.Body), &body)
+	err := json.Unmarshal([]byte(originalReq.Body), &body)
+	if err != nil {
+		slog.Error("Failed to parse body", "error", err)
+	}
 
 	// Update the specified key with the fuzzed value
 	body[key] = value

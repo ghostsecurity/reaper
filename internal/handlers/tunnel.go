@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -16,7 +17,11 @@ func (h *Handler) TunnelStart(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok", "message": "tunnel already running", "url": h.tunnel.URL})
 	}
 	h.tunnel = tunnel.NewTunnel()
-	h.tunnel.Start()
+	err := h.tunnel.Start()
+	if err != nil {
+		slog.Error("[tunnel start]", "msg", "error starting tunnel", "error", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "error starting tunnel"})
+	}
 
 	return c.JSON(fiber.Map{"status": "ok", "url": h.tunnel.URL})
 }
@@ -27,7 +32,7 @@ func (h *Handler) TunnelStop(c *fiber.Ctx) error {
 		h.tunnel = nil
 	}
 
-	service.DeleteSettingByKey(tunnelURLKey, h.db)
+	_ = service.DeleteSettingByKey(tunnelURLKey, h.db)
 
 	return c.JSON(fiber.Map{"status": "ok"})
 }

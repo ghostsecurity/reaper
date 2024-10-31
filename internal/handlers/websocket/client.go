@@ -44,7 +44,7 @@ func (c *Client) Read() {
 		// the connection alive because browsers don't have a
 		// native WebSocket ping
 		if msg.Body == "ping" {
-			c.Conn.WriteMessage(websocket.TextMessage, []byte("pong"))
+			_ = c.Conn.WriteMessage(websocket.TextMessage, []byte("pong"))
 		} else {
 			// we don't need to log pings, but we do want to log everything else
 			slog.Info("[ws]", "body", msg.Body)
