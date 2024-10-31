@@ -25,7 +25,7 @@
 
 !config.yaml
 !sample.env
-!dist/*/*
+!dist/**
 !docs/**
 !tls/*
 
