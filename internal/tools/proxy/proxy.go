@@ -57,7 +57,10 @@ func (p *Proxy) Start() error {
 			}
 		}()
 
-		initializeCA()
+		err := initializeCA()
+		if err != nil {
+			panic(err)
+		}
 
 		// https CONNECT
 		p.proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
@@ -196,11 +199,14 @@ func (p *Proxy) saveResp(resp *http.Response, ctx *goproxy.ProxyCtx) (*http.Resp
 		slog.Error("[proxy resp handler]", "msg", "error writing response to db", "error", result.Error)
 	}
 
-	service.CreateEndpoint(p.db, service.EndpointInput{
+	_, err = service.CreateEndpoint(p.db, service.EndpointInput{
 		Hostname: resp.Request.URL.Hostname(),
 		Path:     resp.Request.URL.Path,
 		Method:   resp.Request.Method,
 	})
+	if err != nil {
+		slog.Error("[proxy resp handler]", "msg", "error creating endpoint", "error", err)
+	}
 
 	// Replace the original response body
 	resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
@@ -240,6 +246,10 @@ func paramKeysToString(values url.Values) string {
 // bodyKeysToString converts a JSON body to a comma-separated string of the keys
 func bodyKeysToString(body []byte) string {
 	var m map[string]string
-	json.Unmarshal(body, &m)
+	err := json.Unmarshal(body, &m)
+	if err != nil {
+		slog.Error("[proxy body keys]", "msg", "error unmarshalling body", "error", err)
+		return ""
+	}
 	return strings.Join(maps.Keys(m), ",")
 }

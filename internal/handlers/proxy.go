@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"log/slog"
+
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/ghostsecurity/reaper/internal/tools/proxy"
@@ -11,7 +13,11 @@ func (h *Handler) ProxyStart(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok", "message": "proxy already running"})
 	}
 	h.proxy = proxy.NewProxy(h.pool, h.db)
-	h.proxy.Start()
+	err := h.proxy.Start()
+	if err != nil {
+		slog.Error("[proxy start]", "msg", "error starting proxy", "error", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "error starting proxy"})
+	}
 
 	return c.JSON(fiber.Map{"status": "ok"})
 }
