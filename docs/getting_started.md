@@ -2,21 +2,34 @@
 
 Reaper runs as either a Docker container (recommended) or as a binary and is controlled by humans using the local web UI.
 
-## Running via Docker
+## Running via Docker Run or Docker Compose
 
-If you have Docker version 19.x or above, the quickest path to getting running is to clone this repo and run from the command line:
+If you have Docker version 19.x or above, the quickest path to getting running is to run:
+
+```sh
+docker run -t --rm  \
+  -e HOST=0.0.0.0 \
+  -e PORT=8000 \
+  -e PROXY_PORT=8080 \
+  -e OPENAI_API_KEY=sk-your-key-here \
+  -p 8000:8000 \
+  -p 8080:8080 \
+  ghcr.io/ghostsecurity/reaper:latest
+```
+
+Once the container is up and running, navigate to [http://localhost:8000](http://localhost:8000) to activate the Reaper UI.
+
+Or, you can use `docker compose`:
+
+ 1. Clone this repo locally,
+ 2. Modify the docker-compose.yml environment variables to add your OpenAI API key if desired, and
+ 3. Run from the command line:
 
 ```sh
 docker compose up
 ```
 
-## Running via Binary
-
-```
-TODO
-```
-
-Once the container or binary is up and running, navigate to https://localhost:8000 to activate the Reaper UI.
+Again, once the container is up and running, navigate to [http://localhost:8000](http://localhost:8000) to activate the Reaper UI.
 
 <!-- Usage -->
 # Usage
