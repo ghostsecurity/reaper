@@ -8,10 +8,10 @@ body:
     attributes:
       label: Summary
       description: | 
-	      A clear and concise summary of what the bug is.
+        A clear and concise summary of what the bug is.
       placeholder: |
-	      Example bug report:
-	      When I click the "Scan" button, nothing happens.
+        Example bug report:
+        When I click the "Scan" button, nothing happens.
     validations:
       required: true
   - type: input
@@ -29,8 +29,8 @@ body:
     attributes:
       label: Details
       description: |
-	      Please provide any additional details about the bug.
-		placeholder: |
+        Please provide any additional details about the bug.
+      placeholder: |
         Example details:
         The "Submit" button is unresponsive. I've tried refreshing the page and using a different browser, but the issue persists.
     validations:
@@ -40,8 +40,8 @@ body:
     attributes:
       label: Contact Email
       description: |
-	      How can we get in touch with you if we need more info?
+        How can we get in touch with you if we need more info?
       placeholder: |
-	      ex. email@example.com
+        ex. email@example.com
     validations:
       required: false

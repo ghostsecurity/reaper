@@ -19,8 +19,8 @@ body:
     attributes:
       label: Contact Email
       description: |
-	      How can we get in touch with you if we need more info?
+        How can we get in touch with you if we need more info?
       placeholder: |
-	      ex. email@example.com
+        ex. email@example.com
     validations:
       required: false
