@@ -34,7 +34,7 @@ Built for orchestration by both humans and AI, Reaper transforms appsec testing 
 - Usable by humans and AI Agents alike
 - A platform for running autonomous workflows
 - Easy to maintain and extend
-- Reduce application security engineer burn-out with helpful automation
+- Reduce security engineer burnout with helpful automation
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
