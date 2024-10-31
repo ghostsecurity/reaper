@@ -120,7 +120,7 @@ To view reports generated and saved via the `/api/reports` `POST` endpoint, sele
 
 First, thank you for taking the time to check out Reaper! Our primary goal is to get as many folks using it and to drive a roadmap based on your feedback.  If you have a great idea for an enhancement or you have encountered a bug, we'd greatly appreciate a well-formed [Issue](https://github.com/ghostsecurity/reaper/issues/new) in this repo so we can triage and prioritize accordingly.
 
-Reaper is distributed under the [Apache 2.0 License](LICENSE). All Reaper contributors and community members must adhere to the [Code of Conduct](CODE_OF_CONDUCT.md)
+Reaper is distributed under the [Apache 2.0 License](LICENSE). All Reaper contributors and community members must adhere to the [Code of Conduct](docs/CODE_OF_CONDUCT.md) and agree to the [CLA](docs/CLA.md).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
