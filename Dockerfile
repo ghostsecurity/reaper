@@ -1,16 +1,25 @@
-FROM golang:1.21-alpine AS builder
-RUN apk --update add ca-certificates make npm
-WORKDIR /build
+# Build layer
+FROM golang:latest AS build
 
-COPY . /build
+WORKDIR /app
 
-ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
+COPY . .
 
-RUN make build
-RUN go build -ldflags="-s -w" -o reaper ./cmd/reaper
+RUN go mod download
 
-FROM scratch
-COPY --from=builder ["/etc/ssl/certs/ca-certificates.crt", "/etc/ssl/certs/"]
-COPY --from=builder ["/build/reaper", "/"]
+RUN GOOS=linux go build -o reaper
 
-ENTRYPOINT ["/reaper"]
+# Run layer
+FROM ubuntu:latest
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN useradd -m -d /app -s /bin/bash app
+
+WORKDIR /app
+COPY . .
+COPY --from=build /app/reaper .
+RUN chown -R app /app
+USER app
+
+CMD ["./reaper"]

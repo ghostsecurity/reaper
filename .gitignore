@@ -1,8 +1,34 @@
-build/bin
-node_modules
-frontend/dist
-.idea
-.vscode
-docs/_site
+# Allowlisting gitignore template for GO projects prevents us
+# from adding various unwanted local files, such as generated
+# files, developer configurations or IDE-specific files etc.
+#
+# Recommended: Go.AllowList.gitignore
 
-dist/
+# Ignore everything
+*
+
+# But not these files...
+!/.gitignore
+
+!*.go
+!go.sum
+!go.mod
+
+!README.md
+!LICENSE
+
+!Makefile
+!Dockerfile
+!docker-compose.yml
+!.dockerignore
+!.github/*
+
+!config.yaml
+!sample.env
+!dist/*/*
+!tls/*
+
+.DS_Store
+
+# ...even if they are in subdirectories
+!*/
