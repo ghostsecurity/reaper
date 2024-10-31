@@ -6,9 +6,8 @@ Reaper by [Ghost Security](https://ghost.security) is a modern, lightweight, and
 <!-- LOGO AND YOUTUBE -->
 <br />
 <div align="center">
-  <a href="https://www.youtube.com/watch?v=t0Oe1IIB9xI">
-    <img src="docs/img/logo-reaper-only.png" alt="Logo" width="200px">
-  </a>
+<i>Watch the demo video!</i><br/>
+[![Reaper by Ghost](docs/img/video-thumbnail.png)](https://www.youtube.com/watch?v=ULpCO1-oDFI)
 </div>
 
 > :warning:
