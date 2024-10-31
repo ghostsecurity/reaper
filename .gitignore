@@ -21,7 +21,7 @@
 !Dockerfile
 !docker-compose.yml
 !.dockerignore
-!.github/*
+!.github/**
 
 !config.yaml
 !sample.env
