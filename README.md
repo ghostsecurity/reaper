@@ -11,8 +11,6 @@ Reaper by [Ghost Security](https://ghost.security) is a modern, lightweight, and
   <br /><br />
 </div>
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/ULpCO1-oDFI?si=9CQU_le9lt_M_j6e" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-
 > :warning:
 > This project is undergoing rapid development and may change significantly in the near future.
 
