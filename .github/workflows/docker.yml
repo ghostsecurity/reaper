@@ -1,6 +1,4 @@
-#
-name: Create and publish a Docker image
-
+name: Publish Docker image
 # Configures this workflow to run every time a change is pushed to the branch called `release`.
 on:
   push:

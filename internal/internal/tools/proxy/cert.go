@@ -1,0 +1,82 @@
+package proxy
+
+import (
+	"crypto/tls"
+	"crypto/x509"
+
+	"github.com/elazarl/goproxy"
+)
+
+// Ghost Labs Reaper CA certificate (exp. 2025-Oct-8)
+var caCert = []byte(`-----BEGIN CERTIFICATE-----
+MIIENTCCAx2gAwIBAgIUEM/HP6DOco9LQjgJPcfyD/Y1i6swDQYJKoZIhvcNAQEL
+BQAwgakxCzAJBgNVBAYTAlVTMQ4wDAYDVQQIDAVUZXhhczEPMA0GA1UEBwwGQXVz
+dGluMR0wGwYDVQQKDBRHaG9zdCBTZWN1cml0eSwgSW5jLjETMBEGA1UECwwKR2hv
+c3QgTGFiczEhMB8GA1UEAwwYcmVhcGVyLmdob3N0c2VjdXJpdHkuY29tMSIwIAYJ
+KoZIhvcNAQkBFhNsYWJzQGdob3N0LnNlY3VyaXR5MB4XDTI0MTAwODE5MzgxNloX
+DTI1MTAwODE5MzgxNlowgakxCzAJBgNVBAYTAlVTMQ4wDAYDVQQIDAVUZXhhczEP
+MA0GA1UEBwwGQXVzdGluMR0wGwYDVQQKDBRHaG9zdCBTZWN1cml0eSwgSW5jLjET
+MBEGA1UECwwKR2hvc3QgTGFiczEhMB8GA1UEAwwYcmVhcGVyLmdob3N0c2VjdXJp
+dHkuY29tMSIwIAYJKoZIhvcNAQkBFhNsYWJzQGdob3N0LnNlY3VyaXR5MIIBIjAN
+BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyHGW4U/8ZuwD5bEMJKYhhagqMmr/
+8K7IZi69gn61tidujONkqnOzPKyrerqcFH3NCbh148ErVtpXogS+Nz+pu+xLuUsu
+QgLy0ivEL0BhTtM1t2aIZTMchfgUiG7RUqMuKm5o/BhOnpF8qUWkWvUi7eaUI0Ht
+yS/w3COVb17jHAuJBg/+57VkN95fex3c97qsebaZbNoMZwPH98ACnBRsEHH7G+0+
+H6Ue4s3WuVQvgxZKR1+rtUoX4iOy3zaOie7TjvebadLsrG03q3H4ItHsIIINRue2
+5922HHYPxie+xxPT2LBaoChtLhQEI0I62ffS83qcN+TGm73idFSp/ws+bwIDAQAB
+o1MwUTAdBgNVHQ4EFgQUefvi2VXnokYoxeYmo+SC0TqGtHIwHwYDVR0jBBgwFoAU
+efvi2VXnokYoxeYmo+SC0TqGtHIwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0B
+AQsFAAOCAQEAoBMdA74q0zF4F8UbnMv5yrFR/mMbkpVLAtZNiy71fXPuVEIucyaN
+K4eG2bLsRSKOLVPdDrp2tsKskrbx3kRBY0iOtxGbeS1Mf2HXua59LODDIeYLkv0w
++z/yVQJdiNch96tL/nR7KbbH4bNbfJDrG4tLTGSIq9Xm2U/w2qHyNSzO8xFhjoYI
+X8g+h7qU9r4LpTyTj31P4c309Y1Un+UJXN11uDXkswc+2eij8XbK1EY1QBKR4kE6
+97trZdh1hT2HTsdY60eAiR0iuAbeWwbC1gRCHrCp7MFj97DOpYchI7k1Tda8gQru
+FfV/JTfkC+xOurw64GptsCpUquDdep6/2Q==
+-----END CERTIFICATE-----`)
+
+// Ghost Labs Reaper CA key
+var caKey = []byte(`-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDIcZbhT/xm7APl
+sQwkpiGFqCoyav/wrshmLr2CfrW2J26M42Sqc7M8rKt6upwUfc0JuHXjwStW2lei
+BL43P6m77Eu5Sy5CAvLSK8QvQGFO0zW3ZohlMxyF+BSIbtFSoy4qbmj8GE6ekXyp
+RaRa9SLt5pQjQe3JL/DcI5VvXuMcC4kGD/7ntWQ33l97Hdz3uqx5tpls2gxnA8f3
+wAKcFGwQcfsb7T4fpR7izda5VC+DFkpHX6u1ShfiI7LfNo6J7tOO95tp0uysbTer
+cfgi0ewggg1G57bn3bYcdg/GJ77HE9PYsFqgKG0uFAQjQjrZ99Lzepw35MabveJ0
+VKn/Cz5vAgMBAAECggEAEIXskVFt1de9N03+jKoO0Vz11yCJTWan3MroxfBHPADI
+7pKmiOm76+1Mvw03y8I8ok4ZlopYVdlVDmU9soHSlOWU4gb+Hsrt1I1vDd+zJc0b
+YuCJr23xlMmVrh/hRkkIh5uz/WczjYOItzUNqCg7Y0kPceiZZW0VedAlHWbBA5ET
+6M8OgBSJ/+6ljjwWcvqmE9BvfnRlOcqkNRD33z7pwrC5Mg8ExUIXGwb5RaJUfMjN
+ivLJuljHsdZUlTzMGCTcv/cP1sUTdn1LwleMOaKwtgGLmUj64UhjZW7GVXvzH6KP
+076bnZbLW+5ulu1SMSwAAJlQKCkYkzo0xc+DfUyeQQKBgQD7qHK/48FukaX7hT8m
+zC9EfLnk/zkKhXW9ANRKGBEqbDcrVqt0w6adccxexzvfLB4WROsrh6uSE3ZRe9j7
+ysZ6048B+aZnIqxw9sF+t9hq+WdnFKVzwCWPpgL23JTvQxWMYJFb37DBkwTwr5ZY
+T7iuxlD/CBZHYAfzIKqjwnTZJwKBgQDL5u6YB2kJuAHE0HOfu/bKW/tfc2V3owLc
+FbkbB/5uo7HtZbdIy+r3GJ3xalyGhA7gUXEh9VGyrm81ZWxLbtvXdffUQxg11f15
+zjJ043aRr58acW0EFLlBXh9xavZx3KiXnQr4twcSx12Ud8UUT2vuntPT7vXs7UI8
+gkdceq1teQKBgQCss4HkG/nP1lYxENUw2+kIOAwekePkS4hsJ1iIbJHDKjaGIFlT
+rTz3SXQ2CsYUtqMDJ1K4McfVXFPTQYm76gFhozO96ESA/LOYZk6Nlr8HUpbaj7mn
+gNKGDSh1nxT6SXBNQKwgf5c+kJVQUz965WLZVjGZg0Q+wTFTcTSJY1Zq+wKBgBo6
+VEp9+YbkgmW8ooLTfMU+27DFeTHQaBfDO5I8jv/QUpzEzrSwdkLeicJ5+fjbl8ZG
+85R4p8+iHG/z4eA6HFE0vXIyRzT1l6tJWLgsYh4PRxnxqSIzQDkmUEkYhybSSWVn
+L/gaIvDJcEIevd0E8k85YuoJ/NxDEJgT8fX1WcWRAoGBAMTPxTYPJmkqrra2OEr1
+xEQkr27jJTVXBm/KDX8eXeIHn5G3xFMFAx2+b67cR+6YD/PqufmHV+m/VGwt4bWy
+aZzp7IdLRrq1ON5DJp7NsfdAPdtXZFef5pfosndM2l5OEcRcCpT4DnOl6+q1uGEP
+XxC/HXnZxv3jsfMNJYoH3mZv
+-----END PRIVATE KEY-----`)
+
+func initializeCA() error {
+	goproxyCa, err := tls.X509KeyPair(caCert, caKey)
+	if err != nil {
+		return err
+	}
+	if goproxyCa.Leaf, err = x509.ParseCertificate(goproxyCa.Certificate[0]); err != nil {
+		return err
+	}
+	goproxy.GoproxyCa = goproxyCa
+	goproxy.OkConnect = &goproxy.ConnectAction{Action: goproxy.ConnectAccept, TLSConfig: goproxy.TLSConfigFromCA(&goproxyCa)}
+	goproxy.MitmConnect = &goproxy.ConnectAction{Action: goproxy.ConnectMitm, TLSConfig: goproxy.TLSConfigFromCA(&goproxyCa)}
+	goproxy.HTTPMitmConnect = &goproxy.ConnectAction{Action: goproxy.ConnectHTTPMitm, TLSConfig: goproxy.TLSConfigFromCA(&goproxyCa)}
+	goproxy.RejectConnect = &goproxy.ConnectAction{Action: goproxy.ConnectReject, TLSConfig: goproxy.TLSConfigFromCA(&goproxyCa)}
+
+	return nil
+}

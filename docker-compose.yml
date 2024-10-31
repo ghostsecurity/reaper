@@ -1,0 +1,16 @@
+services:
+  reaper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - ENV=docker
+      - HOST=0.0.0.0
+      - PORT=8000
+      - PROXY_PORT=8080
+      - NGROK_AUTHTOKEN=...YOUR_NGROK_AUTHTOKEN...
+    volumes:
+      - ./files:/app/files
+    ports:
+      - 8000:8000
+      - 8080:8080

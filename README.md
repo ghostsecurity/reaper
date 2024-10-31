@@ -1,15 +1,31 @@
 # Reaper
 
-> :warning:
-> This project is experimental and will likely change significantly in the future.
+A modern web app attack and testing framework.
 
-[<img src="thumb.png" width="100%">](https://www.youtube.com/watch?v=t0Oe1IIB9xI)
+## What does it do?
 
-Reaper is a reconnaissance and attack proxy, built to be a modern, lightweight, and efficient equivalent to Burp
-Suite/ZAP etc. This is an attack proxy with a heavy focus on automation, collaboration, and building universally
-distributable workflows.
+- intercepting web proxy
+- enumerate and discover hosts & subdomains (using pd subfinder)
+- probe discovered hosts (using pd httpx)
+- TODO: crawl discovered hosts (using pd katana)
+- TODO: attack target hosts (using pd nuclei)
+- TODO: fuzz inputs against specific host endpoints
+- team collaboration (multiple users shared workspace)
 
-## Documentation
+## Running it
 
-For further documentation on installation, configuration and usage, check out
-the [docs](https://ghostsecurity.github.io/reaper).
+Run locally via Docker compose.
+
+```
+docker compose up
+```
+
+Locally via make
+
+```
+make run
+```
+
+Browse to [http://localhost:8000](http://localhost:8000)
+
+

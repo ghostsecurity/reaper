@@ -1,67 +1,35 @@
+.DEFAULT_GOAL := help
 
-default: build
+ENV_FILE := $(shell touch .env) # create .env if it doesn't exist
 
-.PHONY: harness
-harness:
-	mkdir -p frontend/dist
-	touch frontend/dist/index.html
+# export all .env vars
+include .env
+$(eval export $(shell sed -ne 's/ *#.*$$//; /./ s/=.*$$// p' .env))
 
-.PHONY: clean
-clean:
-	rm -rf build/bin || true
-	rm -rf frontend/dist || true
-
-.PHONY: test
-test: test-go test-js
-
-.PHONY: test-go
-test-go: harness
-	go clean -testcache
-	go test ./... -race
-
-.PHONY: test-js
-test-js:
-	cd frontend && npm install && npm test
-
-.PHONY: lint
-lint: lint-go lint-js
-
-.PHONY: lint-js
-lint-js:
-	cd frontend && npm install && npm run lint
-
-.PHONY: lint-go
-lint-go: harness
-	which golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.50.1
-	golangci-lint run --timeout 3m --verbose
-
-.PHONY: build-js
-build-js: clean
-	cd frontend && npm install && npm run build
-
-.PHONY: build-bindings
-build-bindings: clean
-	go run ./cmd/gen-bindings
-
-.PHONY: build
-build: clean build-bindings build-js
-
-.PHONY: install
-install: build
-	go install ./cmd/reaper
+.PHONY: help
+help: ## Show this help
+	@echo "Usage: make [target]\n"
+	@cat ${MAKEFILE_LIST} | grep "[#]# " | grep -v grep | sort | column -t -s '##' | sed -e 's/^/ /'
+	@echo ""
 
 .PHONY: run
-run: build
+run: ## Run the local server
 	go run ./cmd/reaper
+    
+.PHONY: dev
+dev: ## Run the local server with air watcher
+	air
+    
+.PHONY: build
+build: ## Build the local server
+	go build -ldflags="-s -w" -o reaper ./cmd/reaper
 
-.PHONY: fix
-fix:
-	cd frontend && npm install && npm run fix
+.PHONY: lint
+lint: ## Run linters
+	go vet ./...
+	which golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.2
+	golangci-lint run --timeout 3m --verbose
 
-.PHONY: docs
-docs:
-	cd docs && bundle install && bundle exec jekyll serve --livereload
-
-docker:
-	docker build -t "reaper" .
-	docker run -v $$HOME/.reaper:/.reaper -p 8080:8080 -p 31337:31337 reaper
+.PHONY: test
+test: ## Run tests
+	go test -v ./...
