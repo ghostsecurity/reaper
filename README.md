@@ -1,5 +1,5 @@
 <a id="readme-top"></a>
-<h1><img src="docs/img/logo-reaper-only.png" width="30px"> Reaper</h1>
+<h1><img src="docs/img/logo-reaper-only.png" width="26px"> Reaper</h1>
 
 Reaper by [Ghost Security](https://ghost.security) is a modern, lightweight, and extensible open-source application security testing framework built to be operated by both humans and AI Agents.  It provides several capabilities that enable manual application security workflows: target reconnaissance, request proxying, request tampering/replay, live collaboration, and active test running.  When combined with an AI Agent backed by an LLM, Reaper becomes a flexible engine to drive even more powerful application testing workflows.
 
