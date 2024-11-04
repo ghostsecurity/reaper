@@ -34,7 +34,7 @@ jobs:
             const browser = await chromium.launch();
             const page = await browser.newPage();
             try {
-              const response = await page.goto('http://ui:8000');
+              const response = await page.goto('http://localhost:8000');
               if (!response.ok()) throw new Error(`HTTP status: ${response.status()}`);
               console.log('Frontend is responding successfully!');
             } catch (error) {
@@ -44,4 +44,4 @@ jobs:
             await browser.close();
           })();
           EOF
-          node test.js || (docker logs ui-container && exit 1)
+          node test.js || (docker logs ui && exit 1)
