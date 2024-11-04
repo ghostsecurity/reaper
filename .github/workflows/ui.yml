@@ -16,7 +16,7 @@ jobs:
           HOST: 0.0.0.0
           PORT: 8000
         run: |
-          docker run -d -p 8000:8000 --name ui ui-app -e HOST -e PORT
+          docker run -d -e HOST -e PORT -p 8000:8000 --name ui ui-app
           sleep 10
 
       - name: Check container status
