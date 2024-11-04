@@ -36,7 +36,7 @@ curl -x localhost:8080 -k https://ipinfo.io
 
 {
   "ip": "98.76.54.32",
-  "hostname": "ip98-169-174-174.isp.net",
+  "hostname": "ip98-76-54-32.isp.net",
   "city": "San Diego",
   "region": "California",
   "country": "US",
