@@ -23,6 +23,7 @@ RUN useradd -m -d /app -s /bin/bash app
 WORKDIR /app
 COPY . .
 COPY --from=build /app/reaper .
+COPY --from=build /app/cmd/reaper/dist ./dist
 RUN chown -R app /app
 USER app
 
