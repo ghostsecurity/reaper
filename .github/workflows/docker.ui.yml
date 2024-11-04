@@ -1,0 +1,33 @@
+name: Docker UI
+on:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker container
+        run: docker build -t ui-app .
+
+      - name: Start Docker container
+        env:
+          HOST: 0.0.0.0
+          PORT: 8000
+        run: |
+          docker run -d -e HOST -e PORT -p 8000:8000 --name ui ui-app
+          sleep 5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        run: npx playwright test

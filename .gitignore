@@ -25,7 +25,8 @@
 
 !config.yaml
 !sample.env
-!dist/**
+!docs/**
+!tests/**
 !cmd/reaper/dist/**
 !tls/*
 
