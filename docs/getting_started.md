@@ -31,7 +31,6 @@ docker compose up
 
 Again, once the container is up and running, navigate to [http://localhost:8000](http://localhost:8000) to activate the Reaper UI.
 
-<!-- Usage -->
 # Usage
 
 ## Scan

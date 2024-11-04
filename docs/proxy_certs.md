@@ -29,11 +29,22 @@ Some tools allow specifying the CA pem file on demand. First, either clone this 
 
 ### curl
 
-Use `-x` and `--cacert` to proxy a request through Reaper without TLS warnings, respectively:
+Use `-x` and `-k` to proxy a request through Reaper without TLS warnings, respectively:
 
 ```sh
-curl -x localhost:8080 --cacert path/to/reaper/tls/ca.pem https://icanhazip.com
-<ip response here>
+curl -x localhost:8080 -k https://ipinfo.io
+
+{
+  "ip": "98.76.54.32",
+  "hostname": "ip98-76-54-32.isp.net",
+  "city": "San Diego",
+  "region": "California",
+  "country": "US",
+  "loc": "38.8462,-77.3064",
+  "org": "AS1337 Ghost Communications Inc.",
+  "postal": "90001",
+  "timezone": "America/San_Diego"
+}   
 ```
 
 ## Browsers
@@ -66,12 +77,23 @@ Disable proxying by switching the proxy settings dialog back to `No proxy`.  Rem
 
 ### Chrome
 
-To install the certificate for Chrome to use, follow the steps to install for your <a href="#operating-system">Operating system</a>.
+Launch a new Chrome instance using the local Reaper proxy (without altering your system settings).
 
-To configure Chrome to proxy through Reaper, you must configure your OS proxy settings.  Chrome doesn't have native proxy configuration without help from a [proxy switcher extension](https://chromewebstore.google.com/search/proxy%20switcher):
+#### macOS
 
-1. Either use one of the extensions or navigate to [chrome://settings/?search=proxy](chrome://settings/?search=proxy)
-2. Click `Open your computer's proxy settings`
-3. Enable the `HTTP` and `HTTPS` proxy with a host:`localhost` and port: `8080`
+```sh
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+  --proxy-server="127.0.0.1:8080" \
+  --ignore-certificate-errors \
+  --user-data-dir="$HOME/.chrome-reaper"
+```
 
-Disable proxying by reverting the proxy settings to disabled.
+
+#### Linux
+
+```sh
+google-chrome \
+  --proxy-server="127.0.0.1:8080" \
+  --ignore-certificate-errors \
+  --user-data-dir="$HOME/.chrome-reaper"
+```
