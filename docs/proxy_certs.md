@@ -43,7 +43,7 @@ curl -x localhost:8080 -k https://ipinfo.io
   "loc": "38.8462,-77.3064",
   "org": "AS1337 Ghost Communications Inc.",
   "postal": "90001",
-  "timezone": "America/Los_Angeles"
+  "timezone": "America/San_Diego"
 }   
 ```
 
