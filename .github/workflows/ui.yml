@@ -12,10 +12,11 @@ jobs:
         run: docker build -t ui-app .
 
       - name: Start Docker container
+        env:
+          HOST: 0.0.0.0
+          PORT: 8000
         run: |
-          docker run -d -p 8000:8000 --name ui ui-app \
-            -e HOST=0.0.0.0 \
-            -e PORT=8000
+          docker run -d -p 8000:8000 --name ui ui-app -e HOST -e PORT
           sleep 10
 
       - name: Check container status
