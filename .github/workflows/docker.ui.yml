@@ -26,8 +26,12 @@ jobs:
       - name: Setup npm
         run: npm init -y
 
+      - name: Install Playwright
+        run: npm install @playwright/test
+
       - name: Install Playwright Browsers
         run: npx playwright install chromium --with-deps
 
       - name: Run Playwright tests
         run: npx playwright test
+
