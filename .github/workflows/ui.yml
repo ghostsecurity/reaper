@@ -1,0 +1,47 @@
+name: UI
+on:
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker container
+        run: docker build -t ui-app .
+
+      - name: Start Docker container
+        run: |
+          docker run -d -p 8000:8000 --name ui-container ui-app
+          sleep 10
+
+      - name: Check container status
+        run: docker ps -a
+
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install @playwright/test
+          npx playwright install chromium --with-deps
+
+      - name: Test frontend
+        run: |
+          cat << EOF > test.js
+          const { chromium } = require('@playwright/test');
+
+          (async () => {
+            const browser = await chromium.launch();
+            const page = await browser.newPage();
+            try {
+              const response = await page.goto('http://localhost:8000');
+              if (!response.ok()) throw new Error(`HTTP status: ${response.status()}`);
+              console.log('Frontend is responding successfully!');
+            } catch (error) {
+              console.error('Error:', error);
+              process.exit(1);
+            }
+            await browser.close();
+          })();
+          EOF
+          node test.js || (docker logs ui-container && exit 1)
