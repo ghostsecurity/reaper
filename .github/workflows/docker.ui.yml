@@ -22,12 +22,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          
-      - name: Setup npm
-        run: npm init -y
-
-      - name: Install dependencies
-        run: npm ci
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
