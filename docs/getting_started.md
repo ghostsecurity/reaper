@@ -42,7 +42,7 @@ The first step in reconnaissance is enumerating the available targets for a give
 ✨ *Learn how to set up Reaper's proxy [using this guide](proxy_certs.md).*
 
 Capture traffic by following these steps:
-1. Switch the `Proxy on` toggle at the top of the page Explore page in Reaper.
+1. The proxy is on by default. It can be stopped and restarted using the `Proxy on/off` toggle at the top of the page Explore page.
 2. Configure your browser or other client to route requests through the proxy at `localhost:8080` for both HTTP and HTTPS.
 3. Browse through your target app, targeting any interactions or workflows you want to test for vulnerabilities.
 4. The Explore page in Reaper will show an inventory of hosts and endpoints captured by the proxy.
