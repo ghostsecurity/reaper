@@ -1,4 +1,4 @@
-name: Docker UI
+name: Web UI
 on:
   pull_request:
 jobs:
@@ -8,16 +8,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build Docker container
-        run: docker build -t ui .
-
-      - name: Start Docker container
-        env:
-          HOST: 0.0.0.0
-          PORT: 8000
-        run: |
-          docker run -d -e HOST -e PORT -p 8000:8000 --name ui ui
-          sleep 5
+      - name: Start Server
+        run: make run
 
       - uses: actions/setup-node@v4
         with:

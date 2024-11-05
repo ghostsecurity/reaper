@@ -1,9 +1,11 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"log"
 	"log/slog"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -11,6 +13,7 @@ import (
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 
 	"github.com/ghostsecurity/reaper/internal/database"
@@ -18,6 +21,9 @@ import (
 	ws "github.com/ghostsecurity/reaper/internal/handlers/websocket"
 	"github.com/ghostsecurity/reaper/internal/middleware"
 )
+
+//go:embed dist/*
+var static embed.FS
 
 func main() {
 	// We don't need the time field in the local logs
@@ -114,15 +120,17 @@ func main() {
 	// settings
 
 	// serve static frontend files
-	app.Static("/", "./dist")
-
-	// if 404, serve index.html
-	app.Use(func(c *fiber.Ctx) error {
-		if c.Method() != fiber.MethodGet {
-			return c.SendStatus(fiber.StatusNotFound)
-		}
-		return c.SendFile("./dist/index.html")
-	})
+	app.Use("/", filesystem.New(filesystem.Config{
+		Root:         http.FS(static),
+		PathPrefix:   "dist",
+		Browse:       true,
+		NotFoundFile: "dist/index.html",
+	}))
+	app.Use("/assets", filesystem.New(filesystem.Config{
+		Root:       http.FS(static),
+		PathPrefix: "dist/assets",
+		Browse:     true,
+	}))
 
 	// Start server
 	host := os.Getenv("HOST")
