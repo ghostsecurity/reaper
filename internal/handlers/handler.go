@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"log"
+
 	"gorm.io/gorm"
 
 	ws "github.com/ghostsecurity/reaper/internal/handlers/websocket"
@@ -16,9 +18,16 @@ type Handler struct {
 }
 
 func NewHandler(pool *ws.Pool, db *gorm.DB) *Handler {
+	proxy := proxy.NewProxy(pool, db)
+	// start proxy by default
+	err := proxy.Start()
+	if err != nil {
+		log.Fatalf("error starting proxy: %v", err)
+	}
 	return &Handler{
-		pool: pool,
-		db:   db,
+		proxy: proxy,
+		pool:  pool,
+		db:    db,
 	}
 }
 
