@@ -1,30 +1,30 @@
-name: Docker UI
+name: Web UI
 on:
   pull_request:
 jobs:
   test:
+    name: Web UI Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build Docker container
-        run: docker build -t ui-app .
-
-      - name: Start Docker container
+      - name: Start Server
         env:
           HOST: 0.0.0.0
           PORT: 8000
         run: |
-          docker run -d -e HOST -e PORT -p 8000:8000 --name ui ui-app
-          sleep 5
+          make run &
+
+      - name: Wait for server to start
+        run: |
+          while ! curl -s http://localhost:8000 > /dev/null 2>&1; do
+            sleep 1
+          done
 
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          
-      - name: Debug
-        run: curl -v http://localhost:8000
 
       - name: Setup npm
         run: npm init -y
