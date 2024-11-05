@@ -35,7 +35,7 @@ const (
 	// TODO: add rate limit
 )
 
-func CreateAttack(domain string, excludeKeys []string, ws *websocket.Pool, db *gorm.DB, min, max, maxSuccess int) error {
+func CreateAttack(hostname string, params []string, ws *websocket.Pool, db *gorm.DB, min, max, maxSuccess int) error {
 	slog.Info("Creating fuzz attack")
 
 	// Defaults
@@ -58,19 +58,20 @@ func CreateAttack(domain string, excludeKeys []string, ws *websocket.Pool, db *g
 		Method: http.MethodPost,
 	}
 
-	// Get most recent POST request for the domain
+	// Get most recent POST request for the endpoint
 	res := db.Where(&req).
-		Where("host LIKE ?", "%"+domain+"%").
+		Where("host LIKE ?", "%"+hostname+"%").
+		Where("method = ?", req.Method).
 		Order("created_at DESC").
 		First(&req)
 
 	if res.Error != nil {
-		return fmt.Errorf("failed to find POST request for domain %s: %w", domain, res.Error)
+		return fmt.Errorf("failed to find POST request for hostname %s: %w", hostname, res.Error)
 	}
 
 	slog.Info("Found request for fuzzing", "id", req.ID, "url", req.URL)
 
-	// Parse body keys
+	// Parse body keys from the original request, so we can fuzz the ones requested by the user
 	var bodyKeys map[string]interface{}
 	if err := json.Unmarshal([]byte(req.Body), &bodyKeys); err != nil {
 		return fmt.Errorf("failed to parse body keys: %w", err)
@@ -88,8 +89,8 @@ func CreateAttack(domain string, excludeKeys []string, ws *websocket.Pool, db *g
 
 	// iterate through body keys and fuzz each one
 	for key := range bodyKeys {
-		// skip excluded keys
-		if slices.Contains(excludeKeys, key) {
+		// skip keys that are not in the params list
+		if !slices.Contains(params, key) {
 			continue
 		}
 		for i := min; i <= max; i++ {

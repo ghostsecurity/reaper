@@ -42,7 +42,7 @@ func (h *Handler) CreateEndpoint(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "hostname, path, and method are required"})
 	}
 
-	endpoint, err := service.CreateEndpoint(h.db, endpointInput)
+	endpoint, err := service.CreateOrUpdateEndpoint(h.db, endpointInput)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -52,24 +52,27 @@ func (h *Handler) CreateEndpoint(c *fiber.Ctx) error {
 
 func (h *Handler) CreateAttack(c *fiber.Ctx) error {
 	var atk struct {
-		EndpointID      uint     `json:"endpoint_id"`
-		Tags            []string `json:"tags"` // TODO: remove
-		ExcludedKeys    []string `json:"excluded_keys"`
-		ExcludedKeyType string   `json:"excluded_key_type"`
+		EndpointID uint     `json:"endpoint_id"`
+		Params     []string `json:"params"`
 	}
 
 	if err := c.BodyParser(&atk); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	if atk.EndpointID < 1 || len(atk.Tags) == 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "endpoint_id and tags are required"})
+	if atk.EndpointID < 1 || len(atk.Params) == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "endpoint_id and params are required"})
 	}
 
-	// TODO: get domain from endpoint
-	domain := "ghostbank.net"
+	// get hostname from endpoint
+	endpoint := models.Endpoint{}
+	err := h.db.First(&endpoint, atk.EndpointID).Error
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "endpoint not found"})
+	}
+
 	go func() {
-		err := fuzz.CreateAttack(domain, atk.ExcludedKeys, h.pool, h.db, 100, 1000, 10)
+		err := fuzz.CreateAttack(endpoint.Hostname, atk.Params, h.pool, h.db, 100, 1000, 10)
 		if err != nil {
 			slog.Error("[create attack]", "msg", "error creating attack", "error", err)
 		}

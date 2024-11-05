@@ -68,6 +68,7 @@ type Endpoint struct {
 	Hostname  string    `json:"hostname"`
 	Method    string    `json:"method"`
 	Path      string    `json:"path"`
+	Params    string    `json:"params"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

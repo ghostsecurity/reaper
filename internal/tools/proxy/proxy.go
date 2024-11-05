@@ -138,6 +138,8 @@ func (p *Proxy) saveReq(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request
 		return nil, err
 	}
 
+	bodyParams := bodyKeysToString(requestBody)
+
 	request := models.Request{
 		Source:        types.RequestSourceProxy,
 		Method:        req.Method,
@@ -151,7 +153,7 @@ func (p *Proxy) saveReq(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request
 		ContentLength: req.ContentLength,
 		HeaderKeys:    keysToString(req.Header),
 		ParamKeys:     paramKeysToString(req.URL.Query()),
-		BodyKeys:      bodyKeysToString(requestBody),
+		BodyKeys:      bodyParams,
 		Body:          string(requestBody),
 	}
 
@@ -165,6 +167,17 @@ func (p *Proxy) saveReq(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request
 
 	// replace the original request body
 	req.Body = io.NopCloser(bytes.NewBuffer(requestBody))
+
+	// we need the request body params to create/update the endpoint
+	_, err = service.CreateOrUpdateEndpoint(p.db, service.EndpointInput{
+		Hostname: req.URL.Hostname(),
+		Path:     req.URL.Path,
+		Method:   req.Method,
+		Params:   bodyParams,
+	})
+	if err != nil {
+		slog.Error("[proxy req handler]", "msg", "error creating endpoint", "error", err)
+	}
 
 	return req, nil
 }
@@ -197,15 +210,6 @@ func (p *Proxy) saveResp(resp *http.Response, ctx *goproxy.ProxyCtx) (*http.Resp
 	result := p.db.Create(&response)
 	if result.Error != nil {
 		slog.Error("[proxy resp handler]", "msg", "error writing response to db", "error", result.Error)
-	}
-
-	_, err = service.CreateEndpoint(p.db, service.EndpointInput{
-		Hostname: resp.Request.URL.Hostname(),
-		Path:     resp.Request.URL.Path,
-		Method:   resp.Request.Method,
-	})
-	if err != nil {
-		slog.Error("[proxy resp handler]", "msg", "error creating endpoint", "error", err)
 	}
 
 	// Replace the original response body
@@ -245,7 +249,10 @@ func paramKeysToString(values url.Values) string {
 
 // bodyKeysToString converts a JSON body to a comma-separated string of the keys
 func bodyKeysToString(body []byte) string {
-	var m map[string]string
+	if len(body) == 0 {
+		return ""
+	}
+	var m map[string]interface{}
 	err := json.Unmarshal(body, &m)
 	if err != nil {
 		slog.Error("[proxy body keys]", "msg", "error unmarshalling body", "error", err)
