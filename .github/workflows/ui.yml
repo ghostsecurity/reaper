@@ -3,13 +3,16 @@ on:
   pull_request:
 jobs:
   test:
+    name: Web UI Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Start Server
-        run: make run
+        run: |
+          make run &
+          sleep 5
 
       - uses: actions/setup-node@v4
         with:
