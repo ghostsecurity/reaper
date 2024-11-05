@@ -6,7 +6,7 @@ permissions:
   pull-requests: read
 jobs:
   golangci:
-    name: Go Lint
+    name: Go
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
