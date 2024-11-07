@@ -21,3 +21,5 @@ First things first, let's get Reaper up and running.
 3. Enter a username (or use the default Reaper Admin) and click *Sign in*.
 
 ![Reaper Login Page](/docs/img/reaper_login.png)
+
+<h1><img src="/docs/img/reaper_login_.png" width="30px"> Reaper</h1>
