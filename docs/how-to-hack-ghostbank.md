@@ -43,7 +43,7 @@ You will see *ghostbank.net* in the Domain list. When the scan completes, you ca
 
 
 ## 3. Capture Traffic
-Now, let's get to the good stuff. We are going to set up a proxy, then log in to Ghostbank and initiate a fund transfer. Reaper's proxy will capture the traffic, allowing us to inspect, replay, and modify the requests.
+Now, let's get to the good stuff. We are going to set up a proxy in Firefox, then log in to Ghostbank and initiate a fund transfer. Reaper's proxy will capture the traffic, allowing us to inspect, replay, and modify the requests.
 
 **Firefox Proxy Configuration**
 1. Open Firefox.
@@ -67,8 +67,24 @@ Now, let's get to the good stuff. We are going to set up a proxy, then log in to
 
 <p align="center"><img src="/docs/img/captured_requests.png" width="400" /></p>
 
+You now have valid requests that we can replay and modify -- good work!
 
 ## 4. Fuzz Manually
+*[Fuzzing](https://owasp.org/www-community/Fuzzing)* is a software testing method wherein a human or program provides invalid, unexpected, or random data as inputs to a computer program. We are going to fuzz the Transfer API in Ghostbank to see if we can transfer funds from a different customer's account into our own account. But first, let's simply replay and modify our original transfer request.
+
+**Replaying Original and Modified Requests**
+1. Go to the *Replay* tab in Reaper. You should see a variety of requests captured from our previous interaction with Ghostbank.
+2. Search for `transfer` and click on the `/api/v3/transfer` endpoint.
+3. You should see the *Request Headers* and *Request Body*. Notice there are three inputs in the *Request Body*: `account_to`, `account_from`, and `amount`.
+4. Click the *Replay original* button.
+5. In Firefox, disable the proxy (Settings > Network Settings > Settings > No Proxy > OK).
+6. Refresh the Ghostbank page. You should see a new transfer from replaying the request in Reaper.
+7. Return to Reaper and change the `amount` to `20` in the Request Body.
+8. Click *Replay modified*.
+9. Switch back to Firefox and refresh Ghostbank. You should see another transfer, this time for $20!
+
+<p align="center"><img src="/docs/img/replay_modified.png" width="500" /></p>
+
 
 ## 5. Automated Test
 
