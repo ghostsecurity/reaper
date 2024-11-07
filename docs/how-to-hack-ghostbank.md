@@ -22,4 +22,4 @@ First things first, let's get Reaper up and running.
 
 ![Reaper Login Page](/docs/img/reaper_login.png)
 
-<img src="/docs/img/reaper_login.png" width="400" align=center>
+<div><img src="/docs/img/reaper_login.png" width="400" align=center></div>
