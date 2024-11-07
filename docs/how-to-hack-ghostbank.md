@@ -39,7 +39,7 @@ Let's add a Domain and discover the available hosts.
 
 You will see *ghostbank.net* in the Domain list. When the scan completes, you can click on *ghostbank.net* to view the discovered hosts. By default, Reaper will only show live hosts.
 
-<p align="center"><img src="/docs/img/reaper_discovered_hosts.png" width="400" /></p>
+<p align="center"><img src="/docs/img/discovered_hosts.png" width="400" /></p>
 
 
 ## 3. Capture Traffic
