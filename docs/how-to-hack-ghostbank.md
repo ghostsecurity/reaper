@@ -2,7 +2,7 @@
 This tutorial will walk through hacking Ghostbank with Reaper.
 
 ## Steps
-0. [Prerequisites](#0.-Prerequisites)
+0. [Prerequisites](#prerequisites)
 1. Start Reaper
 2. Add a Domain
 3. Capture Traffic
@@ -10,7 +10,7 @@ This tutorial will walk through hacking Ghostbank with Reaper.
 5. Automated Test
 6. AI Agent-Driven Test
 
-## 0. Prerequisites
+## Prerequisites
 
 
 1. [Clone the Reaper repository](https://docs.github.com/en/desktop/adding-and-cloning-repositories/cloning-a-repository-from-github-to-github-desktop).
