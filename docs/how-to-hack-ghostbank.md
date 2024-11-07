@@ -20,4 +20,4 @@ First things first, let's get Reaper up and running.
 2. In a web browser (we recommend Chrome), navigate to https://127.0.0.1:8000 to reach the Reaper UI.
 3. Enter a username (or use the default Reaper Admin) and click *Sign in*.
 
-![Reaper Login Page](docs/img/reaper_login.png)
+![Reaper Login Page](/docs/img/reaper_login.png)
