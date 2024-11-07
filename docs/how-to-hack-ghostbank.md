@@ -43,6 +43,30 @@ You will see *ghostbank.net* in the Domain list. When the scan completes, you ca
 
 
 ## 3. Capture Traffic
+Now, let's get to the good stuff. We are going to set up a proxy, then log in to Ghostbank and initiate a fund transfer. Reaper's proxy will capture the traffic, allowing us to inspect, replay, and modify the requests.
+
+**Firefox Proxy Configuration**
+1. Open Firefox.
+2. In the URL bar, enter `about:preferences` (or open the app menu and click *Settings*).
+3. Search for `proxy` on the Settings page. *Network Settings* should show up.
+4. Click *Settings*.
+5. Select *Manual proxy configuration*.
+6. Enter `localhost` in the HTTP Proxy field and `8080` in the Port field.
+7. Select *Also use this proxy for HTTPS*.
+8. Click *OK*.
+
+<p align="center"><img src="/docs/img/firefox_proxy_settings.png" width="400" /></p>
+
+**Capturing Traffic in Reaper**
+1. Return to Reaper in Chrome and switch to the *Explore* tab.
+2. Make sure the proxy is on (you'll see *Proxy on*).
+3. Switch back to Firefox and browse to `https://ghostbank.net`.
+4. Log in to Ghostbank.
+5. Initiate a funds transfer by entering $10 and clicking *Transfer*. You may need to switch the From and To accounts.
+6. Switch back to Chrome. You should see a list of captured requests!
+
+<p align="center"><img src="/docs/img/captured_requests.png" width="400" /></p>
+
 
 ## 4. Fuzz Manually
 
