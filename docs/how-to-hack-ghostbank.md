@@ -3,7 +3,7 @@ This tutorial will walk through hacking Ghostbank with Reaper.
 
 ## Steps
 0. [Prerequisites](#prerequisites)
-1. [Start Reaper](#1.-start-reaper)
+1. [Start Reaper](#1-start-reaper)
 2. Add a Domain
 3. Capture Traffic
 4. Manual Test
