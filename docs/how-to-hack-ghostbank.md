@@ -1,6 +1,8 @@
 # How to Hack Ghostbank with Reaper
 This tutorial will walk through hacking Ghostbank with Reaper.
 
+*Note: Ghostbank is not a real banking app, and the funds looted in this tutorial are not real.*
+
 ## Steps
 0. [Prerequisites](#0-prerequisites)
 1. [Start Reaper](#1-start-reaper)
@@ -72,7 +74,7 @@ You now have valid requests that we can replay and modify -- good work!
 ## 4. Fuzz Manually
 *[Fuzzing](https://owasp.org/www-community/Fuzzing)* is a software testing method wherein a human or program provides invalid, unexpected, or random data as inputs to a computer program. We are going to fuzz the Transfer API in Ghostbank to see if we can transfer funds from a different customer's account into our own account. But first, let's simply replay and modify our original transfer request.
 
-**Replaying Original and Modified Requests**
+**Replay Original and Modified Requests**
 1. Go to the *Replay* tab in Reaper. You should see a variety of requests captured from our previous interaction with Ghostbank.
 2. Search for `transfer` and click on the `/api/v3/transfer` endpoint.
 3. You should see the *Request Headers* and *Request Body*. Notice there are three inputs in the *Request Body*: `account_to`, `account_from`, and `amount`.
@@ -85,7 +87,22 @@ You now have valid requests that we can replay and modify -- good work!
 
 <p align="center"><img src="/docs/img/replay_modified.png" width="500" /></p>
 
+Now that we know we can replay and modify requests, let's see if we can loot some cash from someone else's account by fuzzing the `account_from` field. 
+
+**Fuzz the Account From Input**
+1. In Reaper, try changing the `account_from` field to another three digit integer.
+2. Click *Replay modified*.
+3. Refresh the page in Ghostbank and check for a new transfer. If there is no new transfer, then the `account_from` ID provided in the request was not valid.
+4. Repeat steps 1-3, changing the `account_from` value, until you find a valid account ID and loot some funds!
+
+<p align="center"><img src="/docs/img/fuzz_manually.png" width="500" /></p>
+
+Congratulations! You've learned how to capture traffic, modify requests, and find a vulnerability in Ghostbank! This is a *Broken Object Level Authorization (BOLA)* vulnerability, meaning a user may access objects that they do not have permission to access. In our example, Ghostbank "customers" are able to access funds in another customer's account.
+
+Now that we've done this the hard way and understand the concept, let's unleash Reaper to test for a BOLA vulnerability automatically.
 
 ## 5. Automated Test
+
+
 
 ## 6. AI Agent-Driven Test
