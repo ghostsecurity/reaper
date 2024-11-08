@@ -1,7 +1,8 @@
 # How to Hack Ghostbank with Reaper
-This tutorial will walk through hacking Ghostbank with Reaper.
+Welcome to your journey into application security with Ghost Security's Reaper! This guide will take you step-by-step through the process of testing security vulnerabilities in Ghostbank, our fictional banking app.
 
-*Note: Ghostbank is not a real banking app, and the funds looted in this tutorial are not real.*
+In this exercise, your goal is to successfully hack Ghostbank, a fictional banking application. You'll achieve this by transferring funds from all other customer accounts into your own, using the powerful tools provided by Ghost Security's Reaper. This exercise is designed to help you understand key application security concepts and practice your skills in a controlled environment.
+
 
 ## Steps
 0. [Prerequisites](#0-prerequisites)
@@ -13,6 +14,7 @@ This tutorial will walk through hacking Ghostbank with Reaper.
 
 ## 0. Prerequisites
 
+Before you dive in, ensure you have everything set up for a smooth operation. Here’s what you need:
 
 1. [Clone the Reaper repository](https://docs.github.com/en/desktop/adding-and-cloning-repositories/cloning-a-repository-from-github-to-github-desktop).
 2. [Install Docker](https://docs.docker.com/engine/install/).
@@ -120,3 +122,5 @@ When the test completes, you will see several successful requests listed in Reap
 <p align="center"><img src="/docs/img/automated_test_results.png" width="500" /></p>
 
 # 👻 💵 Congratulations, you're flush with Ghostbucks!
+
+We'd love to hear about your experience and results! Join our community on GitHub or connect with us on social media. Share your insights and learn from fellow testers.
