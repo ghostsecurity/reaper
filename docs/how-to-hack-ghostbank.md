@@ -23,7 +23,7 @@ This tutorial will walk through hacking Ghostbank with Reaper.
 First things first, let's get Reaper up and running.
 
 1. From a command line, navigate to the Reaper directory and run `docker compose up`. 
-2. In a web browser (we recommend Chrome), navigate to https://127.0.0.1:8000 to reach the Reaper UI.
+2. In a web browser (we recommend Chrome), navigate to [127.0.0.1:8000](127.0.0.1:8000) to reach the Reaper UI.
 3. Enter a username (or use the default Reaper Admin) and click *Sign in*.
 
 <p align="center"><img src="/docs/img/reaper_login.png" width="400" /></p>
