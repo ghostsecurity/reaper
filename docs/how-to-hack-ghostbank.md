@@ -97,7 +97,7 @@ Now that we know we can replay and modify requests, let's see if we can loot som
 
 <p align="center"><img src="/docs/img/fuzz_manually.png" width="500" /></p>
 
-Congratulations! You've learned how to capture traffic, modify requests, and find a vulnerability in Ghostbank! This is a *Broken Object Level Authorization (BOLA)* vulnerability, meaning a user may access objects that they do not have permission to access. In our example, Ghostbank "customers" are able to access funds in another customer's account.
+Congratulations! You've learned how to capture traffic, modify requests, and find a vulnerability in Ghostbank! This is an *Insecure *Broken Object Level Authorization (BOLA)* vulnerability, meaning a user may access objects that they do not have permission to access. In our example, Ghostbank "customers" are able to access funds in another customer's account.
 
 Now that we've done this the hard way and understand the concept, let's unleash Reaper to test for a BOLA vulnerability automatically.
 
@@ -114,10 +114,11 @@ Since manually changing inputs is time-consuming and error prone, we've built an
 
 Reaper will automatically start modifying the transfer request, changing the `account_from` input with each attempt. Sit back and let Reaper do the work!
 
-*Note: The test may take 10 minutes or so to run. Be patient!*
-
 <p align="center"><img src="/docs/img/create_bola_test.png" width="500" /></p>
 
-When the test completes, refresh Ghostbank. You should see *a lot* of transfers. Congratulations, you're flush with Ghostbucks!
+When the test completes, you will see several successful requests listed in Reaper. Go back to Firefox and refresh Ghostbank. You should see *a lot* of transfers. Congratulations, you're flush with Ghostbucks!
+
+<p align="center"><img src="/docs/img/automated_test_results.png" width="500" /></p>
+
 
 ## 6. AI Agent-Driven Test
