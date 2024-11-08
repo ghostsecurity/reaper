@@ -97,9 +97,9 @@ Now that we know we can replay and modify requests, let's see if we can loot som
 
 <p align="center"><img src="/docs/img/fuzz_manually.png" width="500" /></p>
 
-Congratulations! You've learned how to capture traffic, modify requests, and find a vulnerability in Ghostbank! This is an *Insecure *Broken Object Level Authorization (BOLA)* vulnerability, meaning a user may access objects that they do not have permission to access. In our example, Ghostbank "customers" are able to access funds in another customer's account.
+Congratulations! You've learned how to capture traffic, modify requests, and find a vulnerability in Ghostbank! This is an *[Insecure Direct Object Reference (IDOR)](https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html)* vulnerability, sometimes known as *[Broken Object Level Authorization (BOLA)](https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/)*, meaning a user may modify or access objects that they do not have permission to access. These vulnerabilities occur due to missing access control checks. In our example, Ghostbank "customers" are able to access funds in another customer's account.
 
-Now that we've done this the hard way and understand the concept, let's unleash Reaper to test for a BOLA vulnerability automatically.
+Now that we've done this the hard way and understand the concept, let's unleash Reaper to test for an IDOR/BOLA vulnerability automatically!
 
 ## 5. Automated Test
 
