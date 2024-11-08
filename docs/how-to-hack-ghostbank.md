@@ -10,7 +10,6 @@ This tutorial will walk through hacking Ghostbank with Reaper.
 3. [Capture Traffic](#3-capture-traffic)
 4. [Fuzz Manually](#4-fuzz-manually)
 5. [Automated Test](#5-automated-test)
-6. [AI Agent-Driven Test](#6-ai-agent-driven-test)
 
 ## 0. Prerequisites
 
@@ -116,9 +115,8 @@ Reaper will automatically start modifying the transfer request, changing the `ac
 
 <p align="center"><img src="/docs/img/create_bola_test.png" width="500" /></p>
 
-When the test completes, you will see several successful requests listed in Reaper. Go back to Firefox and refresh Ghostbank. You should see *a lot* of transfers. Congratulations, you're flush with Ghostbucks!
+When the test completes, you will see several successful requests listed in Reaper. Go back to Firefox and refresh Ghostbank. You should see *a lot* of transfers.
 
 <p align="center"><img src="/docs/img/automated_test_results.png" width="500" /></p>
 
-
-## 6. AI Agent-Driven Test
+# 👻 💵 Congratulations, you're flush with Ghostbucks!
