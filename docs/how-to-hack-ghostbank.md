@@ -103,6 +103,21 @@ Now that we've done this the hard way and understand the concept, let's unleash 
 
 ## 5. Automated Test
 
+Since manually changing inputs is time-consuming and error prone, we've built an automated fuzzing capability into Reaper. Let's give it a spin.
 
+1. Switch to the *Tests* tab in Reaper.
+2. Search for `transfer` and select the `/api/v3/transfer` endpoint.
+3. Click the *Create a test* button.
+4. Choose *Insecure Direct Object Reference (IDOR/BOLA)* from the *Test type* menu.
+5. Check the `account_from` in the *Included parameters* list.
+6. Click *Start test*!
+
+Reaper will automatically start modifying the transfer request, changing the `account_from` input with each attempt. Sit back and let Reaper do the work!
+
+*Note: The test may take 10 minutes or so to run. Be patient!*
+
+<p align="center"><img src="/docs/img/create_bola_test.png" width="500" /></p>
+
+When the test completes, refresh Ghostbank. You should see *a lot* of transfers. Congratulations, you're flush with Ghostbucks!
 
 ## 6. AI Agent-Driven Test
