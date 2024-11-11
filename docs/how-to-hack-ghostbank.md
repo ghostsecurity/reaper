@@ -48,6 +48,20 @@ You will see *ghostbank.net* in the Domain list. When the scan completes, you ca
 ## 3. Capture Traffic
 Now, let's get to the good stuff. We are going to set up a proxy in Firefox, then log in to Ghostbank and initiate a fund transfer. Reaper's proxy will capture the traffic, allowing us to inspect, replay, and modify the requests.
 
+**Add Reaper's Certificate to Firefox's Trusted Authority Store**
+
+1. Open Firefox.
+2. In the URL bar, enter `about:preferences` (or open the app menu and click *Settings*).
+3. Search for `cert` in the *Find in Settings* input.
+4. Click *View Certificates...*
+5. Under the *Authorities* tab, click *Import...*
+6. Navigate to the `/reaper/tls` directory and select the `ca.pem` file.
+7. In the dialog that pops up, check *Trust this CA to identify websites* and click Ok.
+8. You should see the *Ghost Security, Inc > reaper.ghostsecurity.com* entry. 
+9. Click Ok.
+
+<p align="center"><img src="/docs/img/import_reaper_cert_firefox.png" width="400" /></p>
+
 **Firefox Proxy Configuration**
 1. Open Firefox.
 2. In the URL bar, enter `about:preferences` (or open the app menu and click *Settings*).
