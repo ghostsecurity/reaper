@@ -47,7 +47,7 @@ Capture traffic by following these steps:
 3. Browse through your target app, targeting any interactions or workflows you want to test for vulnerabilities.
 4. The Explore page in Reaper will show an inventory of hosts and endpoints captured by the proxy.
 
-*If you're having issues with the proxy, check the [guide](proxy_certs.md). If the issue persists, please let us know what's haunting you at reaper@ghost.security.*
+*If you're having issues with the proxy, check the [guide](proxy_certs.md). If the issue persists, please let us know what's haunting you by [opening an Issue](https://github.com/ghostsecurity/reaper/issues/new/choose).*
 
 ## Replay
 
