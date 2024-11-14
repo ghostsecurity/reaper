@@ -65,7 +65,26 @@ This workspace drives testing workflows based on endpoints and/or requests that 
 
 ## AI Agent
 
-The AI Agent capability is the basis for a natural language interaction with one or more Agents via a chat-like interface.  Each `session` will record all messages and actions taken by the Agent and provide human-in-the-loop confirmation for important actions as needed.  Stay tuned as we continue to develop this capability.  In the meantime, your feedback is welcomed and encouraged!
+The AI Agent capability is the basis for a natural language interaction with one or more Agents via a chat-like interface.  The current implementation is experimental and is catered toward the Ghostbank use-case.
+
+To get started:
+1. Obtain an [OpenAI API Key](https://platform.openai.com/api-keys)
+2. Launch Reaper with the `OPENAI_API_KEY` environment variable set:
+  ```sh
+    docker run -t --rm  \
+      -e HOST=0.0.0.0 \
+      -e PORT=8000 \
+      -e PROXY_PORT=8080 \
+      -e OPENAI_API_KEY=sk-your-key-here \
+      -p 8000:8000 \
+      -p 8080:8080 \
+      ghcr.io/ghostsecurity/reaper:latest
+  ```
+3. After making requests through the proxy, such as initiating a valid account transfer in Ghostbank, navigate to the `AI Assist` view and provide a prompt to the agent:
+  ```
+  Find all endpoints in the ghostbank.net domain that are susceptible to BOLA and generate a report.
+  ```
+4. After a few seconds, you should be able to see a report in the `Reports` view summarizing the results.
 
 ## Reports
 
