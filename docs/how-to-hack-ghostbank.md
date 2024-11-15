@@ -1,7 +1,7 @@
-# How to Hack Ghostbank with Reaper
-Welcome to your journey into application security with Ghost Security's Reaper! This guide will take you step-by-step through the process of testing security vulnerabilities in Ghostbank, our fictional banking app.
+# How to Hack ghostBank with Reaper
+Welcome to your journey into application security with Ghost Security's Reaper! This guide will take you step-by-step through the process of testing security vulnerabilities in ghostBank, our fictional banking app.
 
-In this exercise, your goal is to successfully hack Ghostbank, a fictional banking application. You'll achieve this by transferring funds from all other customer accounts into your own, using the powerful tools provided by Ghost Security's Reaper. This exercise is designed to help you understand key application security concepts and practice your skills in a controlled environment.
+In this exercise, your goal is to successfully hack ghostBank, a fictional banking application. You'll achieve this by transferring funds from all other customer accounts into your own, using the powerful tools provided by Ghost Security's Reaper. This exercise is designed to help you understand key application security concepts and practice your skills in a controlled environment.
 
 
 ## Steps
@@ -11,6 +11,7 @@ In this exercise, your goal is to successfully hack Ghostbank, a fictional banki
 3. [Capture Traffic](#3-capture-traffic)
 4. [Fuzz Manually](#4-fuzz-manually)
 5. [Automated Test](#5-automated-test)
+6. [AI-Assisted Test](#6-ai-assisted-test)
 
 ## 0. Prerequisites
 
@@ -18,7 +19,7 @@ Before you dive in, ensure you have everything set up for a smooth operation. He
 
 1. [Clone the Reaper repository](https://docs.github.com/en/desktop/adding-and-cloning-repositories/cloning-a-repository-from-github-to-github-desktop).
 2. [Install Docker](https://docs.docker.com/engine/install/).
-3. Have two web browsers ready. We recommend [Chrome](https://www.google.com/chrome/dr/download/) for using Reaper and [Firefox](https://www.mozilla.org/en-US/firefox/new/) for using Ghostbank.
+3. Have two web browsers ready. We recommend [Chrome](https://www.google.com/chrome/dr/download/) for using Reaper and [Firefox](https://www.mozilla.org/en-US/firefox/new/) for using ghostBank.
 
 ## 1. Start Reaper
 First things first, let's get Reaper up and running.
@@ -46,7 +47,7 @@ You will see *ghostbank.net* in the Domain list. When the scan completes, you ca
 
 
 ## 3. Capture Traffic
-Now, let's get to the good stuff. We are going to set up a proxy in Firefox, then log in to Ghostbank and initiate a fund transfer. Reaper's proxy will capture the traffic, allowing us to inspect, replay, and modify the requests.
+Now, let's get to the good stuff. We are going to set up a proxy in Firefox, then log in to ghostBank and initiate a fund transfer. Reaper's proxy will capture the traffic, allowing us to inspect, replay, and modify the requests.
 
 **Add Reaper's Certificate to Firefox's Trusted Authority Store**
 
@@ -78,7 +79,7 @@ Now, let's get to the good stuff. We are going to set up a proxy in Firefox, the
 1. Return to Reaper in Chrome and switch to the *Explore* tab.
 2. Make sure the proxy is on (you'll see *Proxy on*).
 3. Switch back to Firefox and browse to `https://ghostbank.net`.
-4. Log in to Ghostbank.
+4. Log in to ghostBank.
 5. Initiate a funds transfer by entering $10 and clicking *Transfer*. You may need to switch the From and To accounts.
 6. Switch back to Chrome. You should see a list of captured requests!
 
@@ -87,18 +88,18 @@ Now, let's get to the good stuff. We are going to set up a proxy in Firefox, the
 You now have valid requests that we can replay and modify -- good work!
 
 ## 4. Fuzz Manually
-*[Fuzzing](https://owasp.org/www-community/Fuzzing)* is a software testing method wherein a human or program provides invalid, unexpected, or random data as inputs to a computer program. We are going to fuzz the Transfer API in Ghostbank to see if we can transfer funds from a different customer's account into our own account. But first, let's simply replay and modify our original transfer request.
+*[Fuzzing](https://owasp.org/www-community/Fuzzing)* is a software testing method wherein a human or program provides invalid, unexpected, or random data as inputs to a computer program. We are going to fuzz the Transfer API in ghostBank to see if we can transfer funds from a different customer's account into our own account. But first, let's simply replay and modify our original transfer request.
 
 **Replay Original and Modified Requests**
-1. Go to the *Replay* tab in Reaper. You should see a variety of requests captured from our previous interaction with Ghostbank.
+1. Go to the *Replay* tab in Reaper. You should see a variety of requests captured from our previous interaction with ghostBank.
 2. Search for `transfer` and click on the `/api/v3/transfer` endpoint.
 3. You should see the *Request Headers* and *Request Body*. Notice there are three inputs in the *Request Body*: `account_to`, `account_from`, and `amount`.
 4. Click the *Replay original* button.
 5. In Firefox, disable the proxy (Settings > Network Settings > Settings > No Proxy > OK).
-6. Refresh the Ghostbank page. You should see a new transfer from replaying the request in Reaper.
+6. Refresh the ghostBank page. You should see a new transfer from replaying the request in Reaper.
 7. Return to Reaper and change the `amount` to `20` in the Request Body.
 8. Click *Replay modified*.
-9. Switch back to Firefox and refresh Ghostbank. You should see another transfer, this time for $20!
+9. Switch back to Firefox and refresh ghostBank. You should see another transfer, this time for $20!
 
 <p align="center"><img src="/docs/img/replay_modified.png" width="500" /></p>
 
@@ -107,12 +108,12 @@ Now that we know we can replay and modify requests, let's see if we can loot som
 **Fuzz the Account From Input**
 1. In Reaper, try changing the `account_from` field to another three digit integer.
 2. Click *Replay modified*.
-3. Refresh the page in Ghostbank and check for a new transfer. If there is no new transfer, then the `account_from` ID provided in the request was not valid.
+3. Refresh the page in ghostBank and check for a new transfer. If there is no new transfer, then the `account_from` ID provided in the request was not valid.
 4. Repeat steps 1-3, changing the `account_from` value, until you find a valid account ID and loot some funds!
 
 <p align="center"><img src="/docs/img/fuzz_manually.png" width="500" /></p>
 
-Congratulations! You've learned how to capture traffic, modify requests, and find a vulnerability in Ghostbank! This is an *[Insecure Direct Object Reference (IDOR)](https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html)* vulnerability, sometimes known as *[Broken Object Level Authorization (BOLA)](https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/)*, meaning a user may modify or access objects that they do not have permission to access. These vulnerabilities occur due to missing access control checks. In our example, Ghostbank "customers" are able to access funds in another customer's account.
+Congratulations! You've learned how to capture traffic, modify requests, and find a vulnerability in ghostBank! This is an *[Insecure Direct Object Reference (IDOR)](https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html)* vulnerability, sometimes known as *[Broken Object Level Authorization (BOLA)](https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/)*, meaning a user may modify or access objects that they do not have permission to access. These vulnerabilities occur due to missing access control checks. In our example, ghostBank "customers" are able to access funds in another customer's account.
 
 Now that we've done this the hard way and understand the concept, let's unleash Reaper to test for an IDOR/BOLA vulnerability automatically!
 
@@ -131,9 +132,45 @@ Reaper will automatically start modifying the transfer request, changing the `ac
 
 <p align="center"><img src="/docs/img/create_bola_test.png" width="500" /></p>
 
-When the test completes, you will see several successful requests listed in Reaper. Go back to Firefox and refresh Ghostbank. You should see *a lot* of transfers.
+When the test completes, you will see several successful requests listed in Reaper. Go back to Firefox and refresh ghostBank. You should see *a lot* of transfers.
 
 <p align="center"><img src="/docs/img/automated_test_results.png" width="500" /></p>
+
+## 6. AI-Assisted Test
+
+Now that you've got the hang of using Reaper, let's try setting up and using Reaper's Agentic AI capabilities to automate testing and report generation! We'll set up Reaper's OpenAI integration, capture traffic, and prompt the AI Agent to test ghostBank for BOLA vulnerabilities and generate a report.
+
+*Note: The AI Agent capability is the basis for a natural language interaction with one or more Agents via a chat-like interface. The current implementation is experimental and is catered toward the ghostBank use-case.*
+
+1. Obtain an [OpenAI API Key](https://platform.openai.com/api-keys)
+2. If Reaper is running, shut down the container.
+3. Launch Reaper with the `OPENAI_API_KEY` environment variable set:
+  ```sh
+    docker run -t --rm  \
+      -e HOST=0.0.0.0 \
+      -e PORT=8000 \
+      -e PROXY_PORT=8080 \
+      -e OPENAI_API_KEY=sk-your-key-here \
+      -p 8000:8000 \
+      -p 8080:8080 \
+      ghcr.io/ghostsecurity/reaper:latest
+  ```
+4. Repeat the *Capturing Traffic in Reaper* steps above (see: [Capture Traffic](#3-capture-traffic)).
+5. In Reaper, go to the *AI Agent* tab.
+6. Click on *New Session*.
+7. Enter a session name and click *Create session*.
+8. Click on the newly created session.
+9. In the *Type a message field*, enter:
+  ```
+  Find all endpoints in the ghostbank.net domain that are susceptible to BOLA and generate a report.
+  ```
+10. The AI Agent will show its progress in the chat, ending with *Report saved successfully* and *Done.* messages.
+
+<p align="center"><img src="/docs/img/ai-agent-test.png" width="500" /></p>
+
+11. Go to the *Reports* tab and click on the report to see your results!
+
+<p align="center"><img src="/docs/img/ai-generated-report.png" width="500" /></p>
 
 # 👻 💵 Congratulations, you're flush with Ghostbucks!
 
