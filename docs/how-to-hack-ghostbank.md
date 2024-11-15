@@ -142,9 +142,9 @@ Now that you've got the hang of using Reaper, let's try setting up and using Rea
 
 *Note: The AI Agent capability is the basis for a natural language interaction with one or more Agents via a chat-like interface. The current implementation is experimental and is catered toward the ghostBank use-case.*
 
-1. Obtain an [OpenAI API Key](https://platform.openai.com/api-keys)
+1. Obtain an [OpenAI API Key](https://platform.openai.com/api-keys).
 2. If Reaper is running, shut down the container.
-3. Launch Reaper with the `OPENAI_API_KEY` environment variable set:
+3. Launch Reaper using the below command. Paste your OpenAI API key in the `OPENAI_API_KEY` variable:
   ```sh
     docker run -t --rm  \
       -e HOST=0.0.0.0 \
@@ -164,7 +164,7 @@ Now that you've got the hang of using Reaper, let's try setting up and using Rea
   ```
   Find all endpoints in the ghostbank.net domain that are susceptible to BOLA and generate a report.
   ```
-10. The AI Agent will show its progress in the chat, ending with *Report saved successfully* and *Done.* messages.
+10. The AI Agent will show its progress in the chat, ending with *Report saved successfully* and *Done* messages.
 
 <p align="center"><img src="/docs/img/ai-agent-test.png" width="500" /></p>
 
@@ -174,4 +174,4 @@ Now that you've got the hang of using Reaper, let's try setting up and using Rea
 
 # 👻 💵 Congratulations, you're flush with Ghostbucks!
 
-We'd love to hear about your experience and results! Join our community on GitHub or connect with us on social media. Share your insights and learn from fellow testers.
+We'd love to hear about your experience and results! Join our community on GitHub and connect with us on social media ([LinkedIn](https://www.linkedin.com/company/ghostsecurity/) | [Twitter/X](https://x.com/ghostsecurityhq) | [YouTube](https://www.youtube.com/@ghostsecurity-yt)). [Create an Issue on GitHub](https://github.com/ghostsecurity/reaper/issues/new/choose) to ask us questions or give your feedback about Reaper ❤️.
