@@ -82,59 +82,60 @@ func CreateAttack(hostname string, params []string, ws *websocket.Pool, db *gorm
 	semaphore := make(chan struct{}, maxWorkers)
 
 	var totalCount, successCount int32
+	var activeWorkers int32
 
-	// rarly term channel
 	done := make(chan struct{})
 	var once sync.Once
 
-	// iterate through body keys and fuzz each one
+	// worker
+	runWorker := func(key string, value int) {
+		defer wg.Done()
+		defer atomic.AddInt32(&activeWorkers, -1)
+		defer func() { <-semaphore }()
+
+		fuzzedReq := createFuzzedRequest(&req, key, value)
+		status, err := sendRequest(fuzzedReq, ws, db)
+		if err != nil {
+			slog.Error("Failed to send fuzzed request", "error", err)
+		} else {
+			atomic.AddInt32(&totalCount, 1)
+			if status >= http.StatusOK && status < http.StatusMultipleChoices {
+				newCount := atomic.AddInt32(&successCount, 1)
+				if int(newCount) >= maxSuccess {
+					slog.Info("Max success count reached", "count", maxSuccess, "requests", totalCount)
+					once.Do(func() {
+						close(done)
+					})
+				}
+			}
+		}
+	}
+
+	// Launch workers
+workerLoop:
 	for key := range bodyKeys {
-		// skip keys that are not in the params list
 		if !slices.Contains(params, key) {
 			continue
 		}
 		for i := min; i <= max; i++ {
 			select {
 			case <-done:
-				// early termination
-				return nil
+				break workerLoop
 			default:
 				wg.Add(1)
-				semaphore <- struct{}{} // acquire
-				go func(key string, value int) {
-					defer wg.Done()
-					defer func() { <-semaphore }() // release
-
-					fuzzedReq := createFuzzedRequest(&req, key, value)
-					status, err := sendRequest(fuzzedReq, ws, db)
-					if err != nil {
-						slog.Error("Failed to send fuzzed request", "error", err)
-					} else {
-						atomic.AddInt32(&totalCount, 1)
-						if status >= http.StatusOK && status < http.StatusMultipleChoices {
-							// inc success counter
-							newCount := atomic.AddInt32(&successCount, 1)
-							if int(newCount) >= maxSuccess {
-								// signal early termination
-								slog.Info("Max success count reached", "count", maxSuccess, "requests", totalCount)
-								once.Do(func() { // Safely close the done channel
-									close(done)
-								})
-							}
-						}
-					}
-				}(key, i)
+				semaphore <- struct{}{}
+				atomic.AddInt32(&activeWorkers, 1)
+				go runWorker(key, i)
 			}
 		}
 	}
 
-	// Wait for all goroutines to finish
+	// Wait for active workers to complete
 	wg.Wait()
 
 	msg := &types.AttackCompleteMessage{
 		Type: types.MessageTypeAttackComplete,
 	}
-
 	ws.Broadcast <- msg
 
 	slog.Info("Fuzz attack completed", "successCount", successCount, "totalCount", totalCount)
