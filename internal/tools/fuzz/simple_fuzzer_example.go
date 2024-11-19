@@ -87,7 +87,7 @@ func CreateAttack(hostname string, params []string, ws *websocket.Pool, db *gorm
 	done := make(chan struct{})
 	var once sync.Once
 
-	// Create a separate function for the worker logic
+	// worker
 	runWorker := func(key string, value int) {
 		defer wg.Done()
 		defer atomic.AddInt32(&activeWorkers, -1)

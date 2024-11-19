@@ -6,7 +6,6 @@ import (
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 
 	"github.com/google/uuid"
 
@@ -30,7 +29,7 @@ func Connect() *gorm.DB {
 	}
 	db, err := gorm.Open(sqlite.Open(url), &gorm.Config{
 		// DEBUG
-		Logger: logger.Default.LogMode(logger.Info),
+		// Logger: logger.Default.LogMode(logger.Info), // log all queries to console
 	})
 	if err != nil {
 		panic("failed to connect database")
