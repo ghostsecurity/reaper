@@ -33,6 +33,9 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=tag,pattern={{version}}
+            type=semver,pattern={{version}}
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
