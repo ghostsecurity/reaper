@@ -3,9 +3,12 @@ FROM golang:latest AS build
 
 WORKDIR /app
 
-COPY . .
-
+# Copy go.mod and go.sum first for better caching
+COPY go.mod go.sum ./
 RUN go mod download
+
+# Copy the rest of the source code
+COPY . .
 
 ENV GOOS=linux
 
@@ -123,9 +126,11 @@ echo "Starting Reaper..."\n\
 ' > /app/start.sh \
     && chmod +x /app/start.sh
 
-COPY . .
+# Copy the binary and required files from build stage
 COPY --from=build /app/reaper .
+COPY --from=build /app/cmd/reaper/frontend ./frontend
 COPY --from=build /app/cmd/reaper/dist ./dist
+
 RUN chown -R app /app
 USER app
 
