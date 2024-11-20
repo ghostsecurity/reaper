@@ -16,13 +16,15 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 
+	"github.com/ghostsecurity/reaper/internal/browser"
 	"github.com/ghostsecurity/reaper/internal/database"
 	"github.com/ghostsecurity/reaper/internal/handlers"
 	ws "github.com/ghostsecurity/reaper/internal/handlers/websocket"
 	"github.com/ghostsecurity/reaper/internal/middleware"
+	"github.com/ghostsecurity/reaper/internal/tools/proxy"
 )
 
-//go:embed dist/*
+//go:embed dist/* frontend/browser/*
 var static embed.FS
 
 func main() {
@@ -65,8 +67,15 @@ func main() {
 	database.Migrate()
 	db := database.Connect()
 
+	// Initialize proxy
+	proxy := proxy.NewProxy(pool, db)
+
+	// Initialize browser
+	browserInstance := browser.NewBrowser(proxy)
+
 	// handler
 	h := handlers.NewHandler(pool, db)
+	bh := handlers.NewBrowserHandler(browserInstance)
 
 	// status
 	app.Get("/status", h.Status)
@@ -74,6 +83,16 @@ func main() {
 	api := app.Group("/api", middleware.TokenAuth(db))
 
 	api.Post("/navigation", h.Navigation)
+
+	// Browser routes
+	browserGroup := api.Group("/browser")
+	browserGroup.Post("/start", bh.HandleStart)
+	browserGroup.Post("/stop", bh.HandleStop)
+	browserGroup.Post("/navigate", bh.HandleNavigate)
+	browserGroup.Post("/reload", bh.HandleReload)
+
+	// Browser WebSocket for VNC
+	app.Get("/browser/vnc", websocket.New(bh.HandleVNC))
 
 	// scan
 	api.Post("/scan/domains", h.CreateDomain)
@@ -129,6 +148,11 @@ func main() {
 	app.Use("/assets", filesystem.New(filesystem.Config{
 		Root:       http.FS(static),
 		PathPrefix: "dist/assets",
+		Browse:     true,
+	}))
+	app.Use("/browser", filesystem.New(filesystem.Config{
+		Root:       http.FS(static),
+		PathPrefix: "frontend/browser",
 		Browse:     true,
 	}))
 

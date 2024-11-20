@@ -15,3 +15,7 @@ services:
     ports:
       - 8000:8000
       - 8080:8080
+      - 5900:5900  # VNC port for browser access
+      - 6080:6080  # noVNC web interface
+    # Add shared memory for Chrome
+    shm_size: '2gb'

@@ -109,6 +109,35 @@ func (p *Proxy) httpRequestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*h
 }
 
 func (p *Proxy) httpResponseHandler(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
+	// Handle nil response case (e.g., when host is unreachable)
+	if resp == nil {
+		slog.Error("Proxy HTTP response error", "error", "host unreachable or connection failed")
+
+		// Create an error response
+		errorResp := &http.Response{
+			Status:     "502 Bad Gateway",
+			StatusCode: http.StatusBadGateway,
+			Proto:      "HTTP/1.1",
+			ProtoMajor: 1,
+			ProtoMinor: 1,
+			Header:     make(http.Header),
+			Body:       io.NopCloser(strings.NewReader("Error: Host unreachable")),
+			Request:    ctx.Req,
+		}
+
+		// Broadcast error message
+		m := &types.ProxyMessage{
+			Type:   types.MessageTypeExploreResponse,
+			Host:   ctx.Req.URL.Hostname(),
+			Method: ctx.Req.Method,
+			Path:   ctx.Req.URL.Path,
+			Status: http.StatusBadGateway,
+		}
+		p.pool.Broadcast <- m
+
+		return errorResp
+	}
+
 	slog.Info("Proxy HTTP response", "remote", resp.Request.RemoteAddr)
 
 	m := &types.ProxyMessage{
