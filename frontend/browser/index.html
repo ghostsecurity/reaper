@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REAPER Browser</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <button id="startBtn">Start Browser</button>
+            <button id="stopBtn">Stop Browser</button>
+            <div class="url-bar">
+                <input type="text" id="urlInput" placeholder="Enter URL">
+                <button id="navigateBtn">Go</button>
+                <button id="reloadBtn">Reload</button>
+            </div>
+        </div>
+        <div class="browser-view">
+            <canvas id="vnc"></canvas>
+        </div>
+    </div>
+    <script src="browser.js"></script>
+</body>
+</html>
