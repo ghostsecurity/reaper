@@ -106,7 +106,6 @@ type Response struct {
 	UpdatedAt     time.Time `json:"updated_at"`
 }
 
-// TODO: clean up this mess
 type FuzzAttack struct {
 	ID        uint               `json:"id" gorm:"primaryKey"`
 	Type      string             `json:"type"` // header, body, param
@@ -179,4 +178,26 @@ type AgentSessionMessage struct {
 	Content        string         `json:"content"`
 	CreatedAt      time.Time      `json:"created_at"`
 	UpdatedAt      time.Time      `json:"updated_at"`
+}
+
+// OpenAIConfig stores OpenAI API configuration
+type OpenAIConfig struct {
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	APIKey    string    `json:"api_key" gorm:"uniqueIndex;not null"`
+	Model     string    `json:"model" gorm:"not null;default:'gpt-4o'"`
+	LastUsed  time.Time `json:"last_used" gorm:"index"`
+	IsActive  bool      `json:"is_active" gorm:"default:true"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// ValidOpenAIModels returns the list of supported OpenAI models
+func (c *OpenAIConfig) ValidOpenAIModels() []string {
+	return []string{
+		"gpt-4o",
+		"gpt-4o-mini",
+		"gpt-4-turbo",
+		"gpt-4",
+		"gpt-3.5-turbo",
+	}
 }
