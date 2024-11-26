@@ -32,8 +32,10 @@
 !tls/*
 !ui/
 !ui/**
-ui/dist
 ui/node_modules
+ui/node_modules/**
+ui/dist
+ui/dist/**
 
 .DS_Store
 
