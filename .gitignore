@@ -30,6 +30,8 @@
 !tests/**
 !cmd/reaper/dist/**
 !tls/*
+!ui/
+!ui/**
 
 .DS_Store
 
