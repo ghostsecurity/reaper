@@ -10,11 +10,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Start Server
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Echo Go Version
+        run: go version
+
+      - name: Install Yarn
+        run: npm install -g yarn
+
+      - name: Build UI and Start Server
         env:
           HOST: 0.0.0.0
           PORT: 8000
         run: |
+          make build-ui
           make run &
 
       - name: Wait for server to start
@@ -22,10 +33,6 @@ jobs:
           while ! curl -s http://localhost:8000 > /dev/null 2>&1; do
             sleep 1
           done
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
 
       - name: Setup npm
         run: npm init -y
