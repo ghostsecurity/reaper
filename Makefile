@@ -12,6 +12,10 @@ help: ## Show this help
 	@cat ${MAKEFILE_LIST} | grep "[#]# " | grep -v grep | sort | column -t -s '##' | sed -e 's/^/ /'
 	@echo ""
 
+.PHONY: build-ui
+build-ui: ## Build the UI
+	cd ui && yarn && yarn build
+
 .PHONY: run
 run: ## Run the local server
 	go run ./cmd/reaper

@@ -9,6 +9,7 @@
 
 # But not these files...
 !/.gitignore
+!/.gitattributes
 
 !*.go
 !go.sum
@@ -30,6 +31,12 @@
 !tests/**
 !cmd/reaper/dist/**
 !tls/*
+!ui/
+!ui/**
+ui/node_modules
+ui/node_modules/**
+ui/dist
+ui/dist/**
 
 .DS_Store
 

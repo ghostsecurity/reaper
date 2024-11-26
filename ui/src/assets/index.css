@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+#report-markdown {
+  @apply whitespace-normal;
+}
+/* custom report markdown styles */
+#report-markdown h1 {
+  @apply scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-2xl mt-0;
+}
+
+#report-markdown h2 {
+  @apply mt-16 scroll-m-20 border-b pb-2 text-xl font-semibold tracking-tight transition-colors mt-4 border-black;
+}
+
+#report-markdown h3 {
+  @apply scroll-m-20 text-lg font-semibold tracking-tight mt-4;
+}
+
+#report-markdown h4 {
+  @apply scroll-m-20 text-base font-semibold tracking-tight mt-2;
+}
+
+/* #report-markdown ul {
+  @apply my-0 ml-6 list-disc [&>li]:mt-0;
+} */
+#report-markdown ol {
+  @apply my-0 ml-6 list-decimal mt-2;
+}
+#report-markdown ul {
+  @apply my-0 ml-6 list-disc mt-2;
+}
+#report-markdown p {
+  @apply my-0 ml-6 ms-0 me-0 mb-0 mt-2;
+}
+
+#report-markdown pre {
+  @apply rounded bg-muted p-2 font-mono text-xs mt-2;
+}
+#report-markdown code {
+  @apply text-wrap;
+}
+
+#report-markdown p code {
+  @apply rounded bg-muted p-1 font-mono font-semibold text-xs mt-2 text-wrap;
+}
+
+#report-markdown li code {
+  @apply rounded bg-muted p-1 font-mono font-semibold text-xs mt-2 text-wrap;
+}
