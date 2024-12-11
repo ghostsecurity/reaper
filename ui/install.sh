@@ -42,3 +42,6 @@ yarn add -D autoprefixer \
   @unovis/vue \
   @vitejs/plugin-vue \
   @vueuse/core
+
+# manual updates
+yarn add -D cross-spawn
