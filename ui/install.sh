@@ -4,7 +4,7 @@
 
 # deps
 yarn add axios \
-  typescript \
+  typescript@5.6.3 \
   pinia \
   vite \
   vue \
