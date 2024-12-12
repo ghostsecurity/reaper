@@ -13,6 +13,7 @@ yarn add axios \
 # dev deps
 yarn add -D autoprefixer \
   class-variance-authority \
+  cross-spawn \
   clsx \
   eslint \
   eslint-plugin-tailwindcss \
@@ -42,6 +43,3 @@ yarn add -D autoprefixer \
   @unovis/vue \
   @vitejs/plugin-vue \
   @vueuse/core
-
-# manual updates
-yarn add -D cross-spawn
