@@ -4,7 +4,7 @@
 
 # deps
 yarn add axios \
-  typescript \
+  typescript@5.6.3 \
   pinia \
   vite \
   vue \
@@ -13,6 +13,7 @@ yarn add axios \
 # dev deps
 yarn add -D autoprefixer \
   class-variance-authority \
+  cross-spawn \
   clsx \
   eslint \
   eslint-plugin-tailwindcss \
