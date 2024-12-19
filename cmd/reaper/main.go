@@ -96,8 +96,9 @@ func main() {
 	api.Get("/endpoints", h.GetEndpoints)
 	api.Get("/endpoints/:id", h.GetEndpoint)
 	api.Post("/attack", h.CreateAttack)
-	// api.Get("/attacks", h.GetAttacks)
-	// api.Get("/attacks/:id", h.GetAttack)
+	api.Get("/attacks", h.GetAttacks)
+	api.Get("/attacks/:id", h.GetAttack)
+	api.Get("/attacks/:id/results", h.GetAttackResults)
 	api.Delete("/attack/:id/results", h.DeleteAttackResults)
 	// fuzz
 	// automate

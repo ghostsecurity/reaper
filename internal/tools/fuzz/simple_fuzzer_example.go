@@ -35,7 +35,7 @@ const (
 	// TODO: add rate limit
 )
 
-func CreateAttack(hostname string, params []string, ws *websocket.Pool, db *gorm.DB, min, max, maxSuccess int) error {
+func CreateAttack(attackID uint, hostname string, params []string, ws *websocket.Pool, db *gorm.DB, min, max, maxSuccess int) error {
 	slog.Info("Creating fuzz attack")
 
 	// Defaults
@@ -94,7 +94,7 @@ func CreateAttack(hostname string, params []string, ws *websocket.Pool, db *gorm
 		defer func() { <-semaphore }()
 
 		fuzzedReq := createFuzzedRequest(&req, key, value)
-		status, err := sendRequest(fuzzedReq, ws, db)
+		status, err := sendRequest(fuzzedReq, ws, db, attackID)
 		if err != nil {
 			slog.Error("Failed to send fuzzed request", "error", err)
 		} else {
@@ -132,6 +132,15 @@ workerLoop:
 
 	// Wait for active workers to complete
 	wg.Wait()
+
+	attack := models.FuzzAttack{}
+	db.First(&attack, attackID)
+	if successCount > 0 {
+		attack.Status = "success"
+	} else {
+		attack.Status = "completed"
+	}
+	db.Save(&attack)
 
 	msg := &types.AttackCompleteMessage{
 		Type: types.MessageTypeAttackComplete,
@@ -178,7 +187,7 @@ func createFuzzedRequest(originalReq *models.Request, key string, value int) *ht
 	return req
 }
 
-func sendRequest(req *http.Request, ws *websocket.Pool, db *gorm.DB) (status int, err error) {
+func sendRequest(req *http.Request, ws *websocket.Pool, db *gorm.DB, attackID uint) (status int, err error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -216,14 +225,16 @@ func sendRequest(req *http.Request, ws *websocket.Pool, db *gorm.DB) (status int
 
 	// Create a FuzzResult and save it to the database
 	fuzzResult := &models.FuzzResult{
-		Hostname:  req.URL.Hostname(),
-		IpAddress: req.RemoteAddr,
-		Port:      req.URL.Port(),
-		Scheme:    req.URL.Scheme,
-		URL:       req.URL.String(),
-		Endpoint:  req.URL.Path,
-		Request:   string(requestHeaders) + "\n" + string(requestBody),
-		Response:  string(responseBody),
+		FuzzAttackID: attackID,
+		Hostname:     req.URL.Hostname(),
+		IpAddress:    req.RemoteAddr,
+		Port:         req.URL.Port(),
+		Scheme:       req.URL.Scheme,
+		URL:          req.URL.String(),
+		Endpoint:     req.URL.Path,
+		Request:      string(requestHeaders) + "\n" + string(requestBody),
+		Response:     string(responseBody),
+		StatusCode:   resp.StatusCode,
 	}
 	res := db.Create(fuzzResult)
 	if res.Error != nil {
