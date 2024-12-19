@@ -108,49 +108,30 @@ type Response struct {
 
 // TODO: clean up this mess
 type FuzzAttack struct {
-	ID        uint               `json:"id" gorm:"primaryKey"`
-	Type      string             `json:"type"` // header, body, param
-	Headers   []FuzzAttackHeader `json:"headers"`
-	Keys      []FuzzAttackKey    `json:"keys"`
-	Params    []FuzzAttackParam  `json:"params"`
-	CreatedAt time.Time          `json:"created_at"`
-	UpdatedAt time.Time          `json:"updated_at"`
-}
-
-type FuzzAttackHeader struct {
-	ID           uint      `json:"id" gorm:"primaryKey"`
-	FuzzAttackID uint      `json:"fuzz_attack_id" gorm:"foreignKey:ID"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
-}
-
-type FuzzAttackKey struct {
-	ID           uint      `json:"id" gorm:"primaryKey"`
-	FuzzAttackID uint      `json:"fuzz_attack_id" gorm:"foreignKey:ID"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
-}
-
-type FuzzAttackParam struct {
-	ID           uint      `json:"id" gorm:"primaryKey"`
-	FuzzAttackID uint      `json:"fuzz_attack_id" gorm:"foreignKey:ID"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	Type      string    `json:"type"` // header, body, param
+	Headers   string    `json:"headers"`
+	Keys      string    `json:"keys"`
+	Params    string    `json:"params"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type FuzzResult struct {
-	ID uint `json:"id" gorm:"primaryKey"`
-	// FuzzAttackID uint      `json:"fuzz_attack_id" gorm:"foreignKey:ID"`
-	Hostname  string    `json:"hostname"`
-	IpAddress string    `json:"ip_address"`
-	Port      string    `json:"port"`
-	Scheme    string    `json:"scheme"`
-	URL       string    `json:"url"`
-	Endpoint  string    `json:"endpoint"`
-	Request   string    `json:"request"`
-	Response  string    `json:"response"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID           uint      `json:"id" gorm:"primaryKey"`
+	FuzzAttackID uint      `json:"fuzz_attack_id" gorm:"foreignKey:ID"`
+	Hostname     string    `json:"hostname"`
+	IpAddress    string    `json:"ip_address"`
+	Port         string    `json:"port"`
+	Scheme       string    `json:"scheme"`
+	URL          string    `json:"url"`
+	Endpoint     string    `json:"endpoint"`
+	Request      string    `json:"request"`
+	Response     string    `json:"response"`
+	StatusCode   int       `json:"status_code"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 type Report struct {

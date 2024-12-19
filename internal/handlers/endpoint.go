@@ -3,6 +3,7 @@ package handlers
 import (
 	"log/slog"
 	"strconv"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -71,14 +72,56 @@ func (h *Handler) CreateAttack(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "endpoint not found"})
 	}
 
+	attack := &models.FuzzAttack{
+		Type:   "param",
+		Params: strings.Join(atk.Params, ","),
+	}
+	h.db.Create(attack)
+
 	go func() {
-		err := fuzz.CreateAttack(endpoint.Hostname, atk.Params, h.pool, h.db, 100, 1000, 10)
+		err := fuzz.CreateAttack(attack.ID, endpoint.Hostname, atk.Params, h.pool, h.db, 100, 1000, 10)
 		if err != nil {
 			slog.Error("[create attack]", "msg", "error creating attack", "error", err)
 		}
 	}()
 
-	return c.JSON(fiber.Map{"status": "ok"})
+	return c.JSON(attack)
+}
+
+func (h *Handler) GetAttacks(c *fiber.Ctx) error {
+	attacks := []models.FuzzAttack{}
+	h.db.Find(&attacks)
+
+	return c.JSON(attacks)
+}
+
+func (h *Handler) GetAttack(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	attack := models.FuzzAttack{}
+	h.db.First(&attack, id)
+
+	return c.JSON(attack)
+}
+
+func (h *Handler) GetAttackResults(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	limit, err := strconv.Atoi(c.Query("limit", "50"))
+	if err != nil {
+		limit = 50
+	}
+
+	results := []models.FuzzResult{}
+	h.db.Where("fuzz_attack_id = ?", id).Limit(limit).Find(&results)
+
+	return c.JSON(results)
 }
 
 func (h *Handler) DeleteAttackResults(c *fiber.Ctx) error {

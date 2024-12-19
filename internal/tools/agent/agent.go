@@ -303,7 +303,8 @@ func (manager *AgentManager) runAgent() {
 
 		// Run the BOLA attack
 		manager.sendAgentMessage("Running the attack...")
-		err := fuzz.CreateAttack(function_model.Domain, excludedKeys, manager.Pool, manager.DB, 0, 0, 0)
+		// TODO: get the attack id
+		err := fuzz.CreateAttack(0, function_model.Domain, excludedKeys, manager.Pool, manager.DB, 0, 0, 0)
 		if err != nil {
 			slog.Error("Failed to create fuzz attack", "error", err)
 		}

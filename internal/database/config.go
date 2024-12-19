@@ -50,6 +50,7 @@ func Migrate() {
 		&models.Endpoint{},
 		&models.Request{},
 		&models.Response{},
+		&models.FuzzAttack{},
 		&models.FuzzResult{},
 		&models.Report{},
 		&models.AgentSession{},
