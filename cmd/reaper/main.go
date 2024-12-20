@@ -7,6 +7,9 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"reflect"
+	"runtime"
+	"slices"
 	"strings"
 	"time"
 
@@ -38,7 +41,9 @@ func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &opts))
 	slog.SetDefault(logger)
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		AppName: "Reaper",
+	})
 	app.Use(recover.New())
 	app.Use(cors.New(cors.Config{
 		// TODO: dynamically set this based on the ngrok URL
@@ -120,6 +125,11 @@ func main() {
 	api.Delete("/reports/:id", h.DeleteReport)
 	// settings
 
+	// Generate OpenAPI spec dynamically
+	app.Get("/openapi.json", func(c *fiber.Ctx) error {
+		return c.JSON(generateOpenAPISpec(app))
+	})
+
 	// serve static frontend files
 	app.Use("/", filesystem.New(filesystem.Config{
 		Root:         http.FS(static),
@@ -141,4 +151,125 @@ func main() {
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
+}
+
+func generateOpenAPISpec(app *fiber.App) OpenAPISpec {
+	routes := app.GetRoutes()
+	var openAPIPaths []OpenAPIPath
+	excludedMethods := []string{fiber.MethodConnect, fiber.MethodOptions, fiber.MethodTrace}
+
+	for _, route := range routes {
+		if slices.Contains(excludedMethods, route.Method) {
+			continue
+		}
+		description := extractAnnotation(route.Path)
+		operationObject := OpenAPIOperation{
+			Summary:     description,
+			Description: description,
+		}
+
+		operationObject.Summary = route.Path
+		operationObject.Description = fmt.Sprintf("description: %s %s", route.Method, route.Path)
+
+		path := OpenAPIPath{
+			Description: description,
+		}
+
+		// skip all  middleware handlers; e.g. handler starts with "github.com/gofiber/fiber/v2/middleware"
+		handlers := parseHandlers(route.Handlers)
+		isMiddleware := false
+		for _, handler := range handlers {
+			if strings.Contains(handler, "/middleware/") {
+				isMiddleware = true
+				break
+			}
+		}
+		if isMiddleware {
+			continue
+		}
+
+		switch route.Method {
+		case fiber.MethodGet:
+			path.Get = &operationObject
+		case fiber.MethodPost:
+			path.Post = &operationObject
+		case fiber.MethodDelete:
+			path.Delete = &operationObject
+		case fiber.MethodPut:
+			path.Put = &operationObject
+		case fiber.MethodPatch:
+			path.Patch = &operationObject
+		}
+
+		openAPIPaths = append(openAPIPaths, path)
+	}
+
+	// sort paths by summary
+	slices.SortFunc(openAPIPaths, func(a, b OpenAPIPath) int {
+		return strings.Compare(a.Summary, b.Summary)
+	})
+
+	return OpenAPISpec{
+		Version: "3.1.1",
+		Info: OpenAPIInfo{
+			Title:       app.Config().AppName,
+			Description: "Reaper API",
+			Version:     "1.0.0",
+		},
+		Paths: openAPIPaths,
+	}
+}
+
+func extractAnnotation(routePath string) string {
+	return fmt.Sprintf("%s - path description for", routePath)
+}
+
+func parseHandlers(handlers []func(*fiber.Ctx) error) []string {
+	var handlerNames []string
+	for _, handler := range handlers {
+		handlerNames = append(handlerNames, runtime.FuncForPC(reflect.ValueOf(handler).Pointer()).Name())
+	}
+	return handlerNames
+}
+
+type OpenAPIPath struct {
+	Get         *OpenAPIOperation `json:"get,omitempty"`
+	Post        *OpenAPIOperation `json:"post,omitempty"`
+	Delete      *OpenAPIOperation `json:"delete,omitempty"`
+	Put         *OpenAPIOperation `json:"put,omitempty"`
+	Patch       *OpenAPIOperation `json:"patch,omitempty"`
+	Options     *OpenAPIOperation `json:"options,omitempty"`
+	Head        *OpenAPIOperation `json:"head,omitempty"`
+	Connect     *OpenAPIOperation `json:"connect,omitempty"`
+	Trace       *OpenAPIOperation `json:"trace,omitempty"`
+	Summary     string            `json:"summary"`     // An optional string summary, intended to apply to all operations in this path.
+	Description string            `json:"description"` // An optional string description, intended to apply to all operations in this path. [CommonMark] syntax MAY be used for rich text representation.
+}
+
+type OpenAPIOperation struct {
+	ID          string         `json:"operationId"`
+	Tags        []string       `json:"tags"`        // A list of tags for API documentation control. Tags can be used for logical grouping of operations by resources or any other qualifier.
+	Summary     string         `json:"summary"`     // A short summary of what the operation does.
+	Description string         `json:"description"` // A verbose explanation of the operation behavior. [CommonMark] syntax MAY be used for rich text representation.
+	Params      []OpenAPIParam `json:"parameters"`
+}
+
+type OpenAPIParam struct {
+	Name        string `json:"name"` // REQUIRED. The name of the parameter. Parameter names are case sensitive.
+	In          string `json:"in"`   // REQUIRED. The location of the parameter. Possible values are "query", "header", "path" or "cookie".
+	Description string `json:"description"`
+	Required    bool   `json:"required"`
+}
+
+type OpenAPISpec struct {
+	Version string        `json:"openapi"`
+	Info    OpenAPIInfo   `json:"info"`
+	Title   string        `json:"title"`
+	Paths   []OpenAPIPath `json:"paths"`
+}
+
+type OpenAPIInfo struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Version     string `json:"version"`
 }
