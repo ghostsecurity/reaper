@@ -3,7 +3,7 @@ package handlers
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/ghostsecurity/reaper/internal/database/models"
-	"github.com/ghostsecurity/reaper/internal/tools/brute"
+	"github.com/ghostsecurity/reaper/internal/tools/fuzz"
 )
 
 type FuzzAttackType string
@@ -41,7 +41,7 @@ func (h *Handler) CreateFuzzAttack(c *fiber.Ctx) error {
 	go func() {
 		switch req.Type {
 		case FuzzAttackTypeBrute:
-			err := brute.CreateBruteForceAttack(
+			err := fuzz.CreateBruteForceAttack(
 				attack.ID,
 				req.Hostname,
 				req.Param,
