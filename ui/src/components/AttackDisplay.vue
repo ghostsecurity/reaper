@@ -16,7 +16,7 @@
         </Tooltip>
       </div>
       <div class="ml-auto flex items-center gap-2">
-        <Dialog v-model:open="isModalOpen">
+        <Dialog v-model:open="isModalOpen" @update:open="handleModalClose">
           <DialogTrigger as-child>
             <Button variant="outline"
                     :disabled="!endpoint || attackRunning">
@@ -78,6 +78,7 @@
                 </Command>
               </PopoverContent>
             </Popover>
+            <!-- IDOR Parameters -->
             <div v-if="attackTemplateSelectValue === 'idor'"
                  class="flex flex-col gap-4">
               <span class="text-xs font-medium">
@@ -99,6 +100,41 @@
               <span class="text-xs text-muted-foreground">These parameters were dynamically determined from previous
                 requests to this endpoint. Included parameters will be used as test inputs, while the rest of parameters
                 will be left intact from the original request.</span>
+            </div>
+
+            <!-- Brute Force Parameters -->
+            <div v-if="attackTemplateSelectValue === 'bf'"
+                 class="flex flex-col gap-4">
+              <span class="text-xs font-medium">Parameter to test</span>
+              <div v-if="endpoint" class="mx-1 space-y-2 text-muted-foreground">
+                <select v-model="bruteForceParam" class="w-full rounded-md border p-2">
+                  <option v-for="param in endpoint.params.split(',')" :key="param" :value="param">
+                    {{ param }}
+                  </option>
+                </select>
+              </div>
+
+              <span class="text-xs font-medium mt-2">Dictionary</span>
+              <div class="mx-1 space-y-2">
+                <Textarea v-model="bruteForceDictionary" 
+                         placeholder="Enter values, one per line"
+                         class="min-h-[100px]" />
+              </div>
+
+              <div class="flex gap-4">
+                <div class="flex-1">
+                  <span class="text-xs font-medium">Max Success</span>
+                  <Input v-model="bruteForceMaxSuccess" type="number" min="1" class="mt-1" />
+                </div>
+                <div class="flex-1">
+                  <span class="text-xs font-medium">Max RPS</span>
+                  <Input v-model="bruteForceMaxRPS" type="number" min="1" class="mt-1" />
+                </div>
+              </div>
+
+              <span class="text-xs text-muted-foreground">
+                Configure how many attempts should be made and at what rate. The test will stop early if the maximum number of successful attempts is reached.
+              </span>
             </div>
             <div v-if="unsupportedTest">
               <span class="text-xs font-medium">
@@ -209,6 +245,8 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Command,
   CommandEmpty,
@@ -234,11 +272,49 @@ const attackComplete = computed(() => endpointStore.attackComplete)
 const props = defineProps<EndpointDisplayProps>()
 
 const isModalOpen = ref(false)
+const bruteForceParam = ref('')
+const bruteForceDictionary = ref('')
+const bruteForceMaxSuccess = ref(10)
+const bruteForceMaxRPS = ref(10)
+
+const resetBruteForceForm = () => {
+  bruteForceParam.value = ''
+  bruteForceDictionary.value = ''
+  bruteForceMaxSuccess.value = 10
+  bruteForceMaxRPS.value = 10
+}
+
+const handleModalClose = () => {
+  resetBruteForceForm()
+  attackTemplateSelectValue.value = ''
+}
 
 const handleCreateTest = () => {
   if (props.endpoint) {
-    endpointStore.startAttack(props.endpoint)
+    if (attackTemplateSelectValue.value === 'bf') {
+      // Convert dictionary text to array
+      const dictionary = bruteForceDictionary.value
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+      
+      endpointStore.startBruteForceAttack(
+        props.endpoint,
+        bruteForceParam.value,
+        dictionary,
+        bruteForceMaxSuccess.value,
+        bruteForceMaxRPS.value
+      )
+      
+      // Reset form after starting test
+      resetBruteForceForm()
+    } else {
+      endpointStore.startAttack(props.endpoint)
+    }
   }
+  
+  // Close modal after starting test
+  isModalOpen.value = false
 }
 
 const clearResults = () => {
@@ -262,6 +338,6 @@ const testTypes = [
 ]
 
 const unsupportedTest = computed(() => {
-  return attackTemplateSelectValue.value !== 'idor' && attackTemplateSelectValue.value.length > 0
+  return !['idor', 'bf'].includes(attackTemplateSelectValue.value) && attackTemplateSelectValue.value.length > 0
 })
 </script>

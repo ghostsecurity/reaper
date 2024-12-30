@@ -25,12 +25,13 @@ const (
 type RequestSource string
 
 const (
-	RequestSourceUser      RequestSource = "user"
-	RequestSourceProxy     RequestSource = "proxy"
-	RequestSourceSubfinder RequestSource = "subfinder"
-	RequestSourceHttpx     RequestSource = "httpx"
-	RequestSourceFuzzer    RequestSource = "fuzzer"
-	RequestSourceReplay    RequestSource = "replay"
+        RequestSourceUser      RequestSource = "user"
+        RequestSourceProxy     RequestSource = "proxy"
+        RequestSourceSubfinder RequestSource = "subfinder"
+        RequestSourceHttpx     RequestSource = "httpx"
+        RequestSourceFuzzer    RequestSource = "fuzzer"
+        RequestSourceReplay    RequestSource = "replay"
+        RequestSourceBrute     RequestSource = "brute"
 )
 
 type ReportStatus string

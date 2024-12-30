@@ -1,4 +1,4 @@
-package brute
+package fuzz
 
 import (
     "encoding/json"

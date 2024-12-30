@@ -56,11 +56,12 @@ export const useEndpointStore = defineStore('endpoint', () => {
     attackComplete.value = false
 
     const payload = {
-      endpoint_id: endpoint.id,
+      type: 'idor',
+      hostname: endpoint.hostname,
       params: Array.from(selectedParams.value),
     }
     axios
-      .post(`/api/attack`, payload)
+      .post(`/api/fuzz`, payload)
       .then((response) => {
         console.log("attack started", response)
       })
@@ -107,6 +108,35 @@ export const useEndpointStore = defineStore('endpoint', () => {
     }
   }
 
+  const startBruteForceAttack = (
+    endpoint: Endpoint, 
+    param: string, 
+    dictionary: string[], 
+    maxSuccess: number, 
+    maxRPS: number
+  ) => {
+    attackRunning.value = true
+    attackComplete.value = false
+
+    const payload = {
+      type: 'brute',
+      hostname: endpoint.hostname,
+      param: param,
+      dictionary: dictionary,
+      maxSuccess: maxSuccess,
+      maxRPS: maxRPS
+    }
+
+    axios
+      .post(`/api/fuzz`, payload)
+      .then((response) => {
+        console.log("brute force attack started", response)
+      })
+      .catch((error) => {
+        console.error("[request.ts]", error)
+      })
+  }
+
   return {
     addResult,
     attackComplete,
@@ -119,6 +149,7 @@ export const useEndpointStore = defineStore('endpoint', () => {
     results,
     getEndpoints,
     startAttack,
+    startBruteForceAttack,
     isParamSelected,
     toggleParam,
   }
