@@ -79,7 +79,7 @@ func (h *Handler) CreateAttack(c *fiber.Ctx) error {
 	h.db.Create(attack)
 
 	go func() {
-		err := fuzz.CreateAttack(attack.ID, endpoint.Hostname, atk.Params, h.pool, h.db, 100, 1000, 10)
+		err := fuzz.CreateAttack(attack.ID, endpoint.Hostname, atk.Params, h.pool, h.db, 100, 1000, 5)
 		if err != nil {
 			slog.Error("[create attack]", "msg", "error creating attack", "error", err)
 		}

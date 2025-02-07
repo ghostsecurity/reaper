@@ -21,11 +21,11 @@ import (
 
 const (
 	// maxWorkers        = 50
-	maxWorkers        = 5
+	maxWorkers        = 2
 	defaultMin        = 100
 	defaultMax        = 1000
-	defaultMaxSuccess = 10
-	defaultMaxRPS     = 10
+	defaultMaxSuccess = 5
+	defaultPauseMs    = 10
 	// TODO: input params
 	// - fuzz type (header, body, param)
 	// - fuzz value type (int, string, uuid)
@@ -48,6 +48,7 @@ func CreateAttack(attackID uint, hostname string, params []string, ws *websocket
 	if maxSuccess == 0 {
 		maxSuccess = defaultMaxSuccess
 	}
+	var minSuccessCount int32 = 3
 
 	// Min must be less than or equal to max
 	if min > max {
@@ -100,6 +101,7 @@ func CreateAttack(attackID uint, hostname string, params []string, ws *websocket
 		} else {
 			atomic.AddInt32(&totalCount, 1)
 			if status >= http.StatusOK && status < http.StatusMultipleChoices {
+			    slog.Info("Successful result", "key", key, "value", value)
 				newCount := atomic.AddInt32(&successCount, 1)
 				if int(newCount) >= maxSuccess {
 					slog.Info("Max success count reached", "count", maxSuccess, "requests", totalCount)
@@ -109,6 +111,7 @@ func CreateAttack(attackID uint, hostname string, params []string, ws *websocket
 				}
 			}
 		}
+		time.Sleep(defaultPauseMs * time.Millisecond)
 	}
 
 	// Launch workers
@@ -135,7 +138,7 @@ workerLoop:
 
 	attack := models.FuzzAttack{}
 	db.First(&attack, attackID)
-	if successCount > 0 {
+	if successCount > minSuccessCount {
 		attack.Status = "success"
 	} else {
 		attack.Status = "completed"
@@ -147,7 +150,7 @@ workerLoop:
 	}
 	ws.Broadcast <- msg
 
-	slog.Info("Fuzz attack completed", "successCount", successCount, "totalCount", totalCount)
+	slog.Info("Fuzz attack completed", "status", attack.Status, "successCount", successCount, "totalCount", totalCount)
 	return nil
 }
 
