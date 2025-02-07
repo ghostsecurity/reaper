@@ -26,6 +26,7 @@ const (
 	defaultMax        = 1000
 	defaultMaxSuccess = 5
 	defaultPauseMs    = 10
+	minSuccessCount   = 3
 	// TODO: input params
 	// - fuzz type (header, body, param)
 	// - fuzz value type (int, string, uuid)
@@ -48,7 +49,6 @@ func CreateAttack(attackID uint, hostname string, params []string, ws *websocket
 	if maxSuccess == 0 {
 		maxSuccess = defaultMaxSuccess
 	}
-	var minSuccessCount int32 = 3
 
 	// Min must be less than or equal to max
 	if min > max {
