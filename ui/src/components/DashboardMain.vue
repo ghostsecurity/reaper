@@ -32,6 +32,20 @@
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
+                <div class="my-3 cursor-pointer text-xs font-medium"
+                     @click="copyReaperToken">
+                  <Icon icon="lucide:key-round"
+                        class="size-4" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Copy Reaper API Token</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
                 <div class="flex-none rounded-full"
                      :class="wsConnected ? 'bg-green-400/20 p-1 text-green-400' : 'bg-red-500/20 p-1 text-red-500'">
                   <div class="size-2 rounded-full bg-current"></div>
@@ -88,4 +102,13 @@ const sessionStore = useSessionStore()
 const { loggedIn } = storeToRefs(sessionStore)
 const projectsEnabled = false
 const projects = [{ value: 'ghostbank', label: 'Ghostbank', icon: 'lucide:ghost' }]
+
+const copyReaperToken = () => {
+  const token = localStorage.getItem('reaper.token')
+  if (token) {
+    navigator.clipboard.writeText(token).then(() => {}).catch(err => {
+      console.error('Failed to copy token: ', err)
+    })
+  }
+}
 </script>
