@@ -42,3 +42,6 @@ ui/dist/**
 
 # ...even if they are in subdirectories
 !*/
+
+!/reaperbot/
+!/reaperbot/**
