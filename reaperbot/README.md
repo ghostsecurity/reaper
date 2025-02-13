@@ -6,8 +6,8 @@ ReaperBot is an experimental Agentic AI system designed specifically to orchestr
 
 1. **Clone the repository**:
     ```bash
-    git clone https://github.com/yourusername/reaperbot.git
-    cd reaperbot
+    git clone https://github.com/ghostsecurity/reaper.git
+    cd reaper/reaperbot
     ```
 
 2. **Ensure you have Python 3.13+ and uv installed**.
