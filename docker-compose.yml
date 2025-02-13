@@ -3,13 +3,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    env_file: .env
     environment:
       - ENV=docker
       - HOST=0.0.0.0
       - PORT=8000
       - PROXY_PORT=8080
-      - NGROK_AUTHTOKEN=your_nrok_token
-      - OPENAI_API_KEY=your_openai_key
     volumes:
       - ./files:/app/files
     ports:
