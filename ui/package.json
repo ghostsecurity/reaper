@@ -13,7 +13,7 @@
     "pinia": "^3.0.1",
     "typescript": "^5.7.3",
     "vite": "^6.2.3",
-    "vue": "^3.5.13",
+    "vue": "^3.5.14",
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
