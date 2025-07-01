@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/ghostsecurity/reaper/internal/database/models"
@@ -16,7 +18,16 @@ func (h *Handler) GetReports(c *fiber.Ctx) error {
 
 func (h *Handler) GetReport(c *fiber.Ctx) error {
 	report := models.Report{}
-	err := h.db.First(&report, c.Params("id")).Error
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "report id is required"})
+	}
+
+	if _, err := strconv.Atoi(id); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid report id"})
+	}
+
+	err := h.db.First(&report, id).Error
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -56,7 +67,16 @@ func (h *Handler) CreateReport(c *fiber.Ctx) error {
 
 func (h *Handler) DeleteReport(c *fiber.Ctx) error {
 	report := models.Report{}
-	res := h.db.Delete(&report, c.Params("id"))
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "report id is required"})
+	}
+
+	if _, err := strconv.Atoi(id); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid report id"})
+	}
+
+	res := h.db.Delete(&report, id)
 	if res.RowsAffected == 0 {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "report not found"})
 	}
