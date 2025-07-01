@@ -26,7 +26,16 @@ func (h *Handler) GetDomains(c *fiber.Ctx) error {
 
 func (h *Handler) GetDomain(c *fiber.Ctx) error {
 	domain := models.Domain{}
-	res := h.db.First(&domain, c.Params("id"))
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "domain id is required"})
+	}
+
+	if _, err := strconv.Atoi(id); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid domain id"})
+	}
+
+	res := h.db.First(&domain, id)
 	if res.Error != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": res.Error.Error()})
 	}
@@ -87,7 +96,16 @@ func (h *Handler) UpdateDomain(c *fiber.Ctx) error {
 
 func (h *Handler) DeleteDomain(c *fiber.Ctx) error {
 	domain := models.Domain{}
-	res := h.db.Delete(&domain, c.Params("id"))
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "domain id is required"})
+	}
+
+	if _, err := strconv.Atoi(id); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid domain id"})
+	}
+
+	res := h.db.Delete(&domain, id)
 	if res.RowsAffected == 0 {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "domain not found"})
 	}
