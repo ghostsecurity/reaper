@@ -5,7 +5,7 @@ go 1.22.3
 require (
 	github.com/elazarl/goproxy v0.0.0-20240909085733-6741dbfc16a1
 	github.com/gofiber/contrib/websocket v1.3.2
-	github.com/gofiber/fiber/v2 v2.52.5
+	github.com/gofiber/fiber/v2 v2.52.9
 	github.com/google/uuid v1.6.0
 	github.com/instructor-ai/instructor-go v0.0.0-20240827181533-b63ca60f159b
 	github.com/projectdiscovery/goflags v0.1.64
@@ -80,7 +80,7 @@ require (
 	github.com/jpillora/backoff v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kataras/jwt v0.1.10 // indirect
-	github.com/klauspost/compress v1.17.8 // indirect
+	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/kljensen/snowball v0.8.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
