@@ -21,7 +21,15 @@ func (h *Handler) GetSessions(c *fiber.Ctx) error {
 
 func (h *Handler) GetSession(c *fiber.Ctx) error {
 	session := models.AgentSession{}
-	res := h.db.First(&session, c.Params("id"))
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "session id is required"})
+	}
+
+	if _, err := strconv.Atoi(id); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid session id"})
+	}
+	res := h.db.First(&session, id)
 	if res.Error != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": res.Error.Error()})
 	}
@@ -51,7 +59,15 @@ func (h *Handler) CreateSession(c *fiber.Ctx) error {
 
 func (h *Handler) DeleteSession(c *fiber.Ctx) error {
 	session := models.AgentSession{}
-	res := h.db.Delete(&session, c.Params("id"))
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "session id is required"})
+	}
+
+	if _, err := strconv.Atoi(id); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid session id"})
+	}
+	res := h.db.Delete(&session, id)
 	if res.RowsAffected == 0 {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "session not found"})
 	}
