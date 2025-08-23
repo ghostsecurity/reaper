@@ -12,7 +12,7 @@ ENV GOOS=linux
 RUN go build -ldflags="-s -w" -o reaper ./cmd/reaper
 
 # Run layer
-FROM ubuntu:latest
+FROM ubuntu:24.10
 
 ENV DEBIAN_FRONTEND=noninteractive
 
