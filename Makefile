@@ -31,7 +31,7 @@ build: ## Build the local server
 .PHONY: lint
 lint: ## Run linters
 	go vet ./...
-	which golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.2
+	which golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8
 	golangci-lint run --timeout 3m --verbose
 
 .PHONY: test
