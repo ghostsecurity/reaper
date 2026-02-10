@@ -83,8 +83,8 @@ func (p *Proxy) handleConnect(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send 200 after hijacking so we control the flush
-	buf.WriteString("HTTP/1.1 200 Connection Established\r\n\r\n")
-	buf.Flush()
+	_, _ = buf.WriteString("HTTP/1.1 200 Connection Established\r\n\r\n")
+	_ = buf.Flush()
 
 	hostname := r.Host
 	if idx := strings.Index(hostname, ":"); idx != -1 {
@@ -110,10 +110,10 @@ func (p *Proxy) blindRelay(clientConn net.Conn, targetAddr string) {
 
 	done := make(chan struct{})
 	go func() {
-		io.Copy(upstream, clientConn)
+		_, _ = io.Copy(upstream, clientConn)
 		close(done)
 	}()
-	io.Copy(clientConn, upstream)
+	_, _ = io.Copy(clientConn, upstream)
 	<-done
 }
 
@@ -125,7 +125,7 @@ func (p *Proxy) mitmConnect(clientConn net.Conn, hostname, targetAddr string) {
 		return
 	}
 
-	tlsConfig := &tls.Config{
+	tlsConfig := &tls.Config{ //nolint:gosec
 		Certificates: []tls.Certificate{*tlsCert},
 	}
 
@@ -196,7 +196,7 @@ func (p *Proxy) handleHTTP(w http.ResponseWriter, r *http.Request) {
 			Timestamp:       time.Now(),
 			DurationMs:      duration,
 		}
-		p.Store.Save(entry)
+		_ = p.Store.Save(entry)
 		p.emit(Event{
 			ID:          entry.ID,
 			Method:      r.Method,
@@ -226,7 +226,7 @@ func (p *Proxy) handleHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	w.WriteHeader(resp.StatusCode)
-	w.Write(body)
+	_, _ = w.Write(body)
 }
 
 func (p *Proxy) proxyAndLog(clientConn net.Conn, req *http.Request, scheme, hostname string) {
@@ -272,7 +272,7 @@ func (p *Proxy) proxyAndLog(clientConn net.Conn, req *http.Request, scheme, host
 		Timestamp:       time.Now(),
 		DurationMs:      duration,
 	}
-	p.Store.Save(entry)
+	_ = p.Store.Save(entry)
 	p.emit(Event{
 		ID:          entry.ID,
 		Method:      entry.Method,
@@ -291,11 +291,11 @@ func (p *Proxy) proxyAndLog(clientConn net.Conn, req *http.Request, scheme, host
 
 	var sb strings.Builder
 	fmt.Fprintf(&sb, "HTTP/%d.%d %s\r\n", resp.ProtoMajor, resp.ProtoMinor, resp.Status)
-	resp.Header.Write(&sb)
+	_ = resp.Header.Write(&sb)
 	sb.WriteString("\r\n")
 
-	clientConn.Write([]byte(sb.String()))
-	clientConn.Write(respBody)
+	_, _ = clientConn.Write([]byte(sb.String()))
+	_, _ = clientConn.Write(respBody)
 }
 
 func (p *Proxy) getCertForHost(host string) (*tls.Certificate, error) {

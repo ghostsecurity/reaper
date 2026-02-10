@@ -165,5 +165,5 @@ func (s *IPCServer) handleShutdown() Response {
 func writeResponse(conn net.Conn, resp Response) {
 	data, _ := json.Marshal(resp)
 	data = append(data, '\n')
-	conn.Write(data)
+	_, _ = conn.Write(data)
 }

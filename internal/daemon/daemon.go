@@ -84,13 +84,13 @@ func Run(cfg Config) error {
 
 	// Write PID file
 	pidPath := filepath.Join(dataDir, "reaper.pid")
-	os.WriteFile(pidPath, []byte(strconv.Itoa(os.Getpid())), 0600)
+	_ = os.WriteFile(pidPath, []byte(strconv.Itoa(os.Getpid())), 0600)
 	defer os.Remove(pidPath)
 	defer os.Remove(sockPath)
 
 	// Start HTTP proxy server
 	addr := fmt.Sprintf(":%d", cfg.Port)
-	server := &http.Server{
+	server := &http.Server{ //nolint:gosec
 		Addr:    addr,
 		Handler: p,
 	}

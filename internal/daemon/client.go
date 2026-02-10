@@ -26,7 +26,7 @@ func (c *Client) Send(req Request) (*Response, error) {
 	}
 	defer conn.Close()
 
-	conn.SetDeadline(time.Now().Add(30 * time.Second))
+	_ = conn.SetDeadline(time.Now().Add(30 * time.Second))
 
 	data, err := json.Marshal(req)
 	if err != nil {
@@ -63,7 +63,7 @@ func WaitForSocket(dataDir string) error {
 			// Send ping
 			data, _ := json.Marshal(Request{Command: "ping"})
 			data = append(data, '\n')
-			conn.Write(data)
+			_, _ = conn.Write(data)
 			conn.Close()
 			return nil
 		}
