@@ -34,9 +34,17 @@ curl -x http://localhost:8443 -k https://api.example.com/users
 ```
 
 ```
-# chrome on macOS
+# Chrome on macOS
 /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
   --proxy-server=localhost:8443 \
+  --user-data-dir="$HOME/.chrome-reaper" \
+  --ignore-certificate-errors
+```
+
+```
+# Chrome on Linux
+google-chrome \
+  --proxy-server="localhost:8443" \
   --user-data-dir="$HOME/.chrome-reaper" \
   --ignore-certificate-errors
 ```
