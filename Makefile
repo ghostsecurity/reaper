@@ -12,10 +12,6 @@ help: ## Show this help
 	@cat ${MAKEFILE_LIST} | grep "[#]# " | grep -v grep | sort | column -t -s '##' | sed -e 's/^/ /'
 	@echo ""
 
-.PHONY: build-ui
-build-ui: ## Build the UI
-	cd ui && yarn && yarn build
-
 .PHONY: run
 run: ## Run the local server
 	go run ./cmd/reaper
@@ -31,7 +27,7 @@ build: ## Build the local server
 .PHONY: lint
 lint: ## Run linters
 	go vet ./...
-	which golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8
+	which golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint
 	golangci-lint run --timeout 3m --verbose
 
 .PHONY: test
