@@ -82,7 +82,6 @@ When running in foreground mode, the proxy prints live connection activity:
 ```
 14:30:05 ⇄ GET https://api.example.com/users 200 142ms
 14:30:08 ⇄ POST https://api.example.com/login 200 89ms
-14:30:10 = CONNECT google.com
 14:30:12 ⇄ GET http://example.com/health 200 53ms
 ```
 
