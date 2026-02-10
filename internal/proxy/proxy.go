@@ -92,11 +92,6 @@ func (p *Proxy) handleConnect(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !p.Scope.InScope(hostname) {
-		p.emit(Event{
-			Scheme:      "https",
-			Host:        hostname,
-			Intercepted: false,
-		})
 		p.blindRelay(clientConn, host)
 		return
 	}

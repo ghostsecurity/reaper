@@ -22,7 +22,6 @@
 !.github/**
 !.air.toml
 
-!example.creds.yaml
 !sample.env
 !docs/**
 !tests/**

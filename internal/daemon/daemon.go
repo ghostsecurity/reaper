@@ -125,12 +125,6 @@ func printEvent(e proxy.Event) {
 		tag = "⇄"
 	}
 
-	if e.Method == "" {
-		// CONNECT passthrough — no request/response details
-		fmt.Printf("%s %s CONNECT %s\n", ts, tag, e.Host)
-		return
-	}
-
 	url := fmt.Sprintf("%s://%s%s", e.Scheme, e.Host, e.Path)
 	fmt.Printf("%s %s %s %s %d %dms\n", ts, tag, e.Method, url, e.StatusCode, e.DurationMs)
 }
