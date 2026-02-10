@@ -21,6 +21,8 @@
 !Makefile
 !.github/**
 !.air.toml
+!.golangci.yml
+!.goreleaser.yaml
 
 !sample.env
 !docs/**
