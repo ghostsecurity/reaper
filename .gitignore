@@ -19,24 +19,16 @@
 !LICENSE
 
 !Makefile
-!Dockerfile
-!docker-compose.yml
-!.dockerignore
 !.github/**
 !.air.toml
+!.golangci.yml
+!.goreleaser.yaml
 
-!config.yaml
 !sample.env
 !docs/**
 !tests/**
 !cmd/reaper/dist/**
-!tls/*
-!ui/
-!ui/**
-ui/node_modules
-ui/node_modules/**
-ui/dist
-ui/dist/**
+
 
 .DS_Store
 
