@@ -1,55 +1,210 @@
-<a id="readme-top"></a>
-<h1><img src="docs/img/logo-reaper-only.png" width="30px"> Reaper</h1>
+# Reaper
 
-Reaper by [Ghost Security](https://ghost.security) is a modern, lightweight, and deadly effective open-source application security testing framework—engineered by humans and primed for AI. Reaper slashes through the complexities of app security testing, bringing together reconnaissance, request proxying, request tampering/replay, active testing, vulnerability validation, live collaboration, and reporting into a *killer* workflow. When paired with an AI Agent, Reaper reaps even greater rewards, transforming into a powerful engine that slays application vulnerabilities with precision and efficiency.
+Reaper is a MITM HTTPS proxy for application security testing by [Ghost Security](https://ghostsecurity.ai).
 
-<!-- LOGO AND YOUTUBE -->
-<br />
-<div align="center">
-  <i>Watch the demo video!</i><br/>
-  <a href="https://youtu.be/55dVaNQo4QI"><img src="docs/img/video-thumbnail.png"></a>
-  <br /><br />
-</div>
+It intercepts HTTP and HTTPS traffic, logs requests and responses to a local SQLite database, and provides a CLI for searching and inspecting captured traffic. Out-of-scope traffic passes through untouched. Reaper is designed to be easy to use by humans and AI agents alike.
 
-> :warning:
-> This project is undergoing rapid development and may change significantly in the near future.
+## Install
 
-## 💿 Getting Started
+### From source
 
-Follow [the installation and getting started guide](docs/getting_started.md) for getting Reaper up and running on your machine.
+```
+git clone https://github.com/ghostsecurity/reaper.git
+cd reaper
+make build
+```
 
-## 👻 About
+### From release
 
-Reaper was created to give appsec analysts, pentesters, and bug bounty hunters a single, razor-sharp tool that brings together every phase of application security testing into one efficient workflow. It slashes through the manual, time-intensive steps required to uncover application vulnerabilities, exorcising the lingering demons of application security.
+Download the latest binary from [Releases](https://github.com/ghostsecurity/reaper/releases).
 
-While existing tools like Burp Suite, Zap, Subfinder, and Katana tackle individual stages of the testing lifecycle well, Reaper wields a scythe where others use scissors, stitching the entire process back together with cutting-edge technology.
+## Quick start
 
-Built for orchestration by both humans and AI, Reaper transforms appsec testing into a streamlined, high-speed process. LLM-powered AI Agents step in as tireless team members, mowing through tedious tasks that would take hours for a human analyst in mere seconds. Picture having a teammate who never sleeps, understands the depths of application security, and works at lightning speed assisting with test parameter tuning, data analysis, findings summaries, and reporting 🤤.
+Start the proxy with one or more target domains:
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+```
+reaper start --domains example.com
+```
 
-## 🎯 Project Goals
+Configure your browser or tool to use `http://localhost:8443` as an HTTP proxy. HTTPS traffic to in-scope domains will be intercepted using a generated CA certificate — you'll need to accept the self-signed certificate warning or configure your client to skip TLS verification.
 
-- A modern, lightweight, and extensible framework for application security testing
-- Usable by humans and AI Agents alike
-- A platform for running autonomous workflows
-- Easy to maintain and extend
-- Reduce security engineer burnout with helpful automation
+```
+# curl
+curl -x http://localhost:8443 -k https://api.example.com/users
+```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+```
+# chrome on macOS
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+  --proxy-server=localhost:8443 \
+  --user-data-dir="$HOME/.chrome-reaper" \
+  --ignore-certificate-errors
+```
 
-<!-- CONTRIBUTING -->
-## 💜 Contributing
+In another terminal, inspect what was captured:
 
-First, thank you for taking the time to check out Reaper! Our primary goals are to get as many folks using it as possible and to drive a roadmap based on user feedback.  If you have a great idea for an enhancement or you have encountered a bug, we'd greatly appreciate a well-formed [Issue](https://github.com/ghostsecurity/reaper/issues/new) in this repo so we can triage and prioritize accordingly.
+```
+# show logs
+reaper logs
+# get the full request/response of the first connection that we captured
+reaper get 1
+```
 
-Reaper is distributed under the [Apache 2.0 License](LICENSE). All Reaper contributors and community members must adhere to the [Code of Conduct](CODE_OF_CONDUCT.md)
+Stop the proxy with `Ctrl+C` or with the `stop` command (if started in daemon mode).
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+```
+reaper stop
+```
 
-<!-- ACKNOWLEDGMENTS -->
-## 👏 Acknowledgments
+## How it works
 
-We want to tip our hats to our friends at [ProjectDiscovery](https://github.com/projectdiscovery), who produce a suite of open source tools tailored for offensive security practitioners, security engineers, bug bounty hunters, and red teamers. ProjectDiscovery is the creator of [subfinder](https://github.com/projectdiscovery/subfinder), [katana](https://github.com/projectdiscovery/katana), [nuclei](https://github.com/projectdiscovery/nuclei), and many other great tools.
+### Scope filtering
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+Reaper only intercepts traffic to domains or hosts you specify. Everything else passes through as a blind TCP relay with no logging or MITM.
+
+- `--domains example.com` — suffix match. Intercepts `example.com`, `api.example.com`, `deep.sub.example.com`, etc.
+- `--hosts api.example.com` — exact match. Only intercepts that specific hostname.
+
+Both flags can be combined and accept multiple comma-separated values.
+
+### Live activity
+
+When running in foreground mode, the proxy prints live connection activity:
+
+```
+14:30:05 ⇄ GET https://api.example.com/users 200 142ms
+14:30:08 ⇄ POST https://api.example.com/login 200 89ms
+14:30:10 = CONNECT google.com
+14:30:12 ⇄ GET http://example.com/health 200 53ms
+```
+
+- `⇄` — intercepted (in scope, request and response captured)
+- `=` — passthrough (out of scope, blind relay)
+
+## Commands
+
+### `reaper start`
+
+Start the MITM proxy.
+
+```
+reaper start --domains example.com,api.io --hosts special.internal.host
+reaper start --domains example.com --port 9090
+reaper start --domains example.com -d
+```
+
+| Flag | Description |
+|------|-------------|
+| `--domains` | Domain suffixes to intercept (comma-separated) |
+| `--hosts` | Exact hostnames to intercept (comma-separated) |
+| `--port` | Proxy listen port (default: `8443`) |
+| `-d, --daemon` | Run as a background daemon |
+
+At least one `--domains` or `--hosts` is required.
+
+### `reaper stop`
+
+Stop a running daemon.
+
+```
+reaper stop
+```
+
+### `reaper logs`
+
+Show recent captured entries as a table.
+
+```
+reaper logs
+reaper logs -n 100
+```
+
+| Flag | Description |
+|------|-------------|
+| `-n, --number` | Number of entries to show (default: `50`) |
+
+Output columns: ID, METHOD, HOST, PATH, STATUS, MS (duration), REQ (request body size), RES (response body size).
+
+### `reaper search`
+
+Search captured entries with filters.
+
+```
+reaper search --method POST
+reaper search --domains example.com --status 200
+reaper search --host *.api.example.com
+reaper search --path /api/v2/*
+```
+
+| Flag | Description |
+|------|-------------|
+| `--method` | Filter by HTTP method (exact match) |
+| `--host` | Filter by hostname (supports `*` wildcard) |
+| `--domains` | Filter by domain suffix |
+| `--path` | Filter by path (prefix match, supports `*` wildcard) |
+| `--status` | Filter by HTTP status code |
+| `-n, --limit` | Max results (default: `100`) |
+
+### `reaper get <id>`
+
+Print the full raw HTTP request and response for an entry.
+
+```
+reaper get 42
+```
+
+### `reaper req <id>`
+
+Print just the raw HTTP request.
+
+```
+reaper req 42
+```
+
+### `reaper res <id>`
+
+Print just the raw HTTP response.
+
+```
+reaper res 42
+```
+
+### `reaper version`
+
+Print version information.
+
+## Data directory
+
+Reaper stores its data in `~/.reaper/`:
+
+| File | Purpose |
+|------|---------|
+| `reaper.db` | SQLite database with captured entries |
+| `reaper.sock` | Unix socket for IPC between CLI and daemon |
+| `reaper.pid` | Daemon PID file |
+
+The CA certificate and key are generated in memory on each start and are not persisted.
+
+## Daemon mode
+
+By default, `reaper start` runs in the foreground with live activity output. Use `-d` to run as a background daemon:
+
+```
+reaper start --domains example.com -d
+```
+
+The parent process waits for the daemon to be ready, then exits. Use `reaper stop` to shut it down. All CLI commands (`logs`, `search`, `get`, `req`, `res`) communicate with the running daemon over a Unix socket.
+
+## Development
+
+```
+make build       # Build the binary
+make test        # Run tests
+make lint        # Run linters
+make dev         # Run with air (hot reload)
+make run         # Run directly
+```
+
+## License
+
+Apache License 2.0 — see [LICENSE](LICENSE).
