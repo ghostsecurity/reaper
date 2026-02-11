@@ -18,6 +18,35 @@ make build
 
 Download the latest binary from [Releases](https://github.com/ghostsecurity/reaper/releases).
 
+### Verifying Release Signatures
+
+All release artifacts are signed with [Sigstore cosign](https://github.com/sigstore/cosign) for supply chain security.
+
+```bash
+# Install cosign
+brew install cosign  # macOS
+# or download from https://github.com/sigstore/cosign/releases
+
+# Verify a release artifact
+cosign verify-blob reaper_linux_amd64.tar.gz \
+  --bundle reaper_linux_amd64.tar.gz.sigstore.json \
+  --certificate-identity-regexp 'https://github.com/ghostsecurity/reaper/.github/workflows/release.yml' \
+  --certificate-oidc-issuer 'https://token.actions.githubusercontent.com'
+```
+
+**macOS Security Warning:**
+
+When running the binary on macOS, you may see a Gatekeeper warning. This is because the binary is not signed with an Apple Developer certificate. To bypass:
+
+```bash
+# Remove quarantine attribute
+xattr -d com.apple.quarantine ./reaper
+
+# Or right-click the binary in Finder and select "Open"
+```
+
+The binary is safe to run - verify with cosign signatures above.
+
 ## Quick start
 
 Start the proxy with one or more target domains:

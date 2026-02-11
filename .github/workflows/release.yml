@@ -2,9 +2,10 @@ name: Go Release
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
 permissions:
   contents: write
+  id-token: write  # Required for keyless cosign signing
 jobs:
   goreleaser:
     name: Go Release
@@ -22,5 +23,42 @@ jobs:
           distribution: goreleaser
           version: latest
           args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v4.0.0
+
+      - name: Sign release artifacts
+        run: |
+          # Sign all tar.gz files
+          for file in dist/*.tar.gz; do
+            if [ -f "$file" ]; then
+              echo "Signing $file"
+              cosign sign-blob --yes "$file" \
+                --bundle "${file}.sigstore.json"
+            fi
+          done
+
+          # Sign all zip files
+          for file in dist/*.zip; do
+            if [ -f "$file" ]; then
+              echo "Signing $file"
+              cosign sign-blob --yes "$file" \
+                --bundle "${file}.sigstore.json"
+            fi
+          done
+
+          # Sign checksums file
+          if [ -f "dist/checksums.txt" ]; then
+            echo "Signing checksums.txt"
+            cosign sign-blob --yes "dist/checksums.txt" \
+              --bundle "dist/checksums.txt.sigstore.json"
+          fi
+
+      - name: Upload signatures to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.sigstore.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
