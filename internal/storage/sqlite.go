@@ -20,6 +20,7 @@ func NewSQLiteStore(dbPath string) (*SQLiteStore, error) {
 	if err != nil {
 		return nil, fmt.Errorf("opening database: %w", err)
 	}
+	db.SetMaxOpenConns(1)
 
 	if err := createSchema(db); err != nil {
 		db.Close()
@@ -116,6 +117,29 @@ func (s *SQLiteStore) List(limit, offset int) ([]*Entry, error) {
 	}
 	defer rows.Close()
 	return scanEntries(rows)
+}
+
+func (s *SQLiteStore) ListAfter(afterID int64, limit int) ([]*Entry, error) {
+	if limit <= 0 {
+		limit = 100
+	}
+	rows, err := s.db.Query(
+		`SELECT id, method, scheme, host, path, query, request_headers, request_body, status_code, response_headers, response_body, created_at, duration_ms
+		 FROM entries WHERE id > ? ORDER BY id ASC LIMIT ?`, afterID, limit,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("querying entries: %w", err)
+	}
+	defer rows.Close()
+	return scanEntries(rows)
+}
+
+func (s *SQLiteStore) Clear() error {
+	_, err := s.db.Exec("DELETE FROM entries")
+	if err != nil {
+		return fmt.Errorf("clearing entries: %w", err)
+	}
+	return nil
 }
 
 func (s *SQLiteStore) Search(params SearchParams) ([]*Entry, error) {

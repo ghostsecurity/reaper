@@ -6,6 +6,7 @@ import (
 	"os"
 	"sort"
 	"text/tabwriter"
+	"time"
 )
 
 // entryRow is a subset of storage.Entry used for table display (deserialized from JSON).
@@ -18,6 +19,7 @@ type entryRow struct {
 	Query      string      `json:"Query"`
 	StatusCode int         `json:"StatusCode"`
 	DurationMs int64       `json:"DurationMs"`
+	Timestamp  time.Time   `json:"Timestamp"`
 	// These fields are present but not used for table display
 	RequestHeaders  http.Header `json:"RequestHeaders"`
 	RequestBody     []byte      `json:"RequestBody"`

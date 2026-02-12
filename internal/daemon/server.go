@@ -81,6 +81,10 @@ func (s *IPCServer) route(req Request) Response {
 		return s.handleSearch(req.Params)
 	case "get", "req", "res":
 		return s.handleGet(req.Command, req.Params)
+	case "tail":
+		return s.handleTail(req.Params)
+	case "clear":
+		return s.handleClear()
 	case "shutdown":
 		return s.handleShutdown()
 	case "ping":
@@ -153,6 +157,30 @@ func (s *IPCServer) handleGet(command string, params json.RawMessage) Response {
 
 	data, _ := json.Marshal(getResponse{Command: command, Entry: entry})
 	return Response{OK: true, Data: data}
+}
+
+func (s *IPCServer) handleTail(params json.RawMessage) Response {
+	var p TailParams
+	if len(params) > 0 {
+		if err := json.Unmarshal(params, &p); err != nil {
+			return Response{Error: "invalid params"}
+		}
+	}
+
+	entries, err := s.store.ListAfter(p.AfterID, p.Limit)
+	if err != nil {
+		return Response{Error: err.Error()}
+	}
+
+	data, _ := json.Marshal(entries)
+	return Response{OK: true, Data: data}
+}
+
+func (s *IPCServer) handleClear() Response {
+	if err := s.store.Clear(); err != nil {
+		return Response{Error: err.Error()}
+	}
+	return Response{OK: true}
 }
 
 func (s *IPCServer) handleShutdown() Response {
