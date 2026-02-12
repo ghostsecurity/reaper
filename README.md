@@ -1,4 +1,4 @@
-[Reaper Banner](https://media.ghostsecurity.ai/reaper-banner.png)
+![Reaper Banner](https://media.ghostsecurity.ai/reaper-banner.png)
 
 # Ghost Security Reaper
 
