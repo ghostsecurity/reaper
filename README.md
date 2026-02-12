@@ -1,5 +1,3 @@
-![Reaper Logo](./docs/reaper.png)
-
 # Ghost Security Reaper
 
 MITM HTTPS proxy for application security testing. Intercepts in-scope traffic, logs requests and responses to a local database, and provides a CLI for searching and inspecting captured traffic. Reaper is designed to be easy to use by humans and AI agents alike.
