@@ -28,7 +28,7 @@
 !docs/**
 !tests/**
 !cmd/reaper/dist/**
-
+!scripts/**
 
 .DS_Store
 
