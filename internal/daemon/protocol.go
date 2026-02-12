@@ -3,7 +3,7 @@ package daemon
 import "encoding/json"
 
 type Request struct {
-	Command string          `json:"command"` // "logs", "search", "get", "req", "res", "shutdown"
+	Command string          `json:"command"` // "logs", "search", "get", "req", "res", "tail", "clear", "shutdown"
 	Params  json.RawMessage `json:"params"`
 }
 
@@ -26,6 +26,11 @@ type SearchRequestParams struct {
 	Status  int      `json:"status,omitempty"`
 	Limit   int      `json:"limit,omitempty"`
 	Offset  int      `json:"offset,omitempty"`
+}
+
+type TailParams struct {
+	AfterID int64 `json:"after_id"`
+	Limit   int   `json:"limit"`
 }
 
 type GetParams struct {

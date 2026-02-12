@@ -17,13 +17,13 @@ import (
 
 type nullStore struct{}
 
-func (s *nullStore) Save(e *storage.Entry) error              { return nil }
-func (s *nullStore) Get(id int64) (*storage.Entry, error)     { return nil, fmt.Errorf("not found") }
-func (s *nullStore) List(l, o int) ([]*storage.Entry, error)  { return nil, nil }
-func (s *nullStore) Search(p storage.SearchParams) ([]*storage.Entry, error) {
-	return nil, nil
-}
-func (s *nullStore) Close() error { return nil }
+func (s *nullStore) Save(e *storage.Entry) error                                  { return nil }
+func (s *nullStore) Get(id int64) (*storage.Entry, error)                         { return nil, fmt.Errorf("not found") }
+func (s *nullStore) List(l, o int) ([]*storage.Entry, error)                      { return nil, nil }
+func (s *nullStore) Search(p storage.SearchParams) ([]*storage.Entry, error)      { return nil, nil }
+func (s *nullStore) ListAfter(afterID int64, limit int) ([]*storage.Entry, error) { return nil, nil }
+func (s *nullStore) Clear() error                                                 { return nil }
+func (s *nullStore) Close() error                                                 { return nil }
 
 func startTestProxy(t *testing.T, domains []string, transport http.RoundTripper) (*Proxy, net.Listener) {
 	t.Helper()
