@@ -47,6 +47,12 @@ get_installed_version() {
     fi
 }
 
+# Extract bare version number for comparison
+# "reaper 1.0.0" -> "1.0.0", "v1.0.0" -> "1.0.0"
+normalize_version() {
+    echo "$1" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1
+}
+
 # Download and install from GitHub
 install_from_github() {
     local platform="$1"
@@ -95,18 +101,7 @@ main() {
     platform=$(detect_platform)
     echo "Platform: ${platform}"
 
-    # Check if already installed
-    local installed_version
-    installed_version=$(get_installed_version)
-    echo "Installed version: ${installed_version:-none}"
-
-    if [ -n "$installed_version" ]; then
-        echo "Already installed!"
-        echo "Binary path: ${BIN_DIR}/${BINARY_NAME}"
-        exit 0
-    fi
-
-    # Get latest version
+    # Get latest version from GitHub API
     local latest_version
     latest_version=$(get_latest_version)
 
@@ -118,6 +113,25 @@ main() {
     fi
 
     echo "Latest version: ${latest_version}"
+
+    # Check if already installed and up to date
+    local installed_version
+    installed_version=$(get_installed_version)
+    echo "Installed version: ${installed_version:-none}"
+
+    if [ -n "$installed_version" ]; then
+        local installed_normalized latest_normalized
+        installed_normalized=$(normalize_version "$installed_version")
+        latest_normalized=$(normalize_version "$latest_version")
+
+        if [ "$installed_normalized" = "$latest_normalized" ]; then
+            echo "Already up to date!"
+            echo "Binary path: ${BIN_DIR}/${BINARY_NAME}"
+            exit 0
+        fi
+
+        echo "Updating from ${installed_normalized} to ${latest_normalized}..."
+    fi
 
     if install_from_github "$platform" "$latest_version"; then
         echo ""
