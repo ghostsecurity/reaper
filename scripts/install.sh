@@ -33,7 +33,7 @@ detect_platform() {
 
 # Get latest release version
 get_latest_version() {
-    curl -s "https://api.github.com/repos/${REPO}/releases/latest" | \
+    curl -sL "https://updates.ghostsecurity.ai/repos/${REPO}/releases/latest" | \
         grep '"tag_name":' | \
         sed -E 's/.*"([^"]+)".*/\1/'
 }
