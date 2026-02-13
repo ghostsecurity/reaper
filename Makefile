@@ -16,10 +16,6 @@ help: ## Show this help
 run: ## Run the local server
 	go run ./cmd/reaper
     
-.PHONY: dev
-dev: ## Run the local server with air watcher
-	air
-    
 .PHONY: build
 build: ## Build the local server
 	go build -ldflags="-s -w" -o reaper ./cmd/reaper
