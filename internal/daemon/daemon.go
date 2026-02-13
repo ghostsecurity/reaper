@@ -28,7 +28,7 @@ func DataDir() (string, error) {
 		return "", fmt.Errorf("getting home directory: %w", err)
 	}
 
-	dir := filepath.Join(home, ".reaper")
+	dir := filepath.Join(home, ".ghost", "reaper")
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		return "", fmt.Errorf("creating data directory: %w", err)
 	}
