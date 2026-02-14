@@ -23,10 +23,6 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("reaper %s\n", version.Version)
-		if version.Date != "" {
-			fmt.Printf("built %s\n", version.Date)
-		}
-		fmt.Println(version.URL())
 	},
 }
 
